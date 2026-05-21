@@ -1,5 +1,17 @@
 version: 2.1
 
+commands:
+  download_available_models:
+    steps:
+      - run:
+          name: download available models from datashare-python release
+          command: |
+            ASR_WORKER_VERSION=$(mvn help:evaluate -Dexpression=asr-worker.version -q -DforceStdout)
+            echo "downloading available-models.json for asr-worker-${ASR_WORKER_VERSION}"
+            mkdir -p src/main/resources
+            curl -fsSL "https://github.com/ICIJ/datashare-python/releases/download/asr-worker-${ASR_WORKER_VERSION}/available-models.json" \
+              -o src/main/resources/available-models.json
+
 jobs:
   build:
     docker:
@@ -38,6 +50,8 @@ jobs:
           keys:
             - v1-dependencies-{{ checksum "pom.xml" }}
             - v1-dependencies-
+
+      - download_available_models
 
       - run:
           name: package datashare asr extension
