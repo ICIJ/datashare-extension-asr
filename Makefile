@@ -1,10 +1,16 @@
 VERSION = $(shell cat pom.xml | grep '<version>[0-9.]\+' | cut -d ' ' -f 5 | sed 's/<version>\([0-9.]\+\)<\/version>/\1/g' | tr -d '[:space:]')
+ASR_WORKER_VERSION = $(shell mvn help:evaluate -Dexpression=asr-worker.version -q -DforceStdout)
 
 clean:
 	mvn clean
 
+download-models:
+	mkdir -p src/main/resources
+	curl -fsSL "https://github.com/ICIJ/datashare-python/releases/download/asr-worker-$(ASR_WORKER_VERSION)/available-models.json" \
+		-o src/main/resources/available-models.json
+
 .PHONY: dist
-dist:
+dist: download-models
 	mvn validate package -Dmaven.test.skip=true
 
 install:
