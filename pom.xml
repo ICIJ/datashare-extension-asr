@@ -6,7 +6,7 @@
 
     <groupId>org.icij</groupId>
     <artifactId>datashare-extension-asr</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
 
     <name>asr datashare extension</name>
     <url>https://github.com/ICIJ/datashare-extension-asr</url>
