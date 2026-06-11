@@ -2,6 +2,7 @@ package org.icij.datashare;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.codestory.http.filters.basic.BasicAuthFilter;
 import net.codestory.rest.FluentRestTest;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -15,6 +16,8 @@ import static org.fest.assertions.MapAssert.entry;
 
 public class AsrResourceTest implements FluentRestTest {
     private static final String AVAILABLE_MODELS_PATH = "/available-models.json";
+    private static final String USER_ID = "foo";
+    private static final String PROJECT = USER_ID + "-datashare";
 
     @ClassRule
     public static ProdWebServerRule server = new ProdWebServerRule();
@@ -28,13 +31,15 @@ public class AsrResourceTest implements FluentRestTest {
     @Before
     public void setUp() {
         taskManager = new MockTaskManager();
-        server.configure(routes -> routes.add(new AsrResource(AVAILABLE_MODELS_PATH, taskManager)));
+        server.configure(routes -> routes
+                .add(new AsrResource(AVAILABLE_MODELS_PATH, taskManager))
+                .filter(new BasicAuthFilter("/api", "ds", DatashareUser.singleUser(USER_ID))));
     }
 
     @Test
     public void test_get_models_returns_200() {
         // WHEN
-        var response = get("/api/asr/models");
+        var response = get("/api/asr/models").withPreemptiveAuthentication(USER_ID, "null");
 
         // THEN
         response.should().respond(200).haveType("application/json");
@@ -43,7 +48,9 @@ public class AsrResourceTest implements FluentRestTest {
     @Test
     public void test_get_models_returns_languages_and_models() throws Exception {
         // WHEN
-        String body = get("/api/asr/models").response().content();
+        String body = get("/api/asr/models")
+                .withPreemptiveAuthentication(USER_ID, "null")
+                .response().content();
         Map<String, List<String>> models = new ObjectMapper().readValue(body, new TypeReference<>() {});
 
         // THEN
@@ -54,7 +61,7 @@ public class AsrResourceTest implements FluentRestTest {
     @Test
     public void test_get_unknown_route_returns_404() {
         // WHEN
-        var response = get("/api/asr/unknown");
+        var response = get("/api/asr/unknown").withPreemptiveAuthentication(USER_ID, "null");
 
         // THEN
         response.should().respond(404);
@@ -64,7 +71,8 @@ public class AsrResourceTest implements FluentRestTest {
     public void test_transcribe_creates_task_and_returns_201() throws Exception {
         // WHEN
         String body = post("/api/asr/transcribe",
-                "{\"project\":\"my-project\",\"docs\":[\"doc1\"]}")
+                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\"]}")
+                .withPreemptiveAuthentication(USER_ID, "null")
                 .response().content();
         Map<String, Object> response = new ObjectMapper().readValue(body, new TypeReference<>() {});
 
@@ -78,13 +86,14 @@ public class AsrResourceTest implements FluentRestTest {
     public void test_transcribe_passes_args_to_task() throws Exception {
         // WHEN
         post("/api/asr/transcribe",
-                "{\"project\":\"p\",\"docs\":[\"doc1\",\"doc2\"],\"batch_size\":5}")
+                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\",\"doc2\"],\"batch_size\":5}")
+                .withPreemptiveAuthentication(USER_ID, "null")
                 .should().respond(201);
 
         // THEN
         Map<String, Object> args = taskManager.startedTasks.getFirst().args;
         assertThat(args).includes(
-                entry("project", "p"),
+                entry("project", PROJECT),
                 entry("batch_size", 5)
         );
         assertThat((List<?>) args.get("docs")).containsOnly("doc1", "doc2");
@@ -94,7 +103,8 @@ public class AsrResourceTest implements FluentRestTest {
     public void test_transcribe_default_batch_size() throws Exception {
         // WHEN
         post("/api/asr/transcribe",
-                "{\"project\":\"p\",\"docs\":[\"doc1\"]}")
+                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\"]}")
+                .withPreemptiveAuthentication(USER_ID, "null")
                 .should().respond(201);
 
         // THEN
@@ -108,17 +118,28 @@ public class AsrResourceTest implements FluentRestTest {
 
         // WHEN/THEN
         post("/api/asr/transcribe", bodyWithoutProject)
+                .withPreemptiveAuthentication(USER_ID, "null")
                 .should().respond(400).contain("missing project");
     }
 
     @Test
     public void test_transcribe_missing_docs_returns_400() {
         // GIVEN
-        String bodyWithoutDocs = "{\"project\":\"p\"}";
+        String bodyWithoutDocs = "{\"project\":\"" + PROJECT + "\"}";
 
         // WHEN/THEN
         post("/api/asr/transcribe", bodyWithoutDocs)
+                .withPreemptiveAuthentication(USER_ID, "null")
                 .should().respond(400).contain("missing docs");
+    }
+
+    @Test
+    public void test_transcribe_unauthorized_project_returns_401() {
+        // WHEN/THEN
+        post("/api/asr/transcribe",
+                "{\"project\":\"other-project\",\"docs\":[\"doc1\"]}")
+                .withPreemptiveAuthentication(USER_ID, "null")
+                .should().respond(401);
     }
 
     @Test
@@ -127,7 +148,9 @@ public class AsrResourceTest implements FluentRestTest {
         taskManager.setUp(false);
 
         // WHEN/THEN
-        post("/api/asr/transcribe", "{\"project\":\"p\",\"docs\":[\"doc1\"]}")
+        post("/api/asr/transcribe",
+                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\"]}")
+                .withPreemptiveAuthentication(USER_ID, "null")
                 .should().respond(503).contain("task manager is unavailable");
     }
 }
