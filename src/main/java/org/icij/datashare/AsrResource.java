@@ -67,6 +67,11 @@ public class AsrResource {
             return new JsonPayload(400, new ErrorResponse("missing project"));
         }
 
+        User user = (User) context.currentUser();
+        if (!user.isGranted(project)) {
+            throw new net.codestory.http.errors.UnauthorizedException();
+        }
+
         Object docs = body.get("docs");
         if (docs == null) {
             return new JsonPayload(400, new ErrorResponse("missing docs"));
@@ -80,9 +85,6 @@ public class AsrResource {
         }
         taskArgs.put("batch_size", body.getOrDefault("batch_size", 2));
 
-        User user = context.currentUser() != null
-                ? (User) context.currentUser()
-                : User.local();
         Task<String> task = new Task<>(ASR_WORKFLOW, user, taskArgs);
         String taskId = taskManager.startTask(task, new Group(ASR_GROUP));
 
