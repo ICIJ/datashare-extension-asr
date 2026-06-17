@@ -36,6 +36,35 @@ jobs:
             - ~/.m2
           key: v1-dependencies-{{ checksum "pom.xml" }}
 
+  build-plugin:
+    docker:
+      - image: cimg/node:18.19
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - v1-plugin-dependencies-{{ checksum "plugins/asr/yarn.lock" }}
+            - v1-plugin-dependencies-
+
+      - run:
+          name: install plugin dependencies
+          command: cd plugins/asr && yarn install
+
+      - run:
+          name: run plugin tests
+          command: cd plugins/asr && npx vitest run
+
+      - run:
+          name: build plugin
+          command: cd plugins/asr && yarn build
+
+      - save_cache:
+          paths:
+            - plugins/asr/node_modules
+          key: v1-plugin-dependencies-{{ checksum "plugins/asr/yarn.lock" }}
+
   release:
     docker:
       - image: cimg/openjdk:21.0
@@ -81,6 +110,10 @@ workflows:
   build_workflow:
     jobs:
       - build:
+          filters:
+            tags:
+              only: /.*/
+      - build-plugin:
           filters:
             tags:
               only: /.*/
