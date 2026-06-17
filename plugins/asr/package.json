@@ -1,0 +1,30 @@
+{
+  "name": "datashare-plugin-asr",
+  "description": "A Datashare plugin for Audio Speech Recognition (ASR) transcription.",
+  "version": "0.1.0",
+  "main": "dist/index.umd.cjs",
+  "type": "module",
+  "dependencies": {
+    "pinia": "^3.0.0",
+    "vue": "3.5.13"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.5",
+    "@vue/test-utils": "^2.4.6",
+    "jsdom": "^24.1.0",
+    "vite": "^5.3.1",
+    "vite-plugin-externals": "^0.6.2",
+    "vitest": "^1.6.0"
+  },
+  "private": false,
+  "scripts": {
+    "build": "npx vite build",
+    "test:unit": "vitest",
+    "prepublishOnly": "yarn build"
+  },
+  "author": "ICIJ <engineering@icij.org>",
+  "license": "AGPL-3.0",
+  "files": [
+    "dist"
+  ]
+}
