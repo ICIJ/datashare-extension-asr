@@ -19,6 +19,7 @@
   "private": false,
   "scripts": {
     "build": "npx vite build",
+    "watch": "npx vite build --watch",
     "test:unit": "vitest",
     "prepublishOnly": "yarn build"
   },
