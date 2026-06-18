@@ -3,6 +3,7 @@
   "description": "A Datashare plugin for Audio Speech Recognition (ASR) transcription.",
   "version": "0.1.0",
   "main": "dist/index.umd.cjs",
+  "style": "dist/style.css",
   "type": "module",
   "dependencies": {
     "pinia": "^3.0.0",

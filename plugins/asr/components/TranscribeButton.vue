@@ -1,11 +1,14 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useCore } from '@/composables/useCore'
 import { useAsrStore } from '@/stores/asr'
+import TranscribePanel from './TranscribePanel.vue'
 
 const { stores } = useCore()
 const documentStore = stores.useDocumentStore()
 const asrStore = useAsrStore()
+
+const panelOpen = ref(false)
 
 const document = computed(() => documentStore.document)
 const isAudioVideo = computed(() => {
@@ -17,6 +20,16 @@ const canTranscribe = computed(() => {
   // TODO: check user role (editor/admin)
   return true
 })
+
+function openPanel() {
+  console.log('[ASR] openPanel clicked, panelOpen was:', panelOpen.value)
+  panelOpen.value = true
+  console.log('[ASR] panelOpen is now:', panelOpen.value)
+}
+
+function closePanel() {
+  panelOpen.value = false
+}
 </script>
 
 <template>
@@ -32,9 +45,13 @@ const canTranscribe = computed(() => {
       v-if="canTranscribe"
       class="btn btn-outline-light"
       :disabled="asrStore.isTranscribing"
-      @click="asrStore.openPanel()"
+      @click="openPanel"
     >
       {{ $t('asr.transcribe') }}
     </button>
+
+    <teleport to=".document-entries-list__start__list">
+      <transcribe-panel v-if="panelOpen" @close="closePanel" />
+    </teleport>
   </div>
 </template>

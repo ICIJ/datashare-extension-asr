@@ -1,5 +1,4 @@
 import TranscribeButton from './components/TranscribeButton.vue'
-import TranscribePanel from './components/TranscribePanel.vue'
 
 document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
   core.i18n.global.mergeLocaleMessage('en', {
@@ -19,11 +18,5 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
     name: 'asr-transcribe-button',
     target: 'document.content.body:before',
     definition: TranscribeButton
-  })
-
-  core.registerHook({
-    name: 'asr-transcribe-panel',
-    target: 'search:before',
-    definition: TranscribePanel
   })
 })
