@@ -20,7 +20,7 @@ const canTranscribe = computed(() => {
 </script>
 
 <template>
-  <div v-if="isAudioVideo" class="d-flex align-items-center justify-content-between w-100 px-3 py-2">
+  <div v-if="isAudioVideo" class="transcribe-button d-flex align-items-center justify-content-between w-100 px-3 py-2">
     <span v-if="asrStore.isTranscribing" class="text-muted">
       <span class="spinner-border spinner-border-sm me-2" />
       {{ $t('asr.transcriptionInProgress') }}

@@ -2,7 +2,6 @@ import TranscribeButton from './components/TranscribeButton.vue'
 import TranscribePanel from './components/TranscribePanel.vue'
 
 document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
-  console.log('[ASR plugin] loaded')
   core.i18n.global.mergeLocaleMessage('en', {
     asr: {
       transcribe: 'Transcribe',
