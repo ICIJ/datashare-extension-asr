@@ -12,13 +12,13 @@ vi.mock('@/composables/useApi', () => {
 
 describe('LanguageSelector.vue', () => {
   let wrapper
+  let store
 
   beforeEach(async () => {
     const core = CorePlugin.init()
     wrapper = mount(LanguageSelector, { global: { plugins: core.plugins } })
-    // Set available models in store
     const { useAsrStore } = await import('@/stores/asr')
-    const store = useAsrStore()
+    store = useAsrStore()
     store.availableModels = { en: ['parakeet'], fr: ['parakeet'], pt: ['parakeet'] }
     await flushPromises()
   })
@@ -34,18 +34,50 @@ describe('LanguageSelector.vue', () => {
 
   it('lists available languages', async () => {
     await wrapper.find('button').trigger('click')
-    const labels = wrapper.findAll('.dropdown-item')
-    expect(labels.length).toBe(3)
+    const items = wrapper.findAll('.language-selector__item')
+    expect(items.length).toBe(3)
+  })
+
+  it('sorts languages alphabetically', async () => {
+    await wrapper.find('button').trigger('click')
+    const names = wrapper.findAll('.language-selector__item span span').map(el => el.text())
+    expect(names).toEqual(['English', 'French', 'Portuguese'])
   })
 
   it('selects a language on checkbox click', async () => {
-    const { useAsrStore } = await import('@/stores/asr')
-    const store = useAsrStore()
-
     await wrapper.find('button').trigger('click')
     const checkboxes = wrapper.findAll('input[type="checkbox"]')
     await checkboxes[0].setValue(true)
 
     expect(store.selectedLanguages).toContain('en')
+  })
+
+  it('displays selected language names', async () => {
+    store.selectedLanguages.push('pt', 'fr')
+    await flushPromises()
+
+    expect(wrapper.find('button').text()).toBe('Portuguese, French')
+  })
+
+  it('filters languages by search', async () => {
+    await wrapper.find('button').trigger('click')
+    const searchInput = wrapper.find('input[type="text"]')
+    await searchInput.setValue('port')
+    await flushPromises()
+
+    const items = wrapper.findAll('.language-selector__item')
+    expect(items.length).toBe(1)
+    expect(items[0].text()).toContain('Portuguese')
+  })
+
+  it('filters languages by code', async () => {
+    await wrapper.find('button').trigger('click')
+    const searchInput = wrapper.find('input[type="text"]')
+    await searchInput.setValue('fr')
+    await flushPromises()
+
+    const items = wrapper.findAll('.language-selector__item')
+    expect(items.length).toBe(1)
+    expect(items[0].text()).toContain('French')
   })
 })

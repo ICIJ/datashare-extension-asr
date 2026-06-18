@@ -1,6 +1,16 @@
 import { createPinia } from 'pinia'
 
 class CorePlugin {
+  constructor(options = {}) {
+    this.documentOptions = {
+      id: 'doc1',
+      index: 'test-project',
+      contentType: 'audio/mpeg',
+      contentTypeCategory: 'audio',
+      ...options.document
+    }
+  }
+
   install(app) {
     app.config.globalProperties.$core = this
     app.config.globalProperties.$t = (key) => key
@@ -12,16 +22,10 @@ class CorePlugin {
   }
 
   get stores() {
+    const doc = this.documentOptions
     return {
       useDocumentStore() {
-        return {
-          document: {
-            id: 'doc1',
-            index: 'test-project',
-            contentType: 'audio/mpeg',
-            contentTypeCategory: 'audio'
-          }
-        }
+        return { document: doc }
       }
     }
   }
@@ -35,8 +39,8 @@ class CorePlugin {
     return [this, this.pinia]
   }
 
-  static init() {
-    return new CorePlugin()
+  static init(options) {
+    return new CorePlugin(options)
   }
 }
 

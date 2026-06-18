@@ -16,12 +16,16 @@ const asrStore = useAsrStore()
 const open = ref(false)
 const search = ref('')
 
+const sortedLanguages = computed(() => {
+  return [...asrStore.languages].sort((a, b) => languageName(a).localeCompare(languageName(b)))
+})
+
 const filteredLanguages = computed(() => {
-  return asrStore.languages.filter(code => {
-    const name = languageName(code)
-    return name.toLowerCase().includes(search.value.toLowerCase()) ||
-           code.toLowerCase().includes(search.value.toLowerCase())
-  })
+  if (!search.value) return sortedLanguages.value
+  const q = search.value.toLowerCase()
+  return sortedLanguages.value.filter(code =>
+    languageName(code).toLowerCase().includes(q) || code.toLowerCase().includes(q)
+  )
 })
 
 const displayValue = computed(() => {
@@ -48,7 +52,7 @@ function isSelected(code) {
 <template>
   <div class="language-selector">
     <label class="form-label">
-      Select languages*
+      {{ $t('asr.selectLanguages') }}
     </label>
     <div class="dropdown">
       <button
@@ -58,17 +62,20 @@ function isSelected(code) {
         {{ displayValue }}
       </button>
       <div v-if="open" class="dropdown-menu show w-100 p-2">
-        <input
-          v-model="search"
-          type="text"
-          class="form-control form-control-sm mb-2"
-          :placeholder="$t('asr.search')"
-        >
-        <div class="language-list">
+        <div class="language-selector__search mb-2">
+          <input
+            v-model="search"
+            type="text"
+            class="form-control form-control-sm"
+            :placeholder="$t('asr.search')"
+          >
+        </div>
+        <div class="language-selector__list">
           <label
             v-for="code in filteredLanguages"
             :key="code"
-            class="dropdown-item d-flex align-items-center justify-content-between"
+            class="language-selector__item d-flex align-items-center justify-content-between py-1 px-2"
+            :class="{ 'language-selector__item--selected': isSelected(code) }"
           >
             <span class="d-flex align-items-center">
               <input
@@ -77,9 +84,9 @@ function isSelected(code) {
                 :checked="isSelected(code)"
                 @change="toggle(code)"
               >
-              {{ languageName(code) }}
+              <span>{{ languageName(code) }}</span>
             </span>
-            <span class="text-muted small">{{ code.toUpperCase() }}</span>
+            <span class="language-selector__item__code">{{ code.toUpperCase() }}</span>
           </label>
         </div>
       </div>
@@ -88,8 +95,31 @@ function isSelected(code) {
 </template>
 
 <style scoped>
-.language-list {
-  max-height: 300px;
+.language-selector__list {
+  max-height: 200px;
   overflow-y: auto;
+}
+
+.language-selector__item {
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.language-selector__item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.language-selector__item--selected {
+  font-weight: bold;
+}
+
+.language-selector__item__code {
+  opacity: 0.5;
+  font-size: 0.85em;
+}
+
+.language-selector__item--selected .language-selector__item__code {
+  opacity: 1;
+  font-weight: bold;
 }
 </style>

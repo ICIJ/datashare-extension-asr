@@ -12,17 +12,19 @@ const asrStore = useAsrStore()
 
 const hiddenElements = []
 
-onMounted(() => {
+onMounted(async () => {
+  await asrStore.fetchModels()
   const container = document.querySelector('.document-entries-list__start__list')
   if (container) {
-    // Hide existing children and scroll to top
     container.scrollTop = 0
+    container.style.overflow = 'visible'
     Array.from(container.children).forEach(child => {
       if (!child.classList.contains('transcribe-panel')) {
         child.style.display = 'none'
         hiddenElements.push(child)
       }
     })
+    hiddenElements.push({ style: container.style, _restoreOverflow: true })
   }
   // Hide the header
   const header = document.querySelector('.document-entries-list__start__header')
@@ -34,7 +36,11 @@ onMounted(() => {
 
 onUnmounted(() => {
   hiddenElements.forEach(el => {
-    el.style.display = ''
+    if (el._restoreOverflow) {
+      el.style.overflow = ''
+    } else {
+      el.style.display = ''
+    }
   })
   hiddenElements.length = 0
 })

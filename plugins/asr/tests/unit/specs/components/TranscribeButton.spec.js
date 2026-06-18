@@ -43,4 +43,19 @@ describe('TranscribeButton.vue', () => {
       expect(wrapper.find('button').text()).toBe('asr.transcribe')
     })
   })
+
+  describe('with a PDF document', () => {
+    let wrapper
+
+    beforeEach(async () => {
+      const { plugins } = CorePlugin.init({ document: { contentType: 'application/pdf' } })
+      const testWrapper = mount(TestComponent, { global: { plugins } })
+      await flushPromises()
+      wrapper = testWrapper.findComponent(TranscribeButton)
+    })
+
+    it('is not visible', () => {
+      expect(wrapper.find('.transcribe-button').exists()).toBe(false)
+    })
+  })
 })
