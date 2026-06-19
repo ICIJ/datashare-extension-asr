@@ -16,13 +16,13 @@ const isTaskSection = () => props.to?.name === 'task.task-board'
     v-if="isTaskSection()"
     class="transcriptions-sidebar-entry d-flex align-items-center flex-truncate"
   >
-    <a
-      href="#/tasks/transcriptions"
+    <router-link
+      :to="{ name: 'task.transcriptions' }"
       class="transcriptions-sidebar-entry__link text-truncate d-flex flex-grow-1"
     >
       <i-ph-file-audio class="me-2" style="font-size: 1.25em" />
       {{ $t('asr.transcriptions') }}
-    </a>
+    </router-link>
   </div>
 </template>
 
