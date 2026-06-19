@@ -51,16 +51,17 @@ function isSelected(code) {
 
 <template>
   <div class="language-selector">
-    <label class="form-label">
-      {{ $t('asr.selectLanguages') }}
-    </label>
-    <div class="dropdown">
-      <button
-        class="btn btn-outline-light dropdown-toggle w-100 text-start text-truncate"
-        @click="open = !open"
-      >
-        {{ displayValue }}
-      </button>
+    <div class="language-selector__row">
+      <label class="form-label m-0 text-nowrap">
+        {{ $t('asr.selectLanguages') }}
+      </label>
+      <div class="dropdown">
+        <button
+          class="btn btn-outline-light dropdown-toggle w-100 d-flex justify-content-between align-items-center"
+          @click="open = !open"
+        >
+          <span class="text-truncate">{{ displayValue }}</span>
+        </button>
       <div v-if="open" class="dropdown-menu show w-100 p-2">
         <div class="language-selector__search mb-2">
           <input
@@ -89,12 +90,20 @@ function isSelected(code) {
             <span class="language-selector__item__code">{{ code.toUpperCase() }}</span>
           </label>
         </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
+.language-selector__row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .language-selector__list {
   max-height: 200px;
   overflow-y: auto;
