@@ -12,6 +12,11 @@ const asrStore = useAsrStore()
 
 const hiddenElements = []
 
+// WORKAROUND: Hide the document entries list and its header to make room for the transcribe panel.
+// This is a standalone approach that directly manipulates the DOM of datashare-client
+// to avoid requiring changes in the client codebase.
+// A cleaner alternative would be a dedicated hook in datashare-client
+// (e.g. "document-entries-list:replace") that hides the list when a plugin registers on it.
 onMounted(async () => {
   await asrStore.fetchModels()
   const container = document.querySelector('.document-entries-list__start__list')
@@ -26,7 +31,6 @@ onMounted(async () => {
     })
     hiddenElements.push({ style: container.style, _restoreOverflow: true })
   }
-  // Hide the header
   const header = document.querySelector('.document-entries-list__start__header')
   if (header) {
     header.style.display = 'none'

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useCore } from '@/composables/useCore'
 import { useAsrStore } from '@/stores/asr'
 import TranscribePanel from './TranscribePanel.vue'
@@ -22,14 +22,52 @@ const canTranscribe = computed(() => {
 })
 
 function openPanel() {
-  console.log('[ASR] openPanel clicked, panelOpen was:', panelOpen.value)
   panelOpen.value = true
-  console.log('[ASR] panelOpen is now:', panelOpen.value)
 }
 
 function closePanel() {
   panelOpen.value = false
 }
+
+// WORKAROUND: Hide the "No content extracted" message from datashare-client
+// when this plugin handles the content area for audio/video files.
+// A cleaner alternative would be a hook-aware condition in datashare-client's
+// DocumentContent.vue (e.g. hide the message when document.content.body:before has registered hooks).
+let noContentObserver = null
+
+function hideNoContent() {
+  const el = window.document.querySelector('.document-content__body--no-content')
+  if (el) {
+    el.style.display = 'none'
+    return true
+  }
+  return false
+}
+
+onMounted(() => {
+  if (isAudioVideo.value) {
+    if (!hideNoContent()) {
+      noContentObserver = new MutationObserver(() => {
+        if (hideNoContent()) {
+          noContentObserver.disconnect()
+          noContentObserver = null
+        }
+      })
+      noContentObserver.observe(window.document.body, { childList: true, subtree: true })
+    }
+  }
+})
+
+onUnmounted(() => {
+  if (noContentObserver) {
+    noContentObserver.disconnect()
+    noContentObserver = null
+  }
+  const el = window.document.querySelector('.document-content__body--no-content')
+  if (el) {
+    el.style.display = ''
+  }
+})
 </script>
 
 <template>
@@ -50,6 +88,12 @@ function closePanel() {
       {{ $t('asr.transcribe') }}
     </button>
 
+    <!--
+      WORKAROUND: Teleport to the document entries list to replace its content with the transcribe panel.
+      This is a standalone approach that avoids modifying datashare-client.
+      A cleaner alternative would be a dedicated hook in datashare-client
+      (e.g. "document-entries-list:replace") that hides the list when a plugin registers on it.
+    -->
     <teleport to=".document-entries-list__start__list">
       <transcribe-panel v-if="panelOpen" @close="closePanel" />
     </teleport>
