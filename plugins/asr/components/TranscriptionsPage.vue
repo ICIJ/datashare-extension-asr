@@ -26,6 +26,8 @@ const { api } = core
 
 const tasks = ref([])
 const docNames = ref({})
+const docCategories = ref({})
+const docLanguages = ref({})
 const totalRows = ref(0)
 const page = ref(1)
 const perPage = ref(100)
@@ -73,6 +75,12 @@ async function resolveDocNames() {
         const doc = await api.sendAction(`/api/${project}/documents/${docId}`)
         if (doc?.title) {
           docNames.value[docId] = doc.title
+        }
+        if (doc?.contentTypeCategory) {
+          docCategories.value[docId] = doc.contentTypeCategory
+        }
+        if (doc?.language) {
+          docLanguages.value[docId] = doc.language
         }
       } catch {
         // document not found
@@ -122,17 +130,24 @@ function taskProgress(task) {
 }
 
 function taskCategory(task) {
-  const args = task.args || task.properties || {}
-  return args.category || '—'
+  const docs = getDocs(task)
+  if (docs.length === 0) return '—'
+  const categories = new Set(docs.map(id => docCategories.value[id]).filter(Boolean))
+  if (categories.size === 0) return '—'
+  if (categories.size === 1) return capitalize([...categories][0])
+  return 'Mixed'
+}
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
 }
 
 function taskLanguages(task) {
-  const args = task.args || task.properties || {}
-  const config = args.config || {}
-  const lang = config.language || config.languages
-  if (!lang) return '—'
-  if (Array.isArray(lang)) return lang.join(', ')
-  return lang
+  const docs = getDocs(task)
+  if (docs.length === 0) return '—'
+  const languages = new Set(docs.map(id => docLanguages.value[id]).filter(Boolean))
+  if (languages.size === 0) return '—'
+  return [...languages].map(capitalize).join(', ')
 }
 
 function taskModel(task) {
