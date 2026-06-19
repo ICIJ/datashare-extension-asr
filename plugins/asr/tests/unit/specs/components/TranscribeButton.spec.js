@@ -19,6 +19,16 @@ describe('TranscribeButton.vue', () => {
     template: '<suspense><transcribe-button /></suspense>'
   })
 
+  beforeEach(() => {
+    const target = document.createElement('div')
+    target.classList.add('document-entries-list__start__list')
+    document.body.appendChild(target)
+  })
+
+  afterEach(() => {
+    document.querySelector('.document-entries-list__start__list')?.remove()
+  })
+
   describe('with an audio document', () => {
     let wrapper
 
