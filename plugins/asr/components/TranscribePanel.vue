@@ -1,5 +1,8 @@
 <script setup>
 import { onMounted, onUnmounted } from 'vue'
+import IPhFileAudio from '~icons/ph/file-audio'
+import IPhInfo from '~icons/ph/info'
+import IPhStop from '~icons/ph/stop'
 import { useCore } from '@/composables/useCore'
 import { useAsrStore } from '@/stores/asr'
 import LanguageSelector from './LanguageSelector.vue'
@@ -58,7 +61,8 @@ async function handleTranscribe() {
 <template>
   <div class="transcribe-panel p-3">
     <div class="d-flex align-items-center justify-content-between mb-4">
-      <h4 class="m-0">
+      <h4 class="m-0 d-flex align-items-center gap-2">
+        <i-ph-file-audio />
         {{ $t('asr.transcribe') }}
       </h4>
       <button class="btn-close btn-close-white" @click="emit('close')" />
@@ -66,23 +70,26 @@ async function handleTranscribe() {
 
     <language-selector class="mb-3" />
 
-    <p class="text-muted small">
-      {{ $t('asr.info') }}
+    <p class="text-muted small d-flex align-items-start gap-2">
+      <i-ph-info class="flex-shrink-0 mt-1" />
+      <span>{{ $t('asr.info') }}</span>
     </p>
 
     <button
       v-if="!asrStore.isTranscribing"
-      class="btn btn-light"
+      class="btn btn-light d-flex align-items-center gap-2"
       :disabled="asrStore.selectedLanguages.length === 0"
       @click="handleTranscribe"
     >
+      <i-ph-file-audio />
       {{ $t('asr.transcribe') }}
     </button>
     <button
       v-else
-      class="btn btn-outline-light"
+      class="btn btn-outline-light d-flex align-items-center gap-2"
       @click="asrStore.stopTranscription()"
     >
+      <i-ph-stop />
       {{ $t('asr.stopTranscription') }}
     </button>
   </div>

@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
+import IPhTranslate from '~icons/ph/translate'
 import { useAsrStore } from '@/stores/asr'
 
 const languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
@@ -52,7 +53,8 @@ function isSelected(code) {
 <template>
   <div class="language-selector">
     <div class="language-selector__row">
-      <label class="form-label m-0 text-nowrap">
+      <label class="form-label m-0 text-nowrap d-flex align-items-center gap-1">
+        <i-ph-translate />
         {{ $t('asr.selectLanguages') }}
       </label>
       <div class="dropdown">
