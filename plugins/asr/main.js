@@ -1,9 +1,11 @@
 import TranscribeButton from './components/TranscribeButton.vue'
+import TranscriptionsSidebarEntry from './components/TranscriptionsSidebarEntry.vue'
 
 document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
   core.i18n.global.mergeLocaleMessage('en', {
     asr: {
       transcribe: 'Transcribe',
+      transcriptions: 'Transcriptions',
       noTextTranscribed: 'No text transcribed',
       noTextTranscribedVisitor: 'No text transcribed. Ask an editor or an admin to run transcription.',
       transcriptionInProgress: 'Transcription in progress...',
@@ -19,5 +21,11 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
     name: 'asr-transcribe-button',
     target: 'document.content.body:before',
     definition: TranscribeButton
+  })
+
+  core.registerHook({
+    name: 'asr-transcriptions-sidebar',
+    target: 'app-sidebar-section-entries:after',
+    definition: TranscriptionsSidebarEntry
   })
 })
