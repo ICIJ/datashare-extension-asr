@@ -38,15 +38,15 @@ jobs:
 
   build-plugin:
     docker:
-      - image: cimg/node:18.19
+      - image: cimg/node:20.19
 
     steps:
       - checkout
 
       - restore_cache:
           keys:
-            - v1-plugin-dependencies-{{ checksum "plugins/asr/yarn.lock" }}
-            - v1-plugin-dependencies-
+            - v2-plugin-dependencies-{{ checksum "plugins/asr/yarn.lock" }}
+            - v2-plugin-dependencies-
 
       - run:
           name: install plugin dependencies
@@ -63,7 +63,7 @@ jobs:
       - save_cache:
           paths:
             - plugins/asr/node_modules
-          key: v1-plugin-dependencies-{{ checksum "plugins/asr/yarn.lock" }}
+          key: v2-plugin-dependencies-{{ checksum "plugins/asr/yarn.lock" }}
 
   release:
     docker:
