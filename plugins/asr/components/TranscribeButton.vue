@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref, onMounted, onUnmounted } from 'vue'
+import IPhFileAudio from '~icons/ph/file-audio'
 import { useCore } from '@/composables/useCore'
 import { useAsrStore } from '@/stores/asr'
 import TranscribePanel from './TranscribePanel.vue'
@@ -71,17 +72,18 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div v-if="isAudioVideo" class="transcribe-button d-flex align-items-center justify-content-between w-100 px-3 py-2">
-    <span v-if="asrStore.isTranscribing" class="text-muted">
+  <div v-if="isAudioVideo" class="transcribe-button alert alert-warning d-flex align-items-center justify-content-between w-100 mb-0 px-3 py-2">
+    <span v-if="asrStore.isTranscribing">
       <span class="spinner-border spinner-border-sm me-2" />
       {{ $t('asr.transcriptionInProgress') }}
     </span>
-    <span v-else class="text-muted">
+    <span v-else class="d-flex align-items-center gap-2">
+      <i-ph-file-audio style="font-size: 1.25em" />
       {{ $t('asr.noTextTranscribed') }}
     </span>
     <button
       v-if="canTranscribe"
-      class="btn btn-outline-light"
+      class="btn btn-outline-warning transcribe-button__btn"
       :disabled="asrStore.isTranscribing"
       @click="openPanel"
     >
@@ -99,3 +101,14 @@ onUnmounted(() => {
     </teleport>
   </div>
 </template>
+
+<style scoped>
+.transcribe-button__btn {
+  background-color: white;
+}
+
+.transcribe-button__btn:hover {
+  background-color: var(--bs-warning);
+  color: white;
+}
+</style>

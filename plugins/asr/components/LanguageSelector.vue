@@ -1,7 +1,11 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, defineAsyncComponent } from 'vue'
 import IPhTranslate from '~icons/ph/translate'
 import { useAsrStore } from '@/stores/asr'
+import { useCore } from '@/composables/useCore'
+
+const core = useCore()
+const FormControlSearch = defineAsyncComponent(() => core.findComponent('Form/FormControl/FormControlSearch'))
 
 const languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
 
@@ -66,12 +70,12 @@ function isSelected(code) {
         </button>
       <div v-if="open" class="dropdown-menu show w-100 p-2">
         <div class="language-selector__search mb-2">
-          <input
+          <component
+            :is="FormControlSearch"
             v-model="search"
-            type="text"
-            class="form-control form-control-sm"
+            size="sm"
             :placeholder="$t('asr.search')"
-          >
+          />
         </div>
         <div class="language-selector__list">
           <label
