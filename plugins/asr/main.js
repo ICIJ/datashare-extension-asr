@@ -21,6 +21,7 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       pageInfo: 'Transcriptions are Automatic Speech Recognitions (ASR): audio/video transcribed into text. Only editors and admins can run transcriptions.',
       loading: 'Loading...',
       noTranscriptions: 'No transcriptions yet.',
+      colState: 'State',
       colName: 'Name of the documents',
       colProgress: 'Progress',
       colCategory: 'Category',

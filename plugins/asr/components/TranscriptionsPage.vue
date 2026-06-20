@@ -1,8 +1,6 @@
 <script setup>
 import { ref, computed, watch, defineAsyncComponent, onMounted, onUnmounted } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
-import IPhCheckCircle from '~icons/ph/check-circle'
-import IPhXCircle from '~icons/ph/x-circle'
 import IPhTrash from '~icons/ph/trash'
 import IPhPlay from '~icons/ph/play'
 import IPhTranslate from '~icons/ph/translate'
@@ -21,6 +19,9 @@ const { api } = core
 const PageHeader = defineAsyncComponent(() => core.findComponent('PageHeader/PageHeader'))
 const PageContainer = defineAsyncComponent(() => core.findComponent('PageContainer/PageContainer'))
 const RowPagination = defineAsyncComponent(() => core.findComponent('RowPagination/RowPagination'))
+const DisplayStatus = defineAsyncComponent(() => core.findComponent('Display/DisplayStatus'))
+const DisplayProgress = defineAsyncComponent(() => core.findComponent('Display/DisplayProgress'))
+const DisplayProjectList = defineAsyncComponent(() => core.findComponent('Display/DisplayProjectList'))
 const DismissableAlert = defineAsyncComponent(() => core.findComponent('Dismissable/DismissableAlert'))
 
 const tasks = ref([])
@@ -171,20 +172,6 @@ function taskDate(task) {
   return date.toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-function taskState(task) {
-  switch (task.state) {
-    case 'DONE': return 'done'
-    case 'RUNNING': return 'running'
-    case 'ERROR': case 'CANCELLED': return 'error'
-    default: return 'running'
-  }
-}
-
-function progressVariant(task) {
-  if (taskState(task) === 'error') return 'secondary'
-  return 'primary'
-}
-
 watch(page, () => fetchTasks())
 
 onMounted(() => {
@@ -240,7 +227,12 @@ onUnmounted(() => {
       <table class="table table-borderless table-striped table-hover page-table align-middle">
         <thead>
           <tr>
-            <th class="page-table-th text-nowrap" style="width: 2rem" />
+            <th class="page-table-th text-nowrap">
+              <span class="page-table-th__content">
+                <i-ph-clock-countdown class="me-1 my-2" style="font-size: 1.25em" />
+                <span>{{ $t('asr.colState') }}</span>
+              </span>
+            </th>
             <th class="page-table-th text-nowrap" style="min-width: 250px">
               <span class="page-table-th__content">
                 <i-ph-file-audio class="me-1 my-2" style="font-size: 1.25em" />
@@ -306,25 +298,20 @@ onUnmounted(() => {
           </tr>
           <tr v-for="task in tasks" :key="task.id" class="page-table-tr">
             <td>
-              <i-ph-check-circle v-if="taskState(task) === 'done'" class="text-success" style="font-size: 1.25em" />
-              <span v-else-if="taskState(task) === 'running'" class="spinner-border spinner-border-sm text-info" />
-              <i-ph-x-circle v-else class="text-danger" style="font-size: 1.25em" />
+              <component :is="DisplayStatus" :value="task.state" />
             </td>
             <td class="fw-medium">
               {{ taskName(task) }}
             </td>
             <td>
-              <span class="display-progress display-progress--primary">
-                <span class="display-progress__label">{{ Math.round(taskProgress(task) * 100) }}%</span>
-                <span class="display-progress__value" aria-hidden>
-                  <span class="display-progress__value__bar" :style="{ width: `${taskProgress(task) * 100}%` }" />
-                </span>
-              </span>
+              <component :is="DisplayProgress" :value="taskProgress(task)" />
             </td>
             <td>{{ taskCategory(task) }}</td>
             <td>{{ taskLanguages(task) }}</td>
             <td>{{ taskModel(task) }}</td>
-            <td>{{ taskProject(task) }}</td>
+            <td>
+              <component :is="DisplayProjectList" :values="taskProject(task)" />
+            </td>
             <td>{{ taskUser(task) }}</td>
             <td>{{ taskDate(task) }}</td>
             <td>
@@ -345,4 +332,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.transcriptions-page__table .page-table {
+  font-size: 0.875rem;
+}
 </style>
