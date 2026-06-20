@@ -1,3 +1,5 @@
+import { markRaw } from 'vue'
+import IPhFileAudio from '~icons/ph/file-audio'
 import TranscribeButton from './components/TranscribeButton.vue'
 import TranscriptionsSidebarEntry from './components/TranscriptionsSidebarEntry.vue'
 import TranscriptionsPage from './components/TranscriptionsPage.vue'
@@ -17,7 +19,6 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       searchTranscriptions: 'Search in transcriptions',
       transcriptionLaunched: 'Transcription launched for {name}',
       pageInfo: 'Transcriptions are Automatic Speech Recognitions (ASR): audio/video transcribed into text. Only editors and admins can run transcriptions.',
-      gotIt: "Got it, don't show again",
       loading: 'Loading...',
       noTranscriptions: 'No transcriptions yet.',
       colName: 'Name of the documents',
@@ -27,7 +28,11 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       colModel: 'Model',
       colProject: 'Project',
       colUser: 'User',
-      colLaunchedOn: 'Launched on'
+      colLaunchedOn: 'Launched on',
+      breadcrumbTasks: 'Tasks',
+      rowRange: 'to {to} of 0 transcriptions | to {to} of 1 transcription | to {to} of {total} transcriptions',
+      rowRangeFewer: 'of 0 transcriptions | of 1 transcription | to {total} transcriptions',
+      rowRangeCompact: 'of 0 transcriptions | of 1 transcription | of {total} transcriptions'
     }
   })
 
@@ -53,7 +58,8 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
         path: 'transcriptions',
         component: TranscriptionsPage,
         meta: {
-          title: 'asr.transcriptions'
+          title: 'asr.transcriptions',
+          icon: markRaw(IPhFileAudio)
         }
       })
     }

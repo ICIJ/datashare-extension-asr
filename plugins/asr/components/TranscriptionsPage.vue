@@ -1,14 +1,8 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, defineAsyncComponent, onMounted, onUnmounted } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
-import IPhInfo from '~icons/ph/info'
 import IPhCheckCircle from '~icons/ph/check-circle'
 import IPhXCircle from '~icons/ph/x-circle'
-import IPhMagnifyingGlass from '~icons/ph/magnifying-glass'
-import IPhCaretLeft from '~icons/ph/caret-left'
-import IPhCaretRight from '~icons/ph/caret-right'
-import IPhCaretDoubleLeft from '~icons/ph/caret-double-left'
-import IPhCaretDoubleRight from '~icons/ph/caret-double-right'
 import IPhTrash from '~icons/ph/trash'
 import IPhPlay from '~icons/ph/play'
 import IPhTranslate from '~icons/ph/translate'
@@ -24,19 +18,23 @@ const ASR_TASK_NAME = 'asr.transcription'
 const core = useCore()
 const { api } = core
 
+const PageHeader = defineAsyncComponent(() => core.findComponent('PageHeader/PageHeader'))
+const PageContainer = defineAsyncComponent(() => core.findComponent('PageContainer/PageContainer'))
+const RowPagination = defineAsyncComponent(() => core.findComponent('RowPagination/RowPagination'))
+const DismissableAlert = defineAsyncComponent(() => core.findComponent('Dismissable/DismissableAlert'))
+
 const tasks = ref([])
 const docNames = ref({})
 const docCategories = ref({})
 const docLanguages = ref({})
 const totalRows = ref(0)
 const page = ref(1)
-const perPage = ref(100)
+const perPage = ref(25)
 const search = ref('')
 const loading = ref(false)
 
 let pollInterval = null
 
-const totalPages = computed(() => Math.max(1, Math.ceil(totalRows.value / perPage.value)))
 const from = computed(() => (page.value - 1) * perPage.value)
 
 async function fetchTasks() {
@@ -187,10 +185,7 @@ function progressVariant(task) {
   return 'primary'
 }
 
-function goToPage(p) {
-  page.value = Math.max(1, Math.min(p, totalPages.value))
-  fetchTasks()
-}
+watch(page, () => fetchTasks())
 
 onMounted(() => {
   fetchTasks()
@@ -204,58 +199,44 @@ onUnmounted(() => {
 
 <template>
   <div class="transcriptions-page">
-    <div class="transcriptions-page__header d-flex align-items-center justify-content-between px-4 py-3">
-      <div class="d-flex align-items-center gap-2">
-        <button class="btn btn-sm btn-outline-secondary" :disabled="page <= 1" @click="goToPage(1)">
-          <i-ph-caret-double-left />
-        </button>
-        <button class="btn btn-sm btn-outline-secondary" :disabled="page <= 1" @click="goToPage(page - 1)">
-          <i-ph-caret-left />
-        </button>
-        <span class="text-muted small">
-          <input
-            v-model.number="page"
-            type="number"
-            class="transcriptions-page__page-input"
-            min="1"
-            :max="totalPages"
-            @change="goToPage(page)"
-          >
-          to {{ Math.min(from + perPage, totalRows) }} of {{ totalRows }} transcriptions
-        </span>
-        <button class="btn btn-sm btn-outline-secondary" :disabled="page >= totalPages" @click="goToPage(page + 1)">
-          <i-ph-caret-right />
-        </button>
-        <button class="btn btn-sm btn-outline-secondary" :disabled="page >= totalPages" @click="goToPage(totalPages)">
-          <i-ph-caret-double-right />
-        </button>
-      </div>
-      <div class="transcriptions-page__search">
-        <div class="input-group">
-          <span class="input-group-text">
-            <i-ph-magnifying-glass />
-          </span>
-          <input
-            v-model="search"
-            type="text"
-            class="form-control"
-            :placeholder="$t('asr.searchTranscriptions')"
-          >
+    <component
+      :is="PageHeader"
+      v-model:page="page"
+      v-model:search-query="search"
+      searchable
+      paginable
+      no-toggle-settings
+      :per-page="perPage"
+      :total-rows="totalRows"
+      :search-placeholder="$t('asr.searchTranscriptions')"
+    >
+      <template #pagination="{ page: p, setPage, perPage: pp, totalRows: tr }">
+        <div class="page-header-toolbar__pagination">
+          <component
+            :is="RowPagination"
+            :model-value="p"
+            :total-rows="tr"
+            :per-page="pp"
+            keypath-row-range="asr.rowRange"
+            keypath-row-range-fewer="asr.rowRangeFewer"
+            keypath-row-range-compact="asr.rowRangeCompact"
+            @update:model-value="setPage"
+          />
         </div>
-      </div>
-    </div>
+      </template>
+    </component>
 
-    <div class="px-4">
-      <div class="alert alert-info d-flex align-items-center gap-3 px-3 py-2">
-        <i-ph-info class="flex-shrink-0" />
-        <span class="flex-grow-1">{{ $t('asr.pageInfo') }}</span>
-        <button class="btn btn-sm text-nowrap" style="background: var(--bs-body-bg); color: var(--bs-body-color)" type="button">
-          {{ $t('asr.gotIt') }}
-        </button>
-      </div>
-    </div>
+    <component :is="PageContainer" fluid>
+      <component
+        :is="DismissableAlert"
+        variant="info"
+        persist
+        name="task.transcriptions.list.info"
+      >
+        {{ $t('asr.pageInfo') }}
+      </component>
 
-    <div class="px-4 table-responsive">
+      <div class="transcriptions-page__table table-responsive">
       <table class="table table-borderless table-striped table-hover page-table align-middle">
         <thead>
           <tr>
@@ -358,28 +339,10 @@ onUnmounted(() => {
           </tr>
         </tbody>
       </table>
-    </div>
+      </div>
+    </component>
   </div>
 </template>
 
 <style scoped>
-.transcriptions-page__page-input {
-  width: 3rem;
-  text-align: center;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  color: inherit;
-  padding: 0.1rem 0.25rem;
-}
-
-.transcriptions-page__page-input::-webkit-inner-spin-button,
-.transcriptions-page__page-input::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.transcriptions-page__search {
-  width: 300px;
-}
 </style>
