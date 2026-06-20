@@ -31,7 +31,8 @@ const isTaskSection = () => props.to?.name === 'task.task-board'
   position: relative;
 }
 
-.transcriptions-sidebar-entry:hover::before {
+.transcriptions-sidebar-entry:hover::before,
+.transcriptions-sidebar-entry:has(.router-link-active)::before {
   content: '';
   position: absolute;
   left: -0.5rem;
@@ -40,6 +41,10 @@ const isTaskSection = () => props.to?.name === 'task.task-board'
   width: 2px;
   border-radius: 1px;
   background: var(--bs-primary);
+}
+
+.transcriptions-sidebar-entry:has(.router-link-active) {
+  font-weight: 500;
 }
 
 .transcriptions-sidebar-entry__link {
