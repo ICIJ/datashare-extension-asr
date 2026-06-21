@@ -11,6 +11,11 @@ export const useAsrStore = defineStore('asr', () => {
   const taskId = ref(null)
   const taskState = ref(null) // null | 'RUNNING' | 'DONE' | 'ERROR' | 'CANCELLED'
 
+  // Transcriptions page settings
+  const settingsOrder = ref('desc')
+  const settingsPerPage = ref(25)
+  const settingsProperties = ref(['state', 'name', 'progress', 'category', 'languages', 'model', 'project', 'user', 'launchedOn'])
+
   const isTranscribing = computed(() => taskState.value === 'RUNNING')
   const languages = computed(() => Object.keys(availableModels.value).sort())
 
@@ -81,6 +86,9 @@ export const useAsrStore = defineStore('asr', () => {
     transcribe,
     stopTranscription,
     pollTaskStatus,
+    settingsOrder,
+    settingsPerPage,
+    settingsProperties,
     openPanel,
     closePanel,
     reset

@@ -9,7 +9,10 @@ import IPhCirclesThreePlus from '~icons/ph/circles-three-plus'
 import IPhUserCircle from '~icons/ph/user-circle'
 import IPhCalendarBlank from '~icons/ph/calendar-blank'
 import IPhClockCountdown from '~icons/ph/clock-countdown'
+import IPhSortAscending from '~icons/ph/sort-ascending'
+import IPhSortDescending from '~icons/ph/sort-descending'
 import { useCore } from '@/composables/useCore'
+import { useAsrStore } from '@/stores/asr'
 import errorImageLight from '@/assets/app-modal-error-light.svg'
 import errorImageDark from '@/assets/app-modal-error-dark.svg'
 
@@ -17,6 +20,7 @@ const ASR_TASK_NAME = 'asr.transcription'
 
 const core = useCore()
 const { api } = core
+const asrStore = useAsrStore()
 
 const PageHeader = defineAsyncComponent(() => core.findComponent('PageHeader/PageHeader'))
 const PageContainer = defineAsyncComponent(() => core.findComponent('PageContainer/PageContainer'))
@@ -33,7 +37,9 @@ const docCategories = ref({})
 const docLanguages = ref({})
 const totalRows = ref(0)
 const page = ref(1)
-const perPage = ref(25)
+const perPage = computed(() => asrStore.settingsPerPage)
+const order = computed(() => asrStore.settingsOrder)
+const visibleColumns = computed(() => asrStore.settingsProperties)
 const search = ref('')
 const loading = ref(false)
 const errorModalVisible = ref(false)
@@ -50,7 +56,8 @@ async function fetchTasks() {
       name: ASR_TASK_NAME,
       from: from.value,
       size: perPage.value,
-      order: 'desc'
+      sort: 'createdAt',
+      order: order.value
     })
     if (Array.isArray(result)) {
       tasks.value = result
@@ -177,6 +184,18 @@ function taskDate(task) {
   return date.toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
+const sortIcon = computed(() => order.value === 'desc' ? IPhSortAscending : IPhSortDescending)
+
+function toggleOrder() {
+  asrStore.settingsOrder = order.value === 'desc' ? 'asc' : 'desc'
+}
+
+function isVisible(col) {
+  return visibleColumns.value.includes(col)
+}
+
+const colSpan = computed(() => visibleColumns.value.length + 1)
+
 function showError(task) {
   errorModalTask.value = task
   errorModalVisible.value = true
@@ -193,6 +212,8 @@ function taskErrorFull(task) {
 }
 
 watch(page, () => fetchTasks())
+watch(perPage, () => { page.value = 1; fetchTasks() })
+watch(order, () => { page.value = 1; fetchTasks() })
 
 onMounted(() => {
   fetchTasks()
@@ -212,7 +233,6 @@ onUnmounted(() => {
       v-model:search-query="search"
       searchable
       paginable
-      no-toggle-settings
       :per-page="perPage"
       :total-rows="totalRows"
       :search-placeholder="$t('asr.searchTranscriptions')"
@@ -247,58 +267,66 @@ onUnmounted(() => {
       <table class="table table-borderless table-striped table-hover page-table align-middle">
         <thead>
           <tr>
-            <th class="page-table-th text-nowrap">
+            <th v-if="isVisible('state')" class="page-table-th text-nowrap">
               <span class="page-table-th__content">
                 <i-ph-clock-countdown class="me-1 my-2" style="font-size: 1.25em" />
                 <span>{{ $t('asr.colState') }}</span>
               </span>
             </th>
-            <th class="page-table-th text-nowrap" style="min-width: 250px">
+            <th v-if="isVisible('name')" class="page-table-th text-nowrap" style="min-width: 250px">
               <span class="page-table-th__content">
                 <i-ph-file-audio class="me-1 my-2" style="font-size: 1.25em" />
                 <span>{{ $t('asr.colName') }}</span>
               </span>
             </th>
-            <th class="page-table-th text-nowrap" style="min-width: 150px">
+            <th v-if="isVisible('progress')" class="page-table-th text-nowrap" style="min-width: 150px">
               <span class="page-table-th__content">
                 <i-ph-clock-countdown class="me-1 my-2" style="font-size: 1.25em" />
                 <span>{{ $t('asr.colProgress') }}</span>
               </span>
             </th>
-            <th class="page-table-th text-nowrap">
+            <th v-if="isVisible('category')" class="page-table-th text-nowrap">
               <span class="page-table-th__content">
                 <i-ph-play class="me-1 my-2" style="font-size: 1.25em" />
                 <span>{{ $t('asr.colCategory') }}</span>
               </span>
             </th>
-            <th class="page-table-th text-nowrap">
+            <th v-if="isVisible('languages')" class="page-table-th text-nowrap">
               <span class="page-table-th__content">
                 <i-ph-translate class="me-1 my-2" style="font-size: 1.25em" />
                 <span>{{ $t('asr.colLanguages') }}</span>
               </span>
             </th>
-            <th class="page-table-th text-nowrap">
+            <th v-if="isVisible('model')" class="page-table-th text-nowrap">
               <span class="page-table-th__content">
                 <i-ph-brain class="me-1 my-2" style="font-size: 1.25em" />
                 <span>{{ $t('asr.colModel') }}</span>
               </span>
             </th>
-            <th class="page-table-th text-nowrap">
+            <th v-if="isVisible('project')" class="page-table-th text-nowrap">
               <span class="page-table-th__content">
                 <i-ph-circles-three-plus class="me-1 my-2" style="font-size: 1.25em" />
                 <span>{{ $t('asr.colProject') }}</span>
               </span>
             </th>
-            <th class="page-table-th text-nowrap">
+            <th v-if="isVisible('user')" class="page-table-th text-nowrap">
               <span class="page-table-th__content">
                 <i-ph-user-circle class="me-1 my-2" style="font-size: 1.25em" />
                 <span>{{ $t('asr.colUser') }}</span>
               </span>
             </th>
-            <th class="page-table-th text-nowrap">
+            <th v-if="isVisible('launchedOn')" class="page-table-th page-table-th--sortable page-table-th--sorted text-nowrap">
               <span class="page-table-th__content">
                 <i-ph-calendar-blank class="me-1 my-2" style="font-size: 1.25em" />
                 <span>{{ $t('asr.colLaunchedOn') }}</span>
+                <button-icon
+                  :icon-left="sortIcon"
+                  class="page-table-th-sort page-table-th-sort--sorted ms-1"
+                  variant="outline-tertiary"
+                  icon-left-size="1em"
+                  hide-label
+                  @click="toggleOrder"
+                />
               </span>
             </th>
             <th class="page-table-th text-nowrap" />
@@ -306,18 +334,18 @@ onUnmounted(() => {
         </thead>
         <tbody>
           <tr v-if="loading && tasks.length === 0" class="page-table-tr">
-            <td colspan="10" class="text-center text-muted py-4">
+            <td :colspan="colSpan" class="text-center text-muted py-4">
               <span class="spinner-border spinner-border-sm me-2" />
               {{ $t('asr.loading') }}
             </td>
           </tr>
           <tr v-else-if="tasks.length === 0" class="page-table-tr">
-            <td colspan="10" class="text-center text-muted py-4">
+            <td :colspan="colSpan" class="text-center text-muted py-4">
               {{ $t('asr.noTranscriptions') }}
             </td>
           </tr>
           <tr v-for="task in tasks" :key="task.id" class="page-table-tr">
-            <td>
+            <td v-if="isVisible('state')">
               <button
                 v-if="task.state === 'ERROR'"
                 class="btn btn-link p-0 border-0"
@@ -327,20 +355,20 @@ onUnmounted(() => {
               </button>
               <component :is="DisplayStatus" v-else :value="task.state" />
             </td>
-            <td class="fw-medium">
+            <td v-if="isVisible('name')" class="fw-medium">
               {{ taskName(task) }}
             </td>
-            <td>
+            <td v-if="isVisible('progress')">
               <component :is="DisplayProgress" :value="taskProgress(task)" />
             </td>
-            <td>{{ taskCategory(task) }}</td>
-            <td>{{ taskLanguages(task) }}</td>
-            <td>{{ taskModel(task) }}</td>
-            <td>
+            <td v-if="isVisible('category')">{{ taskCategory(task) }}</td>
+            <td v-if="isVisible('languages')">{{ taskLanguages(task) }}</td>
+            <td v-if="isVisible('model')">{{ taskModel(task) }}</td>
+            <td v-if="isVisible('project')">
               <component :is="DisplayProjectList" :values="taskProject(task)" />
             </td>
-            <td>{{ taskUser(task) }}</td>
-            <td>{{ taskDate(task) }}</td>
+            <td v-if="isVisible('user')">{{ taskUser(task) }}</td>
+            <td v-if="isVisible('launchedOn')">{{ taskDate(task) }}</td>
             <td>
               <button
                 v-if="task.state === 'DONE' || task.state === 'ERROR'"
@@ -385,5 +413,21 @@ onUnmounted(() => {
 <style scoped>
 .transcriptions-page__table .page-table {
   font-size: 0.875rem;
+}
+
+.page-table-th--sorted.page-table-th--sortable {
+  color: var(--bs-action-text-emphasis);
+}
+
+.page-table-th-sort {
+  --bs-border-width: 0;
+  --bs-btn-padding-x: 0.125rem;
+  --bs-btn-padding-y: 0.125rem;
+  --bs-btn-color: var(--bs-secondary-text-emphasis);
+}
+
+.page-table-th-sort--sorted {
+  --bs-btn-color: var(--bs-action-text-emphasis);
+  --bs-btn-bg: var(--bs-action-bg-subtle);
 }
 </style>

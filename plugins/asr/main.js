@@ -3,6 +3,7 @@ import IPhFileAudio from '~icons/ph/file-audio'
 import TranscribeButton from './components/TranscribeButton.vue'
 import TranscriptionsSidebarEntry from './components/TranscriptionsSidebarEntry.vue'
 import TranscriptionsPage from './components/TranscriptionsPage.vue'
+import TranscriptionsSettings from './components/TranscriptionsSettings.vue'
 
 document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
   core.i18n.global.mergeLocaleMessage('en', {
@@ -36,7 +37,13 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       rowRangeCompact: 'of 0 transcriptions | of 1 transcription | of {total} transcriptions',
       errorTitle: 'The error is',
       errorDescription: 'The transcription encountered a problem.',
-      ok: 'Ok'
+      ok: 'Ok',
+      settingsTitle: 'Transcriptions settings',
+      settingsSortBy: 'Sort by',
+      settingsPerPage: 'Transcriptions per page',
+      settingsProperties: 'Properties',
+      sortOldFirst: 'Launched on (old first)',
+      sortRecentFirst: 'Launched on (recent first)'
     }
   })
 
@@ -60,7 +67,10 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       core.router.addRoute('task', {
         name: 'task.transcriptions',
         path: 'transcriptions',
-        component: TranscriptionsPage,
+        components: {
+          default: TranscriptionsPage,
+          settings: TranscriptionsSettings
+        },
         meta: {
           title: 'asr.transcriptions',
           icon: markRaw(IPhFileAudio)
