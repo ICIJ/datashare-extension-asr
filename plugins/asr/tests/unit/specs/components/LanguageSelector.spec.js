@@ -61,6 +61,7 @@ describe('LanguageSelector.vue', () => {
 
   it('filters languages by search', async () => {
     await wrapper.find('button').trigger('click')
+    await flushPromises()
     const searchInput = wrapper.find('input[type="text"]')
     await searchInput.setValue('port')
     await flushPromises()
@@ -72,6 +73,7 @@ describe('LanguageSelector.vue', () => {
 
   it('filters languages by code', async () => {
     await wrapper.find('button').trigger('click')
+    await flushPromises()
     const searchInput = wrapper.find('input[type="text"]')
     await searchInput.setValue('fr')
     await flushPromises()

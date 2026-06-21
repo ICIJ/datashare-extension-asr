@@ -18,7 +18,15 @@ class CorePlugin {
 
   findComponent(path) {
     const name = path.split('/').pop()
-    return { name, template: '<span><slot /></span>' }
+    if (name === 'FormControlSearch') {
+      return Promise.resolve({
+        name,
+        props: { modelValue: { type: String, default: '' }, size: String, placeholder: String },
+        emits: ['update:modelValue'],
+        template: '<input type="text" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />'
+      })
+    }
+    return Promise.resolve({ name, template: '<span><slot /></span>' })
   }
 
   get stores() {
