@@ -190,6 +190,16 @@ function toggleOrder() {
   asrStore.settingsOrder = order.value === 'desc' ? 'asc' : 'desc'
 }
 
+const filteredTasks = computed(() => {
+  if (!search.value) return tasks.value
+  const q = search.value.toLowerCase()
+  return tasks.value.filter(task => {
+    const name = taskName(task).toLowerCase()
+    const docs = getDocs(task).some(id => (docNames.value[id] || id).toLowerCase().includes(q))
+    return name.includes(q) || docs
+  })
+})
+
 function isVisible(col) {
   return visibleColumns.value.includes(col)
 }
@@ -333,18 +343,18 @@ onUnmounted(() => {
           </tr>
         </thead>
         <tbody>
-          <tr v-if="loading && tasks.length === 0" class="page-table-tr">
+          <tr v-if="loading && filteredTasks.length === 0" class="page-table-tr">
             <td :colspan="colSpan" class="text-center text-muted py-4">
               <span class="spinner-border spinner-border-sm me-2" />
               {{ $t('asr.loading') }}
             </td>
           </tr>
-          <tr v-else-if="tasks.length === 0" class="page-table-tr">
+          <tr v-else-if="filteredTasks.length === 0" class="page-table-tr">
             <td :colspan="colSpan" class="text-center text-muted py-4">
               {{ $t('asr.noTranscriptions') }}
             </td>
           </tr>
-          <tr v-for="task in tasks" :key="task.id" class="page-table-tr">
+          <tr v-for="task in filteredTasks" :key="task.id" class="page-table-tr">
             <td v-if="isVisible('state')">
               <button
                 v-if="task.state === 'ERROR'"
