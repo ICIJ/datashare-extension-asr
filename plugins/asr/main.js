@@ -33,7 +33,10 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       breadcrumbTasks: 'Tasks',
       rowRange: 'to {to} of 0 transcriptions | to {to} of 1 transcription | to {to} of {total} transcriptions',
       rowRangeFewer: 'of 0 transcriptions | of 1 transcription | to {total} transcriptions',
-      rowRangeCompact: 'of 0 transcriptions | of 1 transcription | of {total} transcriptions'
+      rowRangeCompact: 'of 0 transcriptions | of 1 transcription | of {total} transcriptions',
+      errorTitle: 'The error is',
+      errorDescription: 'The transcription encountered a problem.',
+      ok: 'Ok'
     }
   })
 

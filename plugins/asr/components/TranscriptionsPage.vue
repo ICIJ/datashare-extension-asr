@@ -10,6 +10,8 @@ import IPhUserCircle from '~icons/ph/user-circle'
 import IPhCalendarBlank from '~icons/ph/calendar-blank'
 import IPhClockCountdown from '~icons/ph/clock-countdown'
 import { useCore } from '@/composables/useCore'
+import errorImageLight from '@/assets/app-modal-error-light.svg'
+import errorImageDark from '@/assets/app-modal-error-dark.svg'
 
 const ASR_TASK_NAME = 'asr.transcription'
 
@@ -23,6 +25,7 @@ const DisplayStatus = defineAsyncComponent(() => core.findComponent('Display/Dis
 const DisplayProgress = defineAsyncComponent(() => core.findComponent('Display/DisplayProgress'))
 const DisplayProjectList = defineAsyncComponent(() => core.findComponent('Display/DisplayProjectList'))
 const DismissableAlert = defineAsyncComponent(() => core.findComponent('Dismissable/DismissableAlert'))
+const AppModal = defineAsyncComponent(() => core.findComponent('AppModal/AppModal'))
 
 const tasks = ref([])
 const docNames = ref({})
@@ -33,6 +36,8 @@ const page = ref(1)
 const perPage = ref(25)
 const search = ref('')
 const loading = ref(false)
+const errorModalVisible = ref(false)
+const errorModalTask = ref(null)
 
 let pollInterval = null
 
@@ -172,6 +177,21 @@ function taskDate(task) {
   return date.toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
+function showError(task) {
+  errorModalTask.value = task
+  errorModalVisible.value = true
+}
+
+function taskErrorFull(task) {
+  if (!task?.error) return 'Unknown error'
+  const message = task.error.message || task.error.cause || task.error.name || 'Unknown error'
+  if (!task.error.stacktrace?.length) return message
+  const stacktrace = task.error.stacktrace
+    .map(frame => `  at ${frame.name}(${frame.file}:${frame.lineno})`)
+    .join('\n')
+  return `${message}\n${stacktrace}`
+}
+
 watch(page, () => fetchTasks())
 
 onMounted(() => {
@@ -298,7 +318,14 @@ onUnmounted(() => {
           </tr>
           <tr v-for="task in tasks" :key="task.id" class="page-table-tr">
             <td>
-              <component :is="DisplayStatus" :value="task.state" />
+              <button
+                v-if="task.state === 'ERROR'"
+                class="btn btn-link p-0 border-0"
+                @click="showError(task)"
+              >
+                <component :is="DisplayStatus" :value="task.state" />
+              </button>
+              <component :is="DisplayStatus" v-else :value="task.state" />
             </td>
             <td class="fw-medium">
               {{ taskName(task) }}
@@ -326,6 +353,30 @@ onUnmounted(() => {
           </tr>
         </tbody>
       </table>
+      </div>
+    </component>
+
+    <component
+      :is="AppModal"
+      v-model="errorModalVisible"
+      :image="errorImageLight"
+      :image-width="70"
+      :ok-title="$t('asr.ok')"
+      ok-only
+      size="lg"
+      class="transcription-error-modal"
+    >
+      <template #header-image-source>
+        <source :srcset="errorImageDark" media="(prefers-color-scheme: dark)" />
+      </template>
+      <div class="d-flex flex-column gap-4 mt-0 pt-0">
+        <div>
+          <p class="text-center fw-medium">{{ $t('asr.errorTitle') }}</p>
+          <div class="bg-tertiary-subtle d-block text-body-emphasis m-0 rounded-1">
+            <pre class="p-3 m-0"><code>{{ taskErrorFull(errorModalTask) }}</code></pre>
+          </div>
+        </div>
+        <p class="m-0">{{ $t('asr.errorDescription') }}</p>
       </div>
     </component>
   </div>
