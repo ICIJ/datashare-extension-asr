@@ -1,6 +1,6 @@
 import { createPinia } from 'pinia'
 
-class CorePlugin {
+class CoreSetup {
   constructor(options = {}) {
     this.documentOptions = {
       id: 'doc1',
@@ -9,6 +9,7 @@ class CorePlugin {
       contentTypeCategory: 'audio',
       ...options.document
     }
+    this._pinia = createPinia()
   }
 
   install(app) {
@@ -38,18 +39,17 @@ class CorePlugin {
     }
   }
 
-  get pinia() {
-    this._pinia = this._pinia || createPinia()
-    return this._pinia
+  get plugins() {
+    return [this, this._pinia]
   }
 
-  get plugins() {
-    return [this, this.pinia]
+  useAll() {
+    return { plugins: this.plugins }
   }
 
   static init(options) {
-    return new CorePlugin(options)
+    return new CoreSetup(options)
   }
 }
 
-export default CorePlugin
+export default CoreSetup

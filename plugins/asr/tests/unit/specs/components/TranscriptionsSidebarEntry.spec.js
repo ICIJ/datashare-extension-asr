@@ -1,11 +1,11 @@
 import { mount } from '@vue/test-utils'
 
-import CorePlugin from '../../CorePlugin.js'
+import CoreSetup from '~tests/unit/CoreSetup'
 import TranscriptionsSidebarEntry from '@/components/TranscriptionsSidebarEntry.vue'
 
 describe('TranscriptionsSidebarEntry.vue', () => {
   function createWrapper(props = {}) {
-    const { plugins } = CorePlugin.init()
+    const { plugins } = CoreSetup.init().useAll()
     return mount(TranscriptionsSidebarEntry, {
       props,
       global: { plugins }

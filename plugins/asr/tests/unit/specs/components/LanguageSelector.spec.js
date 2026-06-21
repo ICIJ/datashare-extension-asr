@@ -1,7 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { vi } from 'vitest'
 
-import CorePlugin from '../../CorePlugin.js'
+import CoreSetup from '~tests/unit/CoreSetup'
 import LanguageSelector from '@/components/LanguageSelector.vue'
 
 vi.mock('@/composables/useApi', () => {
@@ -15,8 +15,8 @@ describe('LanguageSelector.vue', () => {
   let store
 
   beforeEach(async () => {
-    const core = CorePlugin.init()
-    wrapper = mount(LanguageSelector, { global: { plugins: core.plugins } })
+    const { plugins } = CoreSetup.init().useAll()
+    wrapper = mount(LanguageSelector, { global: { plugins } })
     const { useAsrStore } = await import('@/stores/asr')
     store = useAsrStore()
     store.availableModels = { en: ['parakeet'], fr: ['parakeet'], pt: ['parakeet'] }

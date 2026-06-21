@@ -2,14 +2,12 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { vi } from 'vitest'
 import { defineComponent } from 'vue'
 
-import CorePlugin from '../../CorePlugin.js'
+import CoreSetup from '~tests/unit/CoreSetup'
 import TranscribeButton from '@/components/TranscribeButton.vue'
-
-const sendAction = vi.fn()
 
 vi.mock('@/composables/useApi', () => {
   return {
-    useApi: () => ({ sendAction })
+    useApi: () => ({ sendAction: vi.fn() })
   }
 })
 
@@ -33,7 +31,7 @@ describe('TranscribeButton.vue', () => {
     let wrapper
 
     beforeEach(async () => {
-      const { plugins } = CorePlugin.init()
+      const { plugins } = CoreSetup.init().useAll()
       const testWrapper = mount(TestComponent, { global: { plugins } })
       await flushPromises()
       wrapper = testWrapper.findComponent(TranscribeButton)
@@ -58,7 +56,7 @@ describe('TranscribeButton.vue', () => {
     let wrapper
 
     beforeEach(async () => {
-      const { plugins } = CorePlugin.init({ document: { contentType: 'application/pdf' } })
+      const { plugins } = CoreSetup.init({ document: { contentType: 'application/pdf' } }).useAll()
       const testWrapper = mount(TestComponent, { global: { plugins } })
       await flushPromises()
       wrapper = testWrapper.findComponent(TranscribeButton)

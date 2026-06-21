@@ -32,7 +32,8 @@ export default ({ mode }) => {
       dedupe: ['vue'],
       extensions: ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json', '.vue'],
       alias: {
-        '@': path.resolve(__dirname)
+        '@': path.resolve(__dirname),
+        '~tests': path.resolve(__dirname, 'tests')
       }
     }
   })
