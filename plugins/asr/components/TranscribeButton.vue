@@ -1,9 +1,12 @@
 <script setup>
-import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, inject, defineAsyncComponent, onMounted, onUnmounted } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
 import { useCore } from '@/composables/useCore'
 import { useAsrStore } from '@/stores/asr'
 import TranscribePanel from './TranscribePanel.vue'
+
+const core = useCore()
+const AppModal = defineAsyncComponent(() => core.findComponent('AppModal/AppModal'))
 
 const { stores } = useCore()
 const documentStore = stores.useDocumentStore()
@@ -21,6 +24,8 @@ const canTranscribe = computed(() => {
   // TODO: check user role (editor/admin)
   return true
 })
+
+const isInModal = inject('modal', false)
 
 function openPanel() {
   panelOpen.value = true
@@ -96,9 +101,24 @@ onUnmounted(() => {
       A cleaner alternative would be a dedicated hook in datashare-client
       (e.g. "document-entries-list:replace") that hides the list when a plugin registers on it.
     -->
-    <teleport to=".document-entries-list__start__list">
+    <teleport v-if="!isInModal" to=".document-entries-list__start__list">
       <transcribe-panel v-if="panelOpen" @close="closePanel" />
     </teleport>
+    <component
+      v-else
+      :is="AppModal"
+      v-model="panelOpen"
+      size="md"
+      no-header-close
+    >
+      <template #header>
+        <span />
+      </template>
+      <transcribe-panel v-if="panelOpen" @close="closePanel" />
+      <template #footer>
+        <span />
+      </template>
+    </component>
   </div>
 </template>
 

@@ -52,6 +52,15 @@ describe('LanguageSelector.vue', () => {
     expect(store.selectedLanguages).toContain('en')
   })
 
+  it('deselects a language on checkbox uncheck', async () => {
+    store.selectedLanguages.push('en')
+    await wrapper.find('button').trigger('click')
+    const checkboxes = wrapper.findAll('input[type="checkbox"]')
+    await checkboxes[0].setValue(false)
+
+    expect(store.selectedLanguages).not.toContain('en')
+  })
+
   it('displays selected language names', async () => {
     store.selectedLanguages.push('pt', 'fr')
     await flushPromises()

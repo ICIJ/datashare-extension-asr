@@ -29,12 +29,15 @@ describe('TranscribeButton.vue', () => {
 
   describe('with an audio document', () => {
     let wrapper
+    let store
 
     beforeEach(async () => {
       const { plugins } = CoreSetup.init().useAll()
       const testWrapper = mount(TestComponent, { global: { plugins } })
       await flushPromises()
       wrapper = testWrapper.findComponent(TranscribeButton)
+      const { useAsrStore } = await import('@/stores/asr')
+      store = useAsrStore()
     })
 
     it('is visible', () => {
@@ -49,6 +52,25 @@ describe('TranscribeButton.vue', () => {
     it('shows the transcribe button', () => {
       expect(wrapper.find('button').exists()).toBe(true)
       expect(wrapper.find('button').text()).toBe('asr.transcribe')
+    })
+
+    it('opens the transcribe panel on click', async () => {
+      await wrapper.find('button').trigger('click')
+      await flushPromises()
+      const panel = document.querySelector('.document-entries-list__start__list .transcribe-panel')
+      expect(panel).not.toBeNull()
+    })
+
+    it('disables the button while transcription is in progress', async () => {
+      store.taskState = 'RUNNING'
+      await flushPromises()
+      expect(wrapper.find('button').attributes('disabled')).toBeDefined()
+    })
+
+    it('shows transcription in progress message', async () => {
+      store.taskState = 'RUNNING'
+      await flushPromises()
+      expect(wrapper.text()).toContain('asr.transcriptionInProgress')
     })
   })
 
