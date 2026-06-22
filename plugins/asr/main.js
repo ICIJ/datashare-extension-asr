@@ -19,6 +19,7 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       search: 'Search',
       searchTranscriptions: 'Search in transcriptions',
       transcriptionLaunched: 'Transcription launched for {name}',
+      transcriptionError: 'There was an error while launching transcription for {name}',
       pageInfo: 'Transcriptions are Automatic Speech Recognitions (ASR): audio/video transcribed into text. Only editors and admins can run transcriptions.',
       loading: 'Loading...',
       noTranscriptions: 'No transcriptions yet.',

@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted } from 'vue'
+import { getCurrentInstance, onMounted, onUnmounted } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
 import IPhInfo from '~icons/ph/info'
 import IPhStop from '~icons/ph/stop'
@@ -12,6 +12,7 @@ const emit = defineEmits(['close'])
 const { stores } = useCore()
 const documentStore = stores.useDocumentStore()
 const asrStore = useAsrStore()
+const { $toast: toast, $t: t } = getCurrentInstance()?.proxy ?? {}
 
 const hiddenElements = []
 
@@ -54,7 +55,13 @@ onUnmounted(() => {
 
 async function handleTranscribe() {
   const doc = documentStore.document
-  await asrStore.transcribe(doc.index, doc.id)
+  const name = doc.title || doc.id
+  try {
+    await asrStore.transcribe(doc.index, doc.id)
+    toast?.success(t?.('asr.transcriptionLaunched', { name }) ?? `Transcription launched for ${name}`)
+  } catch {
+    toast?.error(t?.('asr.transcriptionError', { name }) ?? `There was an error while launching transcription for ${name}`)
+  }
 }
 </script>
 
