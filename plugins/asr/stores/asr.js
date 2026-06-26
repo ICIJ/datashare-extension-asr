@@ -40,6 +40,17 @@ export const useAsrStore = defineStore('asr', () => {
     taskState.value = 'RUNNING'
   }
 
+  async function transcribeBatch(project, docIds) {
+    return api.sendAction('/api/asr/transcribe', {
+      method: 'POST',
+      data: {
+        project,
+        docs: docIds,
+        batch_size: 2
+      }
+    })
+  }
+
   async function stopTranscription() {
     if (!taskId.value) return
     try {
@@ -84,6 +95,7 @@ export const useAsrStore = defineStore('asr', () => {
     languages,
     fetchModels,
     transcribe,
+    transcribeBatch,
     stopTranscription,
     pollTaskStatus,
     settingsOrder,
