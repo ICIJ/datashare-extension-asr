@@ -27,6 +27,14 @@ class CoreSetup {
         template: '<input type="text" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />'
       })
     }
+    if (name === 'AppModal') {
+      return Promise.resolve({
+        name,
+        props: { modelValue: Boolean, size: String, okTitle: String, okOnly: Boolean },
+        emits: ['update:modelValue'],
+        template: '<div class="app-modal"><slot name="header" /><slot /><slot name="footer" /></div>'
+      })
+    }
     return Promise.resolve({ name, template: '<span><slot /></span>' })
   }
 
