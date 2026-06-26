@@ -12,32 +12,50 @@ let injectedButton = null
 let referenceButton = null
 
 function getSelectionEntries() {
-  // Walk the Vue component tree from .search-selection to find selectionEntries
-  const el = document.querySelector('.search-selection')
-  if (el) {
-    let vnode = el.__vueParentComponent
-    while (vnode) {
-      const state = vnode.setupState ?? vnode.ctx ?? {}
-      if (state.selectionEntries) {
-        return state.selectionEntries.value ?? state.selectionEntries ?? []
+  // Try to access selectionEntries from SearchSelection's Vue component tree
+  const selectionEl = document.querySelector('.search-selection')
+  if (selectionEl) {
+    let comp = selectionEl.__vueParentComponent
+    while (comp) {
+      // Try setupState (internal instance) or proxy (public instance)
+      const state = comp.setupState ?? {}
+      const proxy = comp.proxy ?? {}
+      const entries = state.selectionEntries ?? proxy.selectionEntries
+      if (entries) {
+        const value = entries.value ?? entries
+        if (Array.isArray(value) && value.length > 0) return value
+        break
       }
-      vnode = vnode.parent
+      comp = comp.parent
     }
   }
-  // Fallback: read selected doc IDs from checked checkboxes + search store hits
+  // Fallback: get selected IDs from DOM and cross-reference with search store
   const selectedIds = new Set()
-  document.querySelectorAll('.document-entries-table-body-row--selected a[href*="/d/"]').forEach(link => {
-    const href = link.getAttribute('href')
-    const match = href.match(/\/d\/[^/]+\/([^/]+)/)
-    if (match) selectedIds.add(match[1])
+  // Table view
+  document.querySelectorAll('.page-table-tr--selected').forEach(row => {
+    const link = row.querySelector('a[href*="/d/"]')
+    if (link) {
+      const href = link.getAttribute('href')
+      const match = href.match(/\/d\/[^/]+\/([^/]+)/)
+      if (match) selectedIds.add(match[1])
+    }
+  })
+  // Card/list view
+  document.querySelectorAll('.document-card--selected').forEach(card => {
+    const link = card.querySelector('a[href*="/d/"]')
+    if (link) {
+      const href = link.getAttribute('href')
+      const match = href.match(/\/d\/[^/]+\/([^/]+)/)
+      if (match) selectedIds.add(match[1])
+    }
   })
   if (selectedIds.size === 0) return []
   try {
     const searchStore = core.stores.useSearchStore()
-    const hits = searchStore.response?.hits ?? []
+    const hits = searchStore.hits ?? []
     return hits.filter(hit => selectedIds.has(hit.id))
   } catch {
-    return []
+    return [...selectedIds].map(id => ({ id }))
   }
 }
 
@@ -79,18 +97,17 @@ function createButton(referenceBtn) {
 }
 
 function handleClick() {
-  const entries = getSelectionEntries()
-  if (entries.length === 0) return
-  selectedDocuments.value = [...entries]
+  selectedDocuments.value = [...getSelectionEntries()]
   modalOpen.value = true
 }
 
-function tryInjectIntoDropdown() {
+function tryInject() {
   // Already injected and still in DOM
   if (document.querySelector('[data-asr-batch]')) return
+  const selectionBar = document.querySelector('.search-selection.form-actions')
   // No selection bar visible
-  if (!document.querySelector('.search-selection.form-actions')) return
-  // Find the dropdown menu with the search-selection's actions
+  if (!selectionBar) return
+  // Try compact mode: inject into dropdown menu
   const menus = document.querySelectorAll('ul.form-actions-compact-dropdown__menu')
   for (const menu of menus) {
     const buttons = menu.querySelectorAll('.btn')
@@ -107,6 +124,16 @@ function tryInjectIntoDropdown() {
     syncDisabledState()
     watchDisabledState()
     return
+  }
+  // Non-compact mode: inject inline after existing buttons
+  const inlineButtons = selectionBar.querySelectorAll(':scope > .button-icon')
+  if (inlineButtons.length > 0) {
+    const lastButton = inlineButtons[inlineButtons.length - 1]
+    referenceButton = lastButton
+    injectedButton = createButton(referenceButton)
+    lastButton.after(injectedButton)
+    syncDisabledState()
+    watchDisabledState()
   }
 }
 
@@ -151,7 +178,7 @@ onMounted(() => {
   observer = new MutationObserver(() => {
     const selectionBar = document.querySelector('.search-selection.form-actions')
     if (selectionBar) {
-      tryInjectIntoDropdown()
+      tryInject()
     } else {
       removeButton()
     }
