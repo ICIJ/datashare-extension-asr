@@ -103,11 +103,10 @@ async function handleBatchTranscribe() {
         {{ $t('asr.batchNotEligible', { count: ineligibleCount }, ineligibleCount) }}
       </div>
 
-      <div class="d-flex align-items-start gap-3">
-        <div class="d-flex align-items-center gap-2 flex-shrink-0">
-          <language-selector />
-        </div>
-        <p class="text-muted mb-0 small mt-1">
+      <div>
+        <language-selector />
+        <p class="text-muted mb-0 small mt-2">
+          <i-ph-warning class="me-1" />
           <strong>{{ $t('asr.batchLanguageWarningTitle') }}</strong>
           {{ $t('asr.batchLanguageWarningText') }}
         </p>

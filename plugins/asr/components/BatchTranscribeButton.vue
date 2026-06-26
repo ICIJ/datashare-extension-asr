@@ -12,50 +12,51 @@ let injectedButton = null
 let referenceButton = null
 
 function getSelectionEntries() {
-  // Try to access selectionEntries from SearchSelection's Vue component tree
+  // Get selected IDs and entries from the Search component's Vue tree
   const selectionEl = document.querySelector('.search-selection')
   if (selectionEl) {
     let comp = selectionEl.__vueParentComponent
     while (comp) {
-      // Try setupState (internal instance) or proxy (public instance)
       const state = comp.setupState ?? {}
-      const proxy = comp.proxy ?? {}
-      const entries = state.selectionEntries ?? proxy.selectionEntries
+      // SearchSelection has selectionEntries (computed from entries + selection)
+      const entries = state.selectionEntries
       if (entries) {
         const value = entries.value ?? entries
         if (Array.isArray(value) && value.length > 0) return value
         break
       }
+      // Search.vue has selection (ref of IDs) and entries (computed of hits)
+      const selection = state.selection
+      const allEntries = state.entries
+      if (selection && allEntries) {
+        const ids = new Set(selection.value ?? selection)
+        const hits = allEntries.value ?? allEntries
+        if (Array.isArray(hits)) {
+          return hits.filter(hit => ids.has(hit.id))
+        }
+      }
       comp = comp.parent
     }
   }
-  // Fallback: get selected IDs from DOM and cross-reference with search store
-  const selectedIds = new Set()
-  // Table view
-  document.querySelectorAll('.page-table-tr--selected').forEach(row => {
-    const link = row.querySelector('a[href*="/d/"]')
-    if (link) {
-      const href = link.getAttribute('href')
-      const match = href.match(/\/d\/[^/]+\/([^/]+)/)
-      if (match) selectedIds.add(match[1])
-    }
-  })
-  // Card/list view
-  document.querySelectorAll('.document-card--selected').forEach(card => {
-    const link = card.querySelector('a[href*="/d/"]')
-    if (link) {
-      const href = link.getAttribute('href')
-      const match = href.match(/\/d\/[^/]+\/([^/]+)/)
-      if (match) selectedIds.add(match[1])
-    }
-  })
-  if (selectedIds.size === 0) return []
+  // Fallback: get selected IDs from search store hits
   try {
+    const selectedIds = new Set()
+    // Table view
+    document.querySelectorAll('.page-table-tr--selected a[href*="/d/"]').forEach(link => {
+      const match = link.getAttribute('href')?.match(/\/d\/[^/]+\/([^/]+)/)
+      if (match) selectedIds.add(match[1])
+    })
+    // Card/list/grid view
+    document.querySelectorAll('.document-card--selected a[href*="/d/"], .document-card-grid--selected a[href*="/d/"]').forEach(link => {
+      const match = link.getAttribute('href')?.match(/\/d\/[^/]+\/([^/]+)/)
+      if (match) selectedIds.add(match[1])
+    })
+    if (selectedIds.size === 0) return []
     const searchStore = core.stores.useSearchStore()
     const hits = searchStore.hits ?? []
     return hits.filter(hit => selectedIds.has(hit.id))
   } catch {
-    return [...selectedIds].map(id => ({ id }))
+    return []
   }
 }
 
