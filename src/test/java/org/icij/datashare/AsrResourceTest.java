@@ -6,10 +6,17 @@ import net.codestory.http.filters.basic.BasicAuthFilter;
 import net.codestory.rest.FluentRestTest;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.MapAssert.entry;
@@ -21,7 +28,10 @@ public class AsrResourceTest implements FluentRestTest {
 
     @ClassRule
     public static ProdWebServerRule server = new ProdWebServerRule();
+    @Rule
+    public TemporaryFolder tmpFolder = new TemporaryFolder();
     private MockTaskManager taskManager;
+    private PropertiesProvider propertiesProvider;
 
     @Override
     public int port() {
@@ -31,8 +41,11 @@ public class AsrResourceTest implements FluentRestTest {
     @Before
     public void setUp() {
         taskManager = new MockTaskManager();
+        Properties props = new Properties();
+        props.setProperty("artifactDir", tmpFolder.getRoot().getAbsolutePath());
+        propertiesProvider = new PropertiesProvider(props);
         server.configure(routes -> routes
-                .add(new AsrResource(AVAILABLE_MODELS_PATH, taskManager))
+                .add(new AsrResource(AVAILABLE_MODELS_PATH, taskManager, propertiesProvider))
                 .filter(new BasicAuthFilter("/api", "ds", DatashareUser.singleUser(USER_ID))));
     }
 
@@ -152,5 +165,37 @@ public class AsrResourceTest implements FluentRestTest {
                 "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\"]}")
                 .withPreemptiveAuthentication(USER_ID, "null")
                 .should().respond(503).contain("task manager is unavailable");
+    }
+
+    @Test
+    public void test_get_transcription_returns_200() throws IOException {
+        // GIVEN
+        String docId = "doc_id";
+        String transcription = "{\"transcripts\":[{\"text\":\"hello\"}],\"confidence\":0.95}";
+        Path transcriptionDir = Path.of(tmpFolder.getRoot().getAbsolutePath(),
+                PROJECT, docId.substring(0, 2), docId.substring(2, 4), docId);
+        Files.createDirectories(transcriptionDir);
+        Files.writeString(transcriptionDir.resolve("transcription.json"), transcription);
+
+        // WHEN/THEN
+        get("/api/asr/transcription/" + PROJECT + "/" + docId)
+                .withPreemptiveAuthentication(USER_ID, "null")
+                .should().respond(200).haveType("application/json").contain("hello");
+    }
+
+    @Test
+    public void test_get_transcription_returns_404_when_not_found() {
+        // WHEN/THEN
+        get("/api/asr/transcription/" + PROJECT + "/doc_id")
+                .withPreemptiveAuthentication(USER_ID, "null")
+                .should().respond(404);
+    }
+
+    @Test
+    public void test_get_transcription_returns_401_for_unauthorized_project() {
+        // WHEN/THEN
+        get("/api/asr/transcription/other-project/doc_id")
+                .withPreemptiveAuthentication(USER_ID, "null")
+                .should().respond(401);
     }
 }
