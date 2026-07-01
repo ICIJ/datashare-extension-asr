@@ -26,6 +26,7 @@ const canTranscribe = computed(() => {
 })
 
 const isInModal = inject('modal', false)
+const isDuplicateInline = ref(false)
 
 function openPanel() {
   panelOpen.value = true
@@ -51,6 +52,12 @@ function hideNoContent() {
 }
 
 onMounted(() => {
+  // When document is rendered both in modal and inline (grid/list view),
+  // hide the inline instance to avoid duplicate content below search results
+  if (!isInModal && window.document.querySelector('.document-modal')) {
+    isDuplicateInline.value = true
+    return
+  }
   if (isAudioVideo.value) {
     if (!hideNoContent()) {
       noContentObserver = new MutationObserver(() => {
@@ -77,7 +84,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div v-if="isAudioVideo" class="transcribe-button alert alert-warning d-flex align-items-center justify-content-between w-100 mb-0 px-3 py-2">
+  <div v-if="isAudioVideo && !isDuplicateInline" class="transcribe-button alert alert-warning d-flex align-items-center justify-content-between w-100 mb-0 px-3 py-2">
     <span v-if="asrStore.isTranscribing">
       <span class="spinner-border spinner-border-sm me-2" />
       {{ $t('asr.transcriptionInProgress') }}
