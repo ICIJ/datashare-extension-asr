@@ -16,6 +16,8 @@ import org.icij.datashare.user.User;
 import com.google.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,25 +27,28 @@ public class AsrResource {
     public static final String AVAILABLE_MODELS_PATH = "/available-models.json";
     static final String ASR_WORKFLOW = "asr.transcription";
     static final String ASR_GROUP = "Python";
+    static final String TRANSCRIPTION_FILENAME = "transcription.json";
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
     private final String availableModels;
     private final Map<String, List<String>> modelsMap;
     private final TaskManager taskManager;
+    private final PropertiesProvider propertiesProvider;
 
     record TaskResponse(String taskId) {}
     record ErrorResponse(String error) {}
 
     @Inject
-    public AsrResource(TaskManager taskManager) {
-        this(AVAILABLE_MODELS_PATH, taskManager);
+    public AsrResource(TaskManager taskManager, PropertiesProvider propertiesProvider) {
+        this(AVAILABLE_MODELS_PATH, taskManager, propertiesProvider);
     }
 
-    AsrResource(String resourcePath, TaskManager taskManager) {
+    AsrResource(String resourcePath, TaskManager taskManager, PropertiesProvider propertiesProvider) {
         this.availableModels = loadAvailableModels(resourcePath);
         this.modelsMap = parseModels(this.availableModels);
         this.taskManager = taskManager;
+        this.propertiesProvider = propertiesProvider;
     }
 
     @Get("/models")
@@ -89,6 +94,33 @@ public class AsrResource {
         String taskId = taskManager.startTask(task, new Group(ASR_GROUP));
 
         return new JsonPayload(201, new TaskResponse(taskId));
+    }
+
+    @Get("/transcription/:project/:docId")
+    public Payload getTranscription(String project, String docId, Context context) {
+        User user = (User) context.currentUser();
+        if (!user.isGranted(project)) {
+            throw new net.codestory.http.errors.UnauthorizedException();
+        }
+
+        String artifactDir = propertiesProvider.get("artifactDir").orElse(null);
+        if (artifactDir == null) {
+            return new JsonPayload(503, new ErrorResponse("artifact directory is not configured"));
+        }
+
+        Path transcriptionPath = Path.of(artifactDir, project,
+                docId.substring(0, 2), docId.substring(2, 4), docId, TRANSCRIPTION_FILENAME);
+
+        if (!Files.exists(transcriptionPath)) {
+            return new Payload(404);
+        }
+
+        try {
+            String content = Files.readString(transcriptionPath);
+            return new Payload("application/json", content);
+        } catch (IOException e) {
+            return new JsonPayload(500, new ErrorResponse("failed to read transcription"));
+        }
     }
 
     private static String loadAvailableModels(String resourcePath) {
