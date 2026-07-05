@@ -1,13 +1,17 @@
 <script setup>
-import { getCurrentInstance, onMounted, onUnmounted } from 'vue'
+import { getCurrentInstance, defineAsyncComponent, onMounted, onUnmounted } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
 import IPhInfo from '~icons/ph/info'
 import IPhStop from '~icons/ph/stop'
+import IPhX from '~icons/ph/x'
 import { useCore } from '@/composables/useCore'
 import { useAsrStore } from '@/stores/asr'
 import LanguageSelector from './LanguageSelector.vue'
 
 const emit = defineEmits(['close'])
+
+const core = useCore()
+const ButtonIcon = defineAsyncComponent(() => core.findComponent('Button/ButtonIcon'))
 
 const { stores } = useCore()
 const documentStore = stores.useDocumentStore()
@@ -72,7 +76,14 @@ async function handleTranscribe() {
         <i-ph-file-audio />
         {{ $t('asr.transcribe') }}
       </h4>
-      <button class="btn-close btn-close-white" @click="emit('close')" />
+      <component
+        :is="ButtonIcon"
+        :icon-left="IPhX"
+        hide-label
+        variant="outline-secondary"
+        :label="$t('asr.close')"
+        @click="emit('close')"
+      />
     </div>
 
     <language-selector class="mb-3" />
