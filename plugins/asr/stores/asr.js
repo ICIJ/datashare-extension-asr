@@ -16,8 +16,18 @@ export const useAsrStore = defineStore('asr', () => {
   const settingsPerPage = ref(25)
   const settingsProperties = ref(['state', 'name', 'progress', 'category', 'languages', 'model', 'project', 'user', 'launchedOn'])
 
+  const transcription = ref(null)
   const isTranscribing = computed(() => taskState.value === 'RUNNING')
+  const hasTranscription = computed(() => transcription.value !== null)
   const languages = computed(() => Object.keys(availableModels.value).sort())
+
+  async function fetchTranscription(project, docId) {
+    try {
+      transcription.value = await api.sendAction(`/api/asr/transcription/${project}/${docId}`)
+    } catch {
+      transcription.value = null
+    }
+  }
 
   async function fetchModels() {
     try {
@@ -83,6 +93,7 @@ export const useAsrStore = defineStore('asr', () => {
     selectedLanguages.value = []
     taskId.value = null
     taskState.value = null
+    transcription.value = null
   }
 
   return {
@@ -91,8 +102,11 @@ export const useAsrStore = defineStore('asr', () => {
     panelOpen,
     taskId,
     taskState,
+    transcription,
     isTranscribing,
+    hasTranscription,
     languages,
+    fetchTranscription,
     fetchModels,
     transcribe,
     transcribeBatch,

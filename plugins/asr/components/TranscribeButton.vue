@@ -28,6 +28,17 @@ const canTranscribe = computed(() => {
 const isInModal = inject('modal', false)
 const isDuplicateInline = ref(false)
 
+function formatTimestamp(seconds) {
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = Math.floor(seconds % 60)
+  return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+}
+
+function formatTimeRange(timestamp) {
+  return `${formatTimestamp(timestamp.start_s)}-${formatTimestamp(timestamp.end_s)}`
+}
+
 function openPanel() {
   panelOpen.value = true
 }
@@ -59,6 +70,7 @@ onMounted(() => {
     return
   }
   if (isAudioVideo.value) {
+    asrStore.fetchTranscription(document.value.index, document.value.id)
     if (!hideNoContent()) {
       noContentObserver = new MutationObserver(() => {
         if (hideNoContent()) {
@@ -84,23 +96,45 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div v-if="isAudioVideo && !isDuplicateInline" class="transcribe-button alert alert-warning d-flex align-items-center justify-content-between w-100 mb-0 px-3 py-2">
-    <span v-if="asrStore.isTranscribing">
-      <span class="spinner-border spinner-border-sm me-2" />
-      {{ $t('asr.transcriptionInProgress') }}
-    </span>
-    <span v-else class="d-flex align-items-center gap-2">
-      <i-ph-file-audio style="font-size: 1.25em" />
-      {{ $t('asr.noTextTranscribed') }}
-    </span>
-    <button
-      v-if="canTranscribe"
-      class="btn btn-outline-warning transcribe-button__btn"
-      :disabled="asrStore.isTranscribing"
-      @click="openPanel"
-    >
-      {{ $t('asr.transcribe') }}
-    </button>
+  <div v-if="isAudioVideo && !isDuplicateInline">
+    <div v-if="asrStore.hasTranscription" class="transcribe-button alert alert-warning d-flex align-items-center justify-content-between w-100 mb-0 px-3 py-2">
+      <span class="d-flex align-items-center gap-2">
+        <i-ph-file-audio style="font-size: 1.25em" />
+        {{ $t('asr.transcriptionDisclaimer') }}
+      </span>
+      <button
+        v-if="canTranscribe"
+        class="btn btn-outline-warning transcribe-button__btn"
+        :disabled="asrStore.isTranscribing"
+        @click="openPanel"
+      >
+        {{ $t('asr.transcribeAgain') }}
+      </button>
+    </div>
+    <div v-else class="transcribe-button alert alert-warning d-flex align-items-center justify-content-between w-100 mb-0 px-3 py-2">
+      <span v-if="asrStore.isTranscribing">
+        <span class="spinner-border spinner-border-sm me-2" />
+        {{ $t('asr.transcriptionInProgress') }}
+      </span>
+      <span v-else class="d-flex align-items-center gap-2">
+        <i-ph-file-audio style="font-size: 1.25em" />
+        {{ $t('asr.noTextTranscribed') }}
+      </span>
+      <button
+        v-if="canTranscribe"
+        class="btn btn-outline-warning transcribe-button__btn"
+        :disabled="asrStore.isTranscribing"
+        @click="openPanel"
+      >
+        {{ $t('asr.transcribe') }}
+      </button>
+    </div>
+    <div v-if="asrStore.hasTranscription" class="transcribe-button__content p-3">
+      <div v-for="(t, i) in asrStore.transcription.transcripts" :key="i" class="transcribe-button__line d-flex mb-2">
+        <span v-if="t.timestamp" class="transcribe-button__timestamp text-muted text-nowrap me-3 flex-shrink-0">{{ formatTimeRange(t.timestamp) }}</span>
+        <span>{{ t.text }}</span>
+      </div>
+    </div>
 
     <!--
       WORKAROUND: Teleport to the document entries list to replace its content with the transcribe panel.
@@ -137,5 +171,15 @@ onUnmounted(() => {
 .transcribe-button__btn:hover {
   background-color: var(--bs-warning);
   color: white;
+}
+
+.transcribe-button__line {
+  align-items: baseline;
+}
+
+.transcribe-button__timestamp {
+  font-size: 0.85em;
+  font-family: monospace;
+  width: 13em;
 }
 </style>
