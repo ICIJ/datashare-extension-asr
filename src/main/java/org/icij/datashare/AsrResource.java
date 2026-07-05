@@ -88,6 +88,9 @@ public class AsrResource {
         if (body.containsKey("config")) {
             taskArgs.put("config", body.get("config"));
         }
+        if (body.containsKey("languages")) {
+            taskArgs.put("languages", body.get("languages"));
+        }
         taskArgs.put("batch_size", body.getOrDefault("batch_size", 2));
 
         Task<String> task = new Task<>(ASR_WORKFLOW, user, taskArgs);
