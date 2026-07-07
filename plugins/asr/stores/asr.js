@@ -2,6 +2,26 @@ import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { useApi } from '@/composables/useApi'
 
+const SUPPORTED_CONTENT_TYPES = new Set([
+  'audio/aac',
+  'audio/aiff',
+  'audio/mp4',
+  'audio/mpeg',
+  'audio/ogg',
+  'audio/vnd.wave',
+  'audio/wav',
+  'audio/wave',
+  'audio/x-wav',
+  'audio/x-pn-wav',
+  'video/mp4',
+  'video/mpeg',
+  'video/mov'
+])
+
+export function isEligibleForAsr(contentType) {
+  return SUPPORTED_CONTENT_TYPES.has(contentType)
+}
+
 export const useAsrStore = defineStore('asr', () => {
   const api = useApi()
 

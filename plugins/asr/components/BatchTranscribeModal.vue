@@ -4,7 +4,7 @@ import IPhFileAudio from '~icons/ph/file-audio'
 import IPhInfo from '~icons/ph/info'
 import IPhWarning from '~icons/ph/warning'
 import { useCore } from '@/composables/useCore'
-import { useAsrStore } from '@/stores/asr'
+import { useAsrStore, isEligibleForAsr } from '@/stores/asr'
 import LanguageSelector from './LanguageSelector.vue'
 
 const modelValue = defineModel({ type: Boolean })
@@ -22,10 +22,7 @@ const AppModal = defineAsyncComponent(() => core.findComponent('AppModal/AppModa
 const { $toast: toast, $t: t } = getCurrentInstance()?.proxy ?? {}
 
 const eligibleDocs = computed(() => {
-  return props.selectedDocuments.filter(doc => {
-    const ct = doc.contentType || ''
-    return ct.startsWith('audio/') || ct.startsWith('video/')
-  })
+  return props.selectedDocuments.filter(doc => isEligibleForAsr(doc.contentType || ''))
 })
 
 const ineligibleCount = computed(() => {

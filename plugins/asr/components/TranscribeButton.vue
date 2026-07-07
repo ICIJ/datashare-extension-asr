@@ -2,7 +2,7 @@
 import { computed, ref, inject, defineAsyncComponent, onMounted, onUnmounted } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
 import { useCore } from '@/composables/useCore'
-import { useAsrStore } from '@/stores/asr'
+import { useAsrStore, isEligibleForAsr } from '@/stores/asr'
 import TranscribePanel from './TranscribePanel.vue'
 
 const core = useCore()
@@ -15,10 +15,7 @@ const asrStore = useAsrStore()
 const panelOpen = ref(false)
 
 const document = computed(() => documentStore.document)
-const isAudioVideo = computed(() => {
-  const ct = document.value?.contentType || ''
-  return ct.startsWith('audio/') || ct.startsWith('video/')
-})
+const isAudioVideo = computed(() => isEligibleForAsr(document.value?.contentType || ''))
 
 const canTranscribe = computed(() => {
   // TODO: check user role (editor/admin)
