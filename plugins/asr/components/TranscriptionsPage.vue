@@ -154,6 +154,19 @@ function capitalize(str) {
 }
 
 function taskLanguages(task) {
+  // Use languages from task args if available (set by the user)
+  // Jackson serializes arrays with type info: ["java.util.ArrayList", ["fr"]]
+  let taskLangs = task.args?.languages
+  if (Array.isArray(taskLangs)) {
+    taskLangs = taskLangs.flat().filter(v => typeof v === 'string' && !v.includes('.'))
+    if (taskLangs.length > 0) {
+      return taskLangs.map(code => {
+        try { return new Intl.DisplayNames(['en'], { type: 'language' }).of(code) }
+        catch { return code }
+      }).join(', ')
+    }
+  }
+  // Fallback to document language from ES
   const docs = getDocs(task)
   if (docs.length === 0) return '—'
   const languages = new Set(docs.map(id => docLanguages.value[id]).filter(Boolean))

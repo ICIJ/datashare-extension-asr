@@ -43,6 +43,7 @@ export const useAsrStore = defineStore('asr', () => {
       data: {
         project,
         docs: [docId],
+        languages: [...selectedLanguages.value],
         batch_size: 2
       }
     })
@@ -56,6 +57,7 @@ export const useAsrStore = defineStore('asr', () => {
       data: {
         project,
         docs: docIds,
+        languages: [...selectedLanguages.value],
         batch_size: 2
       }
     })
