@@ -17,6 +17,7 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       transcriptionDisclaimer: 'This is an automatic transcription. Always check original.',
       transcribeAgain: 'Transcribe again',
       close: 'Close',
+      play: 'Play',
       noTextTranscribedVisitor: 'No text transcribed. Ask an editor or an admin to run transcription.',
       transcriptionInProgress: 'Transcription in progress...',
       stopTranscription: 'Stop transcription',
@@ -62,13 +63,19 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
 
   core.registerHook({
     name: 'asr-batch-transcribe',
-    target: 'search:after',
+    target: 'search-selection.compact:after',
     definition: BatchTranscribeButton
   })
 
   core.registerHook({
-    name: 'asr-transcribe-viewer',
-    target: 'document-view-title:after',
+    name: 'asr-transcribe-audio-viewer',
+    target: 'document.viewer.audio:after',
+    definition: TranscribeViewerPanel
+  })
+
+  core.registerHook({
+    name: 'asr-transcribe-video-viewer',
+    target: 'document.viewer.video:after',
     definition: TranscribeViewerPanel
   })
 
