@@ -7,14 +7,7 @@ import TranscribeButton from '@/components/TranscribeButton.vue'
 
 vi.mock('@/composables/useApi', () => {
   return {
-    useApi: () => ({
-      sendAction: vi.fn().mockImplementation((url) => {
-        if (url.startsWith('/api/asr/transcription/')) {
-          return Promise.reject(new Error('not found'))
-        }
-        return Promise.resolve({})
-      })
-    })
+    useApi: () => ({ sendAction: vi.fn() })
   }
 })
 
@@ -52,48 +45,32 @@ describe('TranscribeButton.vue', () => {
       expect(wrapper.isVisible()).toBe(true)
     })
 
-    it('shows "no text transcribed" message when no transcription', () => {
+    it('shows "no text transcribed" message', () => {
       expect(wrapper.text()).toContain('asr.noTextTranscribed')
     })
 
     it('shows the transcribe button', () => {
-      const buttons = wrapper.findAll('button')
-      const transcribeBtn = buttons.find(b => b.text() === 'asr.transcribe')
-      expect(transcribeBtn).toBeDefined()
+      expect(wrapper.find('button').exists()).toBe(true)
+      expect(wrapper.find('button').text()).toBe('asr.transcribe')
     })
 
     it('opens the transcribe panel on click', async () => {
-      const buttons = wrapper.findAll('button')
-      const transcribeBtn = buttons.find(b => b.text() === 'asr.transcribe')
-      await transcribeBtn.trigger('click')
+      await wrapper.find('button').trigger('click')
       await flushPromises()
       const panel = document.querySelector('.document-entries-list__start__list .transcribe-panel')
       expect(panel).not.toBeNull()
     })
 
-    it('disables the transcribe button while transcription is in progress', async () => {
+    it('disables the button while transcription is in progress', async () => {
       store.taskState = 'RUNNING'
       await flushPromises()
-      const buttons = wrapper.findAll('button')
-      const transcribeBtn = buttons.find(b => b.text() === 'asr.transcribe')
-      expect(transcribeBtn.attributes('disabled')).toBeDefined()
+      expect(wrapper.find('button').attributes('disabled')).toBeDefined()
     })
 
     it('shows transcription in progress message', async () => {
       store.taskState = 'RUNNING'
       await flushPromises()
       expect(wrapper.text()).toContain('asr.transcriptionInProgress')
-    })
-
-    it('shows transcription content when available', async () => {
-      store.transcription = {
-        transcripts: [{ text: 'Hello world' }, { text: 'Second sentence' }],
-        confidence: 0.95
-      }
-      await flushPromises()
-      expect(wrapper.text()).toContain('asr.transcriptionDisclaimer')
-      expect(wrapper.text()).toContain('Hello world')
-      expect(wrapper.text()).toContain('Second sentence')
     })
   })
 

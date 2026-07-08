@@ -1,10 +1,10 @@
 import { markRaw } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
-import TranscribeButton from './components/TranscribeButton.vue'
 import TranscriptionsSidebarEntry from './components/TranscriptionsSidebarEntry.vue'
 import TranscriptionsPage from './components/TranscriptionsPage.vue'
 import TranscriptionsSettings from './components/TranscriptionsSettings.vue'
 import BatchTranscribeButton from './components/BatchTranscribeButton.vue'
+import TranscribeViewerPanel from './components/TranscribeViewerPanel.vue'
 
 document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
   core.i18n.global.mergeLocaleMessage('en', {
@@ -61,15 +61,15 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
   })
 
   core.registerHook({
-    name: 'asr-transcribe-button',
-    target: 'document.content.body:before',
-    definition: TranscribeButton
-  })
-
-  core.registerHook({
     name: 'asr-batch-transcribe',
     target: 'search:after',
     definition: BatchTranscribeButton
+  })
+
+  core.registerHook({
+    name: 'asr-transcribe-viewer',
+    target: 'document-view-title:after',
+    definition: TranscribeViewerPanel
   })
 
   core.registerHook({
