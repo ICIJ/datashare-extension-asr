@@ -12,6 +12,7 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       transcribe: 'Transcribe',
       transcriptions: 'Transcriptions',
       noTextTranscribed: 'No text transcribed',
+      unsupportedFormat: 'This audio/video format is not supported for transcription.',
       transcriptionAvailable: 'Transcription available',
       transcriptionDisclaimer: 'This is an automatic transcription. Always check original.',
       transcribeAgain: 'Transcribe again',

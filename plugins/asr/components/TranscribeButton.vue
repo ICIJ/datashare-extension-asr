@@ -15,7 +15,9 @@ const asrStore = useAsrStore()
 const panelOpen = ref(false)
 
 const document = computed(() => documentStore.document)
-const isAudioVideo = computed(() => isEligibleForAsr(document.value?.contentType || ''))
+const contentType = computed(() => document.value?.contentType || '')
+const isAudioVideo = computed(() => contentType.value.startsWith('audio/') || contentType.value.startsWith('video/'))
+const isEligible = computed(() => isEligibleForAsr(contentType.value))
 
 const canTranscribe = computed(() => {
   // TODO: check user role (editor/admin)
@@ -67,7 +69,9 @@ onMounted(() => {
     return
   }
   if (isAudioVideo.value) {
-    asrStore.fetchTranscription(document.value.index, document.value.id)
+    if (isEligible.value) {
+      asrStore.fetchTranscription(document.value.index, document.value.id)
+    }
     if (!hideNoContent()) {
       noContentObserver = new MutationObserver(() => {
         if (hideNoContent()) {
@@ -107,6 +111,12 @@ onUnmounted(() => {
       >
         {{ $t('asr.transcribeAgain') }}
       </button>
+    </div>
+    <div v-else-if="!isEligible" class="transcribe-button alert alert-warning d-flex align-items-center w-100 mb-0 px-3 py-2">
+      <span class="d-flex align-items-center gap-2">
+        <i-ph-file-audio style="font-size: 1.25em" />
+        {{ $t('asr.unsupportedFormat') }}
+      </span>
     </div>
     <div v-else class="transcribe-button alert alert-warning d-flex align-items-center justify-content-between w-100 mb-0 px-3 py-2">
       <span v-if="asrStore.isTranscribing">
