@@ -1,9 +1,13 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, inject, defineAsyncComponent, onMounted } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
 import { useCore } from '@/composables/useCore'
 import { useAsrStore, isEligibleForAsr } from '@/stores/asr'
 import TranscribePanel from './TranscribePanel.vue'
+
+const core = useCore()
+const AppModal = defineAsyncComponent(() => core.findComponent('AppModal/AppModal'))
+const isInModal = inject('modal', false)
 
 const { stores } = useCore()
 const documentStore = stores.useDocumentStore()
@@ -74,9 +78,24 @@ onMounted(() => {
       </button>
     </div>
   </div>
-  <teleport to=".document-entries-list__start__list">
+  <teleport v-if="!isInModal" to=".document-entries-list__start__list">
     <transcribe-panel v-if="panelOpen" @close="panelOpen = false" />
   </teleport>
+  <component
+    v-else
+    :is="AppModal"
+    v-model="panelOpen"
+    size="md"
+    no-header-close
+  >
+    <template #header>
+      <span />
+    </template>
+    <transcribe-panel v-if="panelOpen" @close="panelOpen = false" />
+    <template #footer>
+      <span />
+    </template>
+  </component>
 </template>
 
 <style scoped>
