@@ -17,7 +17,6 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       transcriptionDisclaimer: 'This is an automatic transcription. Always check original.',
       transcribeAgain: 'Transcribe again',
       close: 'Close',
-      play: 'Play',
       noTextTranscribedVisitor: 'No text transcribed. Ask an editor or an admin to run transcription.',
       transcriptionInProgress: 'Transcription in progress...',
       stopTranscription: 'Stop transcription',
