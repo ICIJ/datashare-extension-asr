@@ -35,6 +35,7 @@ onMounted(() => {
     asrStore.fetchTranscription(document.value.index, document.value.id)
   }
 })
+
 </script>
 
 <template>

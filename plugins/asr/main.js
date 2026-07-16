@@ -5,6 +5,7 @@ import TranscriptionsPage from './components/TranscriptionsPage.vue'
 import TranscriptionsSettings from './components/TranscriptionsSettings.vue'
 import BatchTranscribeButton from './components/BatchTranscribeButton.vue'
 import TranscribeViewerPanel from './components/TranscribeViewerPanel.vue'
+import TranscriptionDownloadButtons from './components/TranscriptionDownloadButtons.vue'
 
 document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
   core.i18n.global.mergeLocaleMessage('en', {
@@ -58,7 +59,9 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       batchLanguageWarningText: 'Split the selection in as many languages as you have.',
       batchTranscriptionLaunched: 'Transcription launched for {count} document | Transcription launched for {count} documents',
       batchTranscriptionError: 'There was an error while launching transcription for {count} document | There was an error while launching transcription for {count} documents',
-      viewTranscriptions: 'View transcriptions'
+      viewTranscriptions: 'View transcriptions',
+      downloadTranscription: 'Download transcription',
+      downloadWithTimestamps: 'Download with timestamps'
     }
   })
 
@@ -78,6 +81,12 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
     name: 'asr-transcribe-video-viewer',
     target: 'document.viewer.video:after',
     definition: TranscribeViewerPanel
+  })
+
+  core.registerHook({
+    name: 'asr-transcription-download',
+    target: 'document-download-popover.buttons:after',
+    definition: TranscriptionDownloadButtons
   })
 
   core.registerHook({
