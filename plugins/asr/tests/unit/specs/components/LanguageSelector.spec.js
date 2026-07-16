@@ -10,13 +10,20 @@ vi.mock('@/composables/useApi', () => {
   }
 })
 
+const BDropdownStub = {
+  name: 'BDropdown',
+  template: '<div class="dropdown"><slot name="button-content" /><slot /></div>'
+}
+
 describe('LanguageSelector.vue', () => {
   let wrapper
   let store
 
   beforeEach(async () => {
     const { plugins } = CoreSetup.init().useAll()
-    wrapper = mount(LanguageSelector, { global: { plugins } })
+    wrapper = mount(LanguageSelector, {
+      global: { plugins, stubs: { BDropdown: BDropdownStub } }
+    })
     const { useAsrStore } = await import('@/stores/asr')
     store = useAsrStore()
     store.availableModels = { en: ['parakeet'], fr: ['parakeet'], pt: ['parakeet'] }
@@ -24,69 +31,54 @@ describe('LanguageSelector.vue', () => {
   })
 
   it('shows "Unknown" when no language is selected', () => {
-    expect(wrapper.find('button').text()).toBe('Unknown')
+    expect(wrapper.text()).toContain('Unknown')
   })
 
-  it('opens dropdown on click', async () => {
-    await wrapper.find('button').trigger('click')
-    expect(wrapper.find('.dropdown-menu').exists()).toBe(true)
-  })
-
-  it('lists available languages', async () => {
-    await wrapper.find('button').trigger('click')
+  it('lists available languages', () => {
     const items = wrapper.findAll('.language-selector__item')
     expect(items.length).toBe(3)
   })
 
-  it('sorts languages alphabetically', async () => {
-    await wrapper.find('button').trigger('click')
+  it('sorts languages alphabetically', () => {
     const names = wrapper.findAll('.language-selector__item span span').map(el => el.text())
     expect(names).toEqual(['English', 'French', 'Portuguese'])
   })
 
   it('selects a language on checkbox click', async () => {
-    await wrapper.find('button').trigger('click')
     const checkboxes = wrapper.findAll('input[type="checkbox"]')
     await checkboxes[0].setValue(true)
-
     expect(store.selectedLanguages).toContain('en')
   })
 
   it('deselects a language on checkbox uncheck', async () => {
     store.selectedLanguages.push('en')
-    await wrapper.find('button').trigger('click')
+    await flushPromises()
     const checkboxes = wrapper.findAll('input[type="checkbox"]')
     await checkboxes[0].setValue(false)
-
     expect(store.selectedLanguages).not.toContain('en')
   })
 
   it('displays selected language names', async () => {
     store.selectedLanguages.push('pt', 'fr')
     await flushPromises()
-
-    expect(wrapper.find('button').text()).toBe('Portuguese, French')
+    expect(wrapper.text()).toContain('Portuguese, French')
   })
 
   it('filters languages by search', async () => {
-    await wrapper.find('button').trigger('click')
     await flushPromises()
     const searchInput = wrapper.find('input[type="text"]')
     await searchInput.setValue('port')
     await flushPromises()
-
     const items = wrapper.findAll('.language-selector__item')
     expect(items.length).toBe(1)
     expect(items[0].text()).toContain('Portuguese')
   })
 
   it('filters languages by code', async () => {
-    await wrapper.find('button').trigger('click')
     await flushPromises()
     const searchInput = wrapper.find('input[type="text"]')
     await searchInput.setValue('fr')
     await flushPromises()
-
     const items = wrapper.findAll('.language-selector__item')
     expect(items.length).toBe(1)
     expect(items[0].text()).toContain('French')
@@ -108,16 +100,15 @@ describe('LanguageSelector.vue', () => {
           }
         })
       })
-      // Set available models before mount so onMounted can match ES languages
       const { useAsrStore } = await import('@/stores/asr')
       const pinia = coreSetup._pinia
       const store = useAsrStore(pinia)
       store.availableModels = { en: ['parakeet'], fr: ['parakeet'], pt: ['parakeet'], es: ['parakeet'] }
       store.selectedLanguages = []
 
-      wrapper = mount(LanguageSelector, { global: { plugins: coreSetup.plugins } })
-      await flushPromises()
-      await wrapper.find('button').trigger('click')
+      wrapper = mount(LanguageSelector, {
+        global: { plugins: coreSetup.plugins, stubs: { BDropdown: BDropdownStub } }
+      })
       await flushPromises()
     })
 

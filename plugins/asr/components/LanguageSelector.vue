@@ -26,8 +26,17 @@ function esLanguageToCode(esLang, asrLanguages) {
   }) || null
 }
 
+const floatingMiddleware = [
+  {
+    name: 'matchWidth',
+    fn({ rects, elements }) {
+      Object.assign(elements.floating.style, { width: `${rects.reference.width}px` })
+      return {}
+    }
+  }
+]
+
 const asrStore = useAsrStore()
-const open = ref(false)
 const search = ref('')
 const projectLanguages = ref([])
 
@@ -104,15 +113,19 @@ function isSelected(code) {
         <i-ph-translate />
         {{ $t('asr.selectLanguages') }}
       </label>
-      <div class="dropdown">
-        <button
-          class="btn btn-outline-light dropdown-toggle w-100 d-flex justify-content-between align-items-center"
-          @click="open = !open"
-        >
-          <span class="text-truncate">{{ displayValue }}</span>
-        </button>
-      <div v-if="open" class="dropdown-menu show w-100 p-2">
-        <div class="language-selector__search mb-2">
+      <b-dropdown
+        auto-close="outside"
+        variant="outline-light"
+        boundary="viewport"
+        :floating-middleware="floatingMiddleware"
+        class="w-100"
+        menu-class="p-2"
+        toggle-class="w-100 d-flex justify-content-between align-items-center text-truncate"
+      >
+        <template #button-content>
+          {{ displayValue }}
+        </template>
+        <div class="language-selector__search mb-2" @click.stop>
           <component
             :is="FormControlSearch"
             v-model="search"
@@ -123,9 +136,10 @@ function isSelected(code) {
         <div class="language-selector__list">
           <label
             v-for="code in filteredProjectLanguages"
-            :key="'project-' + code"
+            :key="code"
             class="language-selector__item d-flex align-items-center justify-content-between py-1 px-2"
             :class="{ 'language-selector__item--selected': isSelected(code) }"
+            @click.stop
           >
             <span class="d-flex align-items-center">
               <input
@@ -141,9 +155,10 @@ function isSelected(code) {
           <hr v-if="filteredProjectLanguages.length > 0 && filteredOtherLanguages.length > 0" class="my-1">
           <label
             v-for="code in filteredOtherLanguages"
-            :key="'other-' + code"
+            :key="code"
             class="language-selector__item d-flex align-items-center justify-content-between py-1 px-2"
             :class="{ 'language-selector__item--selected': isSelected(code) }"
+            @click.stop
           >
             <span class="d-flex align-items-center">
               <input
@@ -157,8 +172,7 @@ function isSelected(code) {
             <span class="language-selector__item__code">{{ code.toUpperCase() }}</span>
           </label>
         </div>
-        </div>
-      </div>
+      </b-dropdown>
     </div>
   </div>
 </template>
@@ -199,3 +213,5 @@ function isSelected(code) {
   font-weight: bold;
 }
 </style>
+
+

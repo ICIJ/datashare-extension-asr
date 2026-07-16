@@ -2,6 +2,8 @@ import { defineConfig, loadEnv } from 'vite'
 import path from 'path'
 import vue from '@vitejs/plugin-vue'
 import Icons from 'unplugin-icons/vite'
+import Components from 'unplugin-vue-components/vite'
+import { BootstrapVueNextResolver } from 'unplugin-vue-components/resolvers'
 import { viteExternalsPlugin } from 'vite-plugin-externals'
 
 export default ({ mode }) => {
@@ -11,6 +13,11 @@ export default ({ mode }) => {
     plugins: [
       vue(),
       Icons({ scale: 1, compiler: 'vue3' }),
+      Components({
+        dts: false,
+        dirs: [],
+        resolvers: [BootstrapVueNextResolver()]
+      }),
       mode !== 'test' ? viteExternalsPlugin({ vue: '__VUE_SHARED__', pinia: '__PINIA_SHARED__' }) : null
     ],
     test: {
