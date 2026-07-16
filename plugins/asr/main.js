@@ -57,7 +57,8 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       batchLanguageWarningTitle: 'All documents must be in the same languages.',
       batchLanguageWarningText: 'Split the selection in as many languages as you have.',
       batchTranscriptionLaunched: 'Transcription launched for {count} document | Transcription launched for {count} documents',
-      batchTranscriptionError: 'There was an error while launching transcription for {count} document | There was an error while launching transcription for {count} documents'
+      batchTranscriptionError: 'There was an error while launching transcription for {count} document | There was an error while launching transcription for {count} documents',
+      viewTranscriptions: 'View transcriptions'
     }
   })
 

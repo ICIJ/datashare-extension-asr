@@ -62,9 +62,13 @@ async function handleTranscribe() {
   const name = doc.title || doc.id
   try {
     await asrStore.transcribe(doc.index, doc.id)
-    toast?.success(t?.('asr.transcriptionLaunched', { name }) ?? `Transcription launched for ${name}`)
+    const { href } = core.router.resolve({ name: 'task.transcriptions' })
+    const linkLabel = t?.('asr.viewTranscriptions') ?? 'View transcriptions'
+    toast?.success(t?.('asr.transcriptionLaunched', { name }) ?? `Transcription launched for ${name}`, { href, linkLabel })
   } catch {
-    toast?.error(t?.('asr.transcriptionError', { name }) ?? `There was an error while launching transcription for ${name}`)
+    const { href } = core.router.resolve({ name: 'task.transcriptions' })
+    const linkLabel = t?.('asr.viewTranscriptions') ?? 'View transcriptions'
+    toast?.error(t?.('asr.transcriptionError', { name }) ?? `There was an error while launching transcription for ${name}`, { href, linkLabel })
   }
 }
 </script>

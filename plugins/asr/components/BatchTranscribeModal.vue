@@ -58,10 +58,14 @@ async function handleBatchTranscribe() {
   }
 
   if (successCount > 0) {
-    toast?.success(t?.('asr.batchTranscriptionLaunched', { count: successCount }, successCount) ?? `Transcription launched for ${successCount} documents`)
+    const { href } = core.router.resolve({ name: 'task.transcriptions' })
+    const linkLabel = t?.('asr.viewTranscriptions') ?? 'View transcriptions'
+    toast?.success(t?.('asr.batchTranscriptionLaunched', { count: successCount }, successCount) ?? `Transcription launched for ${successCount} documents`, { href, linkLabel })
   }
   if (errorCount > 0) {
-    toast?.error(t?.('asr.batchTranscriptionError', { count: errorCount }, errorCount) ?? `There was an error while launching transcription for ${errorCount} documents`)
+    const { href: errorHref } = core.router.resolve({ name: 'task.transcriptions' })
+    const errorLinkLabel = t?.('asr.viewTranscriptions') ?? 'View transcriptions'
+    toast?.error(t?.('asr.batchTranscriptionError', { count: errorCount }, errorCount) ?? `There was an error while launching transcription for ${errorCount} documents`, { href: errorHref, linkLabel: errorLinkLabel })
   }
 
   modelValue.value = false
