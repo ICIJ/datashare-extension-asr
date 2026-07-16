@@ -65,6 +65,7 @@ async function handleTranscribe() {
     const { href } = core.router.resolve({ name: 'task.transcriptions' })
     const linkLabel = t?.('asr.viewTranscriptions') ?? 'View transcriptions'
     toast?.success(t?.('asr.transcriptionLaunched', { name }) ?? `Transcription launched for ${name}`, { href, linkLabel })
+    emit('close')
   } catch {
     const { href } = core.router.resolve({ name: 'task.transcriptions' })
     const linkLabel = t?.('asr.viewTranscriptions') ?? 'View transcriptions'
