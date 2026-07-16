@@ -117,4 +117,10 @@ onMounted(() => {
 .transcribe-viewer-panel__line {
   align-items: baseline;
 }
+
+@media (max-width: 767.98px) {
+  .transcribe-viewer-panel__timestamp {
+    display: none;
+  }
+}
 </style>
