@@ -90,6 +90,11 @@ async function handleTranscribe() {
 
     <p class="text-muted small d-flex align-items-start gap-2">
       <i-ph-info class="flex-shrink-0 mt-1" />
+      <span>{{ $t('asr.selectLanguagesHint') }}</span>
+    </p>
+
+    <p class="text-muted small d-flex align-items-start gap-2">
+      <i-ph-info class="flex-shrink-0 mt-1" />
       <span>{{ $t('asr.info') }}</span>
     </p>
 
