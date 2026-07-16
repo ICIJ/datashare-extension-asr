@@ -91,4 +91,49 @@ describe('LanguageSelector.vue', () => {
     expect(items.length).toBe(1)
     expect(items[0].text()).toContain('French')
   })
+
+  describe('with project languages from ES', () => {
+    let wrapper
+
+    beforeEach(async () => {
+      const coreSetup = CoreSetup.init({
+        elasticsearchSearch: () => Promise.resolve({
+          aggregations: {
+            languages: {
+              buckets: [
+                { key: 'FRENCH', doc_count: 10 },
+                { key: 'ENGLISH', doc_count: 5 }
+              ]
+            }
+          }
+        })
+      })
+      // Set available models before mount so onMounted can match ES languages
+      const { useAsrStore } = await import('@/stores/asr')
+      const pinia = coreSetup._pinia
+      const store = useAsrStore(pinia)
+      store.availableModels = { en: ['parakeet'], fr: ['parakeet'], pt: ['parakeet'], es: ['parakeet'] }
+      store.selectedLanguages = []
+
+      wrapper = mount(LanguageSelector, { global: { plugins: coreSetup.plugins } })
+      await flushPromises()
+      await wrapper.find('button').trigger('click')
+      await flushPromises()
+    })
+
+    it('shows project languages before other languages', () => {
+      const items = wrapper.findAll('.language-selector__item')
+      expect(items[0].text()).toContain('French')
+      expect(items[1].text()).toContain('English')
+    })
+
+    it('shows a separator between project and other languages', () => {
+      expect(wrapper.find('hr').exists()).toBe(true)
+    })
+
+    it('has 4 total languages (2 project + 2 other)', () => {
+      const items = wrapper.findAll('.language-selector__item')
+      expect(items.length).toBe(4)
+    })
+  })
 })

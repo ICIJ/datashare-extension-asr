@@ -10,6 +10,12 @@ class CoreSetup {
       ...options.document
     }
     this._pinia = createPinia()
+    this.projectIds = options.projectIds || ['test-project']
+    this.api = {
+      elasticsearch: {
+        search: options.elasticsearchSearch || (() => Promise.resolve({ aggregations: { languages: { buckets: [] } } }))
+      }
+    }
   }
 
   install(app) {
