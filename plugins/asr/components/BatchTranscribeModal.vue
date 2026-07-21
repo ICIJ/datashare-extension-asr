@@ -50,7 +50,8 @@ async function handleBatchTranscribe() {
 
   for (const [project, docIds] of Object.entries(docsByProject)) {
     try {
-      await asrStore.transcribeBatch(project, docIds)
+      const name = `[batch] ${docIds.length} documents`
+      await asrStore.transcribeBatch(project, docIds, { name })
       successCount += docIds.length
     } catch {
       errorCount += docIds.length

@@ -61,7 +61,7 @@ async function handleTranscribe() {
   const doc = documentStore.document
   const name = doc.title || doc.id
   try {
-    await asrStore.transcribe(doc.index, doc.id)
+    await asrStore.transcribe(doc.index, doc.id, { name })
     const { href } = core.router.resolve({ name: 'task.transcriptions' })
     const linkLabel = t?.('asr.viewTranscriptions') ?? 'View transcriptions'
     toast?.success(t?.('asr.transcriptionLaunched', { name }) ?? `Transcription launched for ${name}`, { href, linkLabel })

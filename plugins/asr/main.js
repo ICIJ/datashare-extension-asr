@@ -76,7 +76,8 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
     title: 'asr.transcription',
     listRoute: { name: 'task.transcriptions' },
     linkTitle: 'asr.transcription',
-    getProjects: (item) => [item.args?.project].filter(Boolean)
+    getProjects: (item) => [item.args?.project].filter(Boolean),
+    getTitle: (item) => item.args?.name ?? 'asr.transcription'
   })
 
   core.registerHook({
