@@ -60,6 +60,7 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       batchLanguageWarningText: 'Split the selection in as many languages as you have.',
       batchTranscriptionLaunched: 'Transcription launched for {count} document | Transcription launched for {count} documents',
       batchTranscriptionError: 'There was an error while launching transcription for {count} document | There was an error while launching transcription for {count} documents',
+      transcription: 'Transcription',
       viewTranscriptions: 'View transcriptions',
       downloadTranscription: 'Download transcription',
       downloadWithTimestamps: 'Download with timestamps',
@@ -68,6 +69,14 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
         description: 'Automatically transcribe video and audio documents into text, using Nvidia\'s Parakeet-tdt-0.6b-v3 for Automatic Speech Recognition (ASR). All the processing is done within Datashare — no data is sent to third parties.'
       }
     }
+  })
+
+  core.registerTaskName('asr.transcription', {
+    icon: IPhFileAudio,
+    title: 'asr.transcription',
+    listRoute: { name: 'task.transcriptions' },
+    linkTitle: 'asr.transcription',
+    getProjects: (item) => [item.args?.project].filter(Boolean)
   })
 
   core.registerHook({
