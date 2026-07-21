@@ -62,17 +62,12 @@ onMounted(() => {
       </div>
     </div>
     <div v-else class="alert alert-warning d-flex align-items-center justify-content-between px-3 py-2">
-      <span v-if="asrStore.isTranscribing">
-        <span class="spinner-border spinner-border-sm me-2" />
-        {{ $t('asr.transcriptionInProgress') }}
-      </span>
-      <span v-else class="d-flex align-items-center gap-2">
+      <span class="d-flex align-items-center gap-2">
         <i-ph-file-audio style="font-size: 1.25em" />
         {{ $t('asr.noTextTranscribed') }}
       </span>
       <button
         class="btn btn-outline-warning transcribe-viewer-panel__btn"
-        :disabled="asrStore.isTranscribing"
         @click="panelOpen = true"
       >
         {{ $t('asr.transcribe') }}
