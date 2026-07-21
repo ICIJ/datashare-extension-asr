@@ -6,6 +6,7 @@ import TranscriptionsSettings from './components/TranscriptionsSettings.vue'
 import BatchTranscribeButton from './components/BatchTranscribeButton.vue'
 import TranscribeViewerPanel from './components/TranscribeViewerPanel.vue'
 import TranscriptionDownloadButtons from './components/TranscriptionDownloadButtons.vue'
+import TranscriptionsBoardEntry from './components/TranscriptionsBoardEntry.vue'
 
 document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
   core.i18n.global.mergeLocaleMessage('en', {
@@ -61,7 +62,11 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       batchTranscriptionError: 'There was an error while launching transcription for {count} document | There was an error while launching transcription for {count} documents',
       viewTranscriptions: 'View transcriptions',
       downloadTranscription: 'Download transcription',
-      downloadWithTimestamps: 'Download with timestamps'
+      downloadWithTimestamps: 'Download with timestamps',
+      boardEntry: {
+        title: 'Transcriptions',
+        description: 'Automatically transcribe video and audio documents into text, using Nvidia\'s Parakeet-tdt-0.6b-v3 for Automatic Speech Recognition (ASR). All the processing is done within Datashare — no data is sent to third parties.'
+      }
     }
   })
 
@@ -87,6 +92,12 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
     name: 'asr-transcription-download',
     target: 'document-download-popover.buttons:after',
     definition: TranscriptionDownloadButtons
+  })
+
+  core.registerHook({
+    name: 'asr-transcriptions-board',
+    target: 'task-board-list:after',
+    definition: TranscriptionsBoardEntry
   })
 
   core.registerHook({
