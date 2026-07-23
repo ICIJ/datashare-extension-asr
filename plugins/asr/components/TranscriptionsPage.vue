@@ -379,7 +379,9 @@ onUnmounted(() => {
               <component :is="DisplayStatus" v-else :value="task.state" />
             </td>
             <td v-if="isVisible('name')" class="fw-medium">
-              {{ taskName(task) }}
+              <router-link :to="{ name: 'task.transcriptions.detail', params: { id: task.id } }" class="text-action">
+                {{ taskName(task) }}
+              </router-link>
             </td>
             <td v-if="isVisible('progress')">
               <component :is="DisplayProgress" :value="taskProgress(task)" />

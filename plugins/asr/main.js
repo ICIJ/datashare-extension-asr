@@ -7,6 +7,7 @@ import BatchTranscribeButton from './components/BatchTranscribeButton.vue'
 import TranscribeViewerPanel from './components/TranscribeViewerPanel.vue'
 import TranscriptionDownloadButtons from './components/TranscriptionDownloadButtons.vue'
 import TranscriptionsBoardEntry from './components/TranscriptionsBoardEntry.vue'
+import TranscriptionDetail from './components/TranscriptionDetail.vue'
 
 document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
   core.i18n.global.mergeLocaleMessage('en', {
@@ -67,7 +68,25 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       boardEntry: {
         title: 'Transcriptions',
         description: 'Automatically transcribe video and audio documents into text, using Nvidia\'s Parakeet-tdt-0.6b-v3 for Automatic Speech Recognition (ASR). All the processing is done within Datashare — no data is sent to third parties.'
-      }
+      },
+      detailColDocName: 'Document name',
+      detailDelete: 'Delete',
+      detailRunningCount: 'Running for {count} documents',
+      detailSuccessCount: 'Success for {count} documents',
+      detailFailureCount: 'Failure for {count} documents',
+      detailSeeDocument: 'See document',
+      detailSeeAllDocuments: 'See all documents',
+      detailDownloadCsv: 'Download list (CSV)',
+      detailDeleteTitle: 'Are you sure?',
+      detailDeleteConfirm: 'Yes, proceed',
+      detailDeleteDescription: 'You are about to delete the transcriptions of {count} documents.',
+      detailNbDocuments: 'Number of documents',
+      detailModel: 'Model',
+      detailLanguage: 'Language',
+      detailDate: 'Date',
+      detailUser: 'User',
+      detailProjects: 'Projects',
+      taskNotFound: 'Task not found.'
     }
   })
 
@@ -128,6 +147,18 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
           default: TranscriptionsPage,
           settings: TranscriptionsSettings
         },
+        meta: {
+          title: 'asr.transcriptions',
+          icon: markRaw(IPhFileAudio)
+        }
+      })
+      core.router.addRoute('task', {
+        name: 'task.transcriptions.detail',
+        path: 'transcriptions/:id',
+        components: {
+          default: TranscriptionDetail
+        },
+        props: { default: true },
         meta: {
           title: 'asr.transcriptions',
           icon: markRaw(IPhFileAudio)
