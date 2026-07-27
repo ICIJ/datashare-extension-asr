@@ -58,7 +58,9 @@ function taskNameFromDocs() {
 
 function getDocs() {
   if (!task.value) return []
+  console.log('[ASR] task.value:', JSON.stringify(task.value, null, 2))
   const docs = task.value.args?.docs || []
+  console.log('[ASR] docs:', docs)
   if (docs.length === 2 && docs[0] === 'java.util.ArrayList') {
     return docs[1]
   }
@@ -66,11 +68,14 @@ function getDocs() {
 }
 
 function docDisplayName(docId) {
-  return docDetails.value[docId]?.title || docId
+  return docId
 }
 
 function docCategory(docId) {
-  return capitalize(docDetails.value[docId]?.contentTypeCategory || '—')
+  const doc = docDetails.value[docId]
+  const contentType = doc?._source?.contentType || ''
+  const category = contentType.split('/')[0]
+  return capitalize(category || '—')
 }
 
 function docProject(docId) {
@@ -176,16 +181,16 @@ async function fetchTask() {
 async function resolveDocDetails() {
   const project = task.value?.args?.project
   if (!project) return
-  for (const docId of getDocs()) {
-    if (docDetails.value[docId]) continue
-    try {
-      const doc = await api.sendAction(`/api/${project}/documents/${docId}`)
-      if (doc) {
-        docDetails.value[docId] = doc
-      }
-    } catch {
-      // document not found
+  const ids = getDocs().filter(id => !docDetails.value[id])
+  if (!ids.length) return
+  try {
+    const result = await api.elasticsearch.getDocumentsByIds(project, ids)
+    const hits = result?.hits?.hits || []
+    for (const hit of hits) {
+      docDetails.value[hit._id] = hit
     }
+  } catch {
+    // documents not found
   }
 }
 
@@ -292,25 +297,13 @@ onMounted(fetchTask)
                     <component :is="DisplayStatus" :value="docState(docId)" />
                   </td>
                   <td class="fw-medium">
-                    <router-link
-                      :to="{ name: 'document.doc', params: { index: task.args?.project, id: docId, routing: docId } }"
-                      class="text-action"
-                    >
-                      {{ docDisplayName(docId) }}
-                    </router-link>
+                    {{ docDisplayName(docId) }}
                   </td>
                   <td>{{ docCategory(docId) }}</td>
                   <td>
                     <component :is="DisplayProjectList" :values="docProject(docId)" />
                   </td>
-                  <td>
-                    <router-link
-                      :to="{ name: 'document.doc', params: { index: task.args?.project, id: docId, routing: docId } }"
-                      class="btn btn-sm btn-link text-muted p-0"
-                    >
-                      <component :is="IPhDownloadSimple" style="font-size: 1.1em" />
-                    </router-link>
-                  </td>
+                  <td />
                 </tr>
               </tbody>
             </table>
