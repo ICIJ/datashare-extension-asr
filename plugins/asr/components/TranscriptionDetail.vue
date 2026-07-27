@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, defineAsyncComponent, onMounted, h } from 'vue'
+import { ref, computed, defineAsyncComponent, onMounted, h, getCurrentInstance } from 'vue'
 import { BRow, BCol, useModal } from 'bootstrap-vue-next'
 import IPhFileAudio from '~icons/ph/file-audio'
 import IPhArrowClockwise from '~icons/ph/arrow-clockwise'
@@ -18,7 +18,10 @@ import IPhBrain from '~icons/ph/brain'
 import IPhInfo from '~icons/ph/info'
 import confirmImage from '@/assets/app-modal-default-light.svg'
 import confirmImageDark from '@/assets/app-modal-default-dark.svg'
+import IPhWarning from '~icons/ph/warning'
 import { useCore } from '@/composables/useCore'
+import { useAsrStore } from '@/stores/asr'
+import LanguageSelector from './LanguageSelector.vue'
 
 const props = defineProps({
   taskId: { type: String, required: true }
@@ -26,6 +29,8 @@ const props = defineProps({
 
 const core = useCore()
 const { api } = core
+const asrStore = useAsrStore()
+const toast = getCurrentInstance().appContext.config.globalProperties.$toast
 
 const PageHeader = defineAsyncComponent(() => core.findComponent('PageHeader/PageHeader'))
 const PageContainer = defineAsyncComponent(() => core.findComponent('PageContainer/PageContainer'))
@@ -45,6 +50,7 @@ const task = ref(null)
 const loading = ref(true)
 const docDetails = ref({})
 const showDeleteModal = ref(false)
+const showTranscribeModal = ref(false)
 const DocumentModalComponent = ref(null)
 
 core.findComponent('Document/DocumentModal').then(c => { DocumentModalComponent.value = c })
@@ -123,6 +129,11 @@ const failureCount = computed(() => {
 const isRunning = computed(() => {
   const state = task.value?.state
   return state === 'RUNNING' || state === 'QUEUED'
+})
+
+const isFinished = computed(() => {
+  const state = task.value?.state
+  return state === 'DONE' || state === 'ERROR' || state === 'CANCELLED'
 })
 
 const toSeeDocuments = computed(() => {
@@ -213,6 +224,50 @@ function openDocument(docId) {
     onCancel: () => {}
   })
   createModal({ component }).show()
+}
+
+const taskLanguageCodes = computed(() => {
+  const langs = task.value?.args?.languages
+  if (!Array.isArray(langs)) return []
+  return langs.flat().filter(v => typeof v === 'string' && !v.includes('.'))
+})
+
+const canTranscribe = computed(() => {
+  return asrStore.selectedLanguages.length > 0
+})
+
+function requestTranscribeAgain() {
+  asrStore.selectedLanguages.splice(0, asrStore.selectedLanguages.length, ...taskLanguageCodes.value)
+  asrStore.fetchModels()
+  showTranscribeModal.value = true
+}
+
+async function confirmTranscribeAgain() {
+  showTranscribeModal.value = false
+  const args = task.value?.args || {}
+  const name = args.name || taskTitle.value
+  try {
+    const response = await api.sendAction('/api/asr/transcribe', {
+      method: 'POST',
+      data: {
+        project: args.project,
+        docs: getDocs(),
+        name: args.name,
+        languages: [...asrStore.selectedLanguages],
+        batch_size: args.batch_size || 2
+      }
+    })
+    const { href } = core.router.resolve({ name: 'task.transcriptions' })
+    const linkLabel = core.i18n.global.t('asr.viewTranscriptions')
+    toast?.success(core.i18n.global.t('asr.transcriptionLaunched', { name }), { href, linkLabel })
+    if (response?.taskId) {
+      core.router.push({ name: 'task.transcriptions.detail', params: { taskId: response.taskId } })
+    }
+  } catch {
+    const { href } = core.router.resolve({ name: 'task.transcriptions' })
+    const linkLabel = core.i18n.global.t('asr.viewTranscriptions')
+    toast?.error(core.i18n.global.t('asr.transcriptionError', { name }), { href, linkLabel })
+  }
 }
 
 function requestDelete() {
@@ -350,7 +405,8 @@ onMounted(fetchTask)
                 :icon-left="IPhArrowClockwise"
                 :label="$t('asr.transcribeAgain')"
                 variant="link"
-                disabled
+                :disabled="!isFinished"
+                @click="requestTranscribeAgain"
               />
               <component
                 :is="ButtonIcon"
@@ -492,6 +548,53 @@ onMounted(fetchTask)
       <div class="text-center text-secondary">
         {{ deleteDescription }}
       </div>
+    </component>
+
+    <component
+      :is="AppModal"
+      v-model="showTranscribeModal"
+      size="lg"
+    >
+      <template #header>
+        <div class="w-100 position-relative">
+          <button
+            type="button"
+            class="btn-close position-absolute top-0 end-0"
+            @click="showTranscribeModal = false"
+          />
+          <h5 class="d-flex align-items-center gap-2 m-0 pe-4">
+            <component :is="IPhFileAudio" />
+            {{ $t('asr.transcribeAgain') }}
+          </h5>
+        </div>
+      </template>
+
+      <div class="d-flex flex-column gap-4">
+        <p class="text-muted mb-0">
+          <component :is="IPhInfo" class="me-1" />
+          {{ $t('asr.info') }}
+        </p>
+
+        <div>
+          <language-selector />
+          <p class="text-muted mb-0 small mt-2">
+            <component :is="IPhWarning" class="me-1" />
+            <strong>{{ $t('asr.batchLanguageWarningTitle') }}</strong>
+            {{ $t('asr.batchLanguageWarningText') }}
+          </p>
+        </div>
+      </div>
+
+      <template #footer>
+        <button
+          class="btn btn-action d-flex align-items-center gap-2"
+          :disabled="!canTranscribe"
+          @click="confirmTranscribeAgain"
+        >
+          <component :is="IPhFileAudio" />
+          {{ $t('asr.transcribe') }}
+        </button>
+      </template>
     </component>
 
   </div>
