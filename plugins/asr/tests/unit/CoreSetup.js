@@ -1,4 +1,5 @@
 import { createPinia } from 'pinia'
+import { vi } from 'vitest'
 
 class CoreSetup {
   constructor(options = {}) {
@@ -12,15 +13,34 @@ class CoreSetup {
     this._pinia = createPinia()
     this.projectIds = options.projectIds || ['test-project']
     this.api = {
+      sendAction: options.sendAction || vi.fn().mockResolvedValue(null),
       elasticsearch: {
-        search: options.elasticsearchSearch || (() => Promise.resolve({ aggregations: { languages: { buckets: [] } } }))
+        search: options.elasticsearchSearch || (() => Promise.resolve({ aggregations: { languages: { buckets: [] } } })),
+        getDocumentsByIds: options.getDocumentsByIds || vi.fn().mockResolvedValue({ hits: { hits: [] } })
       }
+    }
+    this.router = {
+      push: vi.fn(),
+      resolve: vi.fn().mockReturnValue({ href: '#' })
+    }
+    this.i18n = {
+      global: {
+        t: (key, params) => key,
+        mergeLocaleMessage: vi.fn()
+      }
+    }
+    this._toast = {
+      success: vi.fn(),
+      error: vi.fn(),
+      info: vi.fn(),
+      warning: vi.fn()
     }
   }
 
   install(app) {
     app.config.globalProperties.$core = this
     app.config.globalProperties.$t = (key) => key
+    app.config.globalProperties.$toast = this._toast
   }
 
   findComponent(path) {
