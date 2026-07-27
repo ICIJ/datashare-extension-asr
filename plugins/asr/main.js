@@ -154,7 +154,7 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       })
       core.router.addRoute('task', {
         name: 'task.transcriptions.detail',
-        path: 'transcriptions/:id',
+        path: 'transcriptions/:taskId',
         components: {
           default: TranscriptionDetail
         },

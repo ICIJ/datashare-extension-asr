@@ -1,6 +1,6 @@
 <script setup>
-import { ref, computed, defineAsyncComponent, onMounted } from 'vue'
-import { BRow, BCol } from 'bootstrap-vue-next'
+import { ref, computed, defineAsyncComponent, onMounted, h } from 'vue'
+import { BRow, BCol, useModal } from 'bootstrap-vue-next'
 import IPhFileAudio from '~icons/ph/file-audio'
 import IPhArrowClockwise from '~icons/ph/arrow-clockwise'
 import IPhTrash from '~icons/ph/trash'
@@ -21,7 +21,7 @@ import confirmImageDark from '@/assets/app-modal-default-dark.svg'
 import { useCore } from '@/composables/useCore'
 
 const props = defineProps({
-  id: { type: String, required: true }
+  taskId: { type: String, required: true }
 })
 
 const core = useCore()
@@ -39,10 +39,15 @@ const DisplayUser = defineAsyncComponent(() => core.findComponent('Display/Displ
 const ProjectButton = defineAsyncComponent(() => core.findComponent('Project/ProjectButton'))
 const AppModal = defineAsyncComponent(() => core.findComponent('AppModal/AppModal'))
 
+const { create: createModal } = useModal()
+
 const task = ref(null)
 const loading = ref(true)
 const docDetails = ref({})
 const showDeleteModal = ref(false)
+const DocumentModalComponent = ref(null)
+
+core.findComponent('Document/DocumentModal').then(c => { DocumentModalComponent.value = c })
 
 const taskTitle = computed(() => {
   if (!task.value) return ''
@@ -58,9 +63,7 @@ function taskNameFromDocs() {
 
 function getDocs() {
   if (!task.value) return []
-  console.log('[ASR] task.value:', JSON.stringify(task.value, null, 2))
   const docs = task.value.args?.docs || []
-  console.log('[ASR] docs:', docs)
   if (docs.length === 2 && docs[0] === 'java.util.ArrayList') {
     return docs[1]
   }
@@ -171,7 +174,7 @@ const taskProjects = computed(() => {
 async function fetchTask() {
   loading.value = true
   try {
-    task.value = await api.sendAction(`/api/task/${encodeURIComponent(props.id)}`)
+    task.value = await api.sendAction(`/api/task/${encodeURIComponent(props.taskId)}`)
   } catch {
     task.value = null
   } finally {
@@ -198,6 +201,20 @@ async function resolveDocDetails() {
   }
 }
 
+function openDocument(docId) {
+  const index = task.value?.args?.project
+  if (!DocumentModalComponent.value) return
+  const component = h(DocumentModalComponent.value, {
+    index,
+    id: docId,
+    routing: docId,
+    onOk: () => {},
+    onClose: () => {},
+    onCancel: () => {}
+  })
+  createModal({ component }).show()
+}
+
 function requestDelete() {
   showDeleteModal.value = true
 }
@@ -205,7 +222,7 @@ function requestDelete() {
 async function confirmDelete() {
   showDeleteModal.value = false
   try {
-    await api.sendAction(`/api/task/clean/${encodeURIComponent(props.id)}`, { method: 'DELETE' })
+    await api.sendAction(`/api/task/clean/${encodeURIComponent(props.taskId)}`, { method: 'DELETE' })
     core.router.push({ name: 'task.transcriptions' })
   } catch {
     // task may already be cleaned
@@ -301,7 +318,9 @@ onMounted(fetchTask)
                     <component :is="DisplayStatus" :value="docState(docId)" />
                   </td>
                   <td class="fw-medium">
-                    {{ docDisplayName(docId) }}
+                    <a href="#" class="text-action" @click.prevent="openDocument(docId)">
+                      {{ docDisplayName(docId) }}
+                    </a>
                   </td>
                   <td>{{ docCategory(docId) }}</td>
                   <td>
@@ -474,6 +493,7 @@ onMounted(fetchTask)
         {{ deleteDescription }}
       </div>
     </component>
+
   </div>
 </template>
 

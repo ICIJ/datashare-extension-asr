@@ -379,7 +379,7 @@ onUnmounted(() => {
               <component :is="DisplayStatus" v-else :value="task.state" />
             </td>
             <td v-if="isVisible('name')" class="fw-medium">
-              <router-link :to="{ name: 'task.transcriptions.detail', params: { id: task.id } }" class="text-action">
+              <router-link :to="{ name: 'task.transcriptions.detail', params: { taskId: task.id } }" class="text-action">
                 {{ taskName(task) }}
               </router-link>
             </td>
