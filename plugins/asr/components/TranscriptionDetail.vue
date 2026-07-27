@@ -182,10 +182,12 @@ const taskProjects = computed(() => {
   return [task.value?.args?.project].filter(Boolean)
 })
 
+const fullTaskId = computed(() => `asr.transcription-${props.taskId}`)
+
 async function fetchTask() {
   loading.value = true
   try {
-    task.value = await api.sendAction(`/api/task/${encodeURIComponent(props.taskId)}`)
+    task.value = await api.sendAction(`/api/task/${encodeURIComponent(fullTaskId.value)}`)
   } catch {
     task.value = null
   } finally {
@@ -261,7 +263,8 @@ async function confirmTranscribeAgain() {
     const linkLabel = core.i18n.global.t('asr.viewTranscriptions')
     toast?.success(core.i18n.global.t('asr.transcriptionLaunched', { name }), { href, linkLabel })
     if (response?.taskId) {
-      core.router.push({ name: 'task.transcriptions.detail', params: { taskId: response.taskId } })
+      const newTaskId = response.taskId.replace('asr.transcription-', '')
+      core.router.push({ name: 'task.transcriptions.detail', params: { taskId: newTaskId } })
     }
   } catch {
     const { href } = core.router.resolve({ name: 'task.transcriptions' })
@@ -277,7 +280,7 @@ function requestDelete() {
 async function confirmDelete() {
   showDeleteModal.value = false
   try {
-    await api.sendAction(`/api/task/clean/${encodeURIComponent(props.taskId)}`, { method: 'DELETE' })
+    await api.sendAction(`/api/task/clean/${encodeURIComponent(fullTaskId.value)}`, { method: 'DELETE' })
     core.router.push({ name: 'task.transcriptions' })
   } catch {
     // task may already be cleaned

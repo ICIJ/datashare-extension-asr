@@ -17,6 +17,11 @@ import errorImageLight from '@/assets/app-modal-error-light.svg'
 import errorImageDark from '@/assets/app-modal-error-dark.svg'
 
 const ASR_TASK_NAME = 'asr.transcription'
+const ASR_TASK_PREFIX = `${ASR_TASK_NAME}-`
+
+function taskUuid(task) {
+  return task.id.startsWith(ASR_TASK_PREFIX) ? task.id.slice(ASR_TASK_PREFIX.length) : task.id
+}
 
 const core = useCore()
 const { api } = core
@@ -379,7 +384,7 @@ onUnmounted(() => {
               <component :is="DisplayStatus" v-else :value="task.state" />
             </td>
             <td v-if="isVisible('name')" class="fw-medium">
-              <router-link :to="{ name: 'task.transcriptions.detail', params: { taskId: task.id } }" class="text-action">
+              <router-link :to="{ name: 'task.transcriptions.detail', params: { taskId: taskUuid(task) } }" class="text-action">
                 {{ taskName(task) }}
               </router-link>
             </td>
