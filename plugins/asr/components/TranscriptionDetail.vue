@@ -68,7 +68,11 @@ function getDocs() {
 }
 
 function docDisplayName(docId) {
-  return docId
+  const doc = docDetails.value[docId]
+  if (!doc) return docId
+  const path = doc._source?.path || ''
+  const basename = path.split('/').pop()
+  return basename || docId
 }
 
 function docCategory(docId) {
