@@ -186,22 +186,25 @@ const fullTaskId = computed(() => `asr.transcription-${props.taskId}`)
 
 async function fetchTask() {
   loading.value = true
+  let fetchedTask = null
   try {
-    task.value = await api.sendAction(`/api/task/${encodeURIComponent(fullTaskId.value)}`)
+    fetchedTask = await api.sendAction(`/api/task/${encodeURIComponent(fullTaskId.value)}`)
   } catch {
-    task.value = null
-  } finally {
-    loading.value = false
+    fetchedTask = null
   }
-  if (task.value) {
-    resolveDocDetails()
+  if (fetchedTask) {
+    await resolveDocDetails(fetchedTask)
   }
+  task.value = fetchedTask
+  loading.value = false
 }
 
-async function resolveDocDetails() {
-  const project = task.value?.args?.project
+async function resolveDocDetails(taskData) {
+  const project = taskData.args?.project
   if (!project) return
-  const ids = getDocs().filter(id => !docDetails.value[id])
+  const docs = taskData.args?.docs || []
+  const docList = docs.length === 2 && docs[0] === 'java.util.ArrayList' ? docs[1] : docs
+  const ids = docList.filter(id => !docDetails.value[id])
   if (!ids.length) return
   try {
     const result = await api.elasticsearch.getDocumentsByIds(project, ids)

@@ -56,6 +56,7 @@ const from = computed(() => (page.value - 1) * perPage.value)
 
 async function fetchTasks() {
   loading.value = true
+  let fetchedTasks = []
   try {
     const result = await api.getTasks({
       name: ASR_TASK_NAME,
@@ -65,28 +66,28 @@ async function fetchTasks() {
       order: order.value
     })
     if (Array.isArray(result)) {
-      tasks.value = result
+      fetchedTasks = result
       if (result.length < perPage.value && page.value === 1) {
         totalRows.value = result.length
       }
     } else if (result?.items) {
-      tasks.value = result.items
+      fetchedTasks = result.items
       totalRows.value = result.pagination?.total ?? result.items.length
     }
   } catch {
-    tasks.value = []
-  } finally {
-    loading.value = false
+    fetchedTasks = []
   }
-  resolveDocNames()
+  await resolveDocNames(fetchedTasks)
+  tasks.value = fetchedTasks
+  loading.value = false
 }
 
-async function resolveDocNames() {
-  for (const task of tasks.value) {
+async function resolveDocNames(taskList) {
+  for (const task of taskList) {
     const project = task.args?.project
     if (!project) continue
     for (const docId of getDocs(task)) {
-      if (docNames.value[docId] || !looksLikeHash(docId)) continue
+      if (docNames.value[docId]) continue
       try {
         const doc = await api.sendAction(`/api/${project}/documents/${docId}`)
         if (doc?.title) {
@@ -103,10 +104,6 @@ async function resolveDocNames() {
       }
     }
   }
-}
-
-function looksLikeHash(str) {
-  return /^[a-f0-9]{40,}$/i.test(str)
 }
 
 async function deleteTask(taskId) {
@@ -133,6 +130,7 @@ function docDisplayName(docId) {
 }
 
 function taskName(task) {
+  if (task.args?.name) return task.args.name
   const docs = getDocs(task)
   if (docs.length === 0) return '—'
   if (docs.length === 1) return docDisplayName(docs[0])
