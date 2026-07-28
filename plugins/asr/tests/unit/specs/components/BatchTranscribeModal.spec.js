@@ -112,7 +112,7 @@ describe('BatchTranscribeModal.vue', () => {
 
       expect(sendActionMock).toHaveBeenCalledWith('/api/asr/transcribe', {
         method: 'POST',
-        data: { project: 'project-a', docs: ['doc1', 'doc2'], languages: ['en'], batch_size: 2 }
+        data: { project: 'project-a', docs: ['doc1', 'doc2'], name: '[batch] 2 documents', languages: ['en'], batch_size: 2 }
       })
     })
 
@@ -135,11 +135,11 @@ describe('BatchTranscribeModal.vue', () => {
       expect(sendActionMock).toHaveBeenCalledTimes(3)
       expect(sendActionMock).toHaveBeenCalledWith('/api/asr/transcribe', {
         method: 'POST',
-        data: { project: 'project-a', docs: ['doc1'], languages: ['en'], batch_size: 2 }
+        data: { project: 'project-a', docs: ['doc1'], name: '[batch] 1 documents', languages: ['en'], batch_size: 2 }
       })
       expect(sendActionMock).toHaveBeenCalledWith('/api/asr/transcribe', {
         method: 'POST',
-        data: { project: 'project-b', docs: ['doc2'], languages: ['en'], batch_size: 2 }
+        data: { project: 'project-b', docs: ['doc2'], name: '[batch] 1 documents', languages: ['en'], batch_size: 2 }
       })
     })
 

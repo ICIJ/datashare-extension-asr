@@ -1,6 +1,5 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { vi } from 'vitest'
-import { defineComponent } from 'vue'
 
 import CoreSetup from '~tests/unit/CoreSetup'
 import TranscribeButton from '@/components/TranscribeButton.vue'
@@ -12,11 +11,6 @@ vi.mock('@/composables/useApi', () => {
 })
 
 describe('TranscribeButton.vue', () => {
-  const TestComponent = defineComponent({
-    components: { TranscribeButton },
-    template: '<suspense><transcribe-button /></suspense>'
-  })
-
   beforeEach(() => {
     const target = document.createElement('div')
     target.classList.add('document-entries-list__start__list')
@@ -30,14 +24,15 @@ describe('TranscribeButton.vue', () => {
   describe('with an audio document', () => {
     let wrapper
     let store
+    let core
 
     beforeEach(async () => {
-      const { plugins } = CoreSetup.init().useAll()
-      const testWrapper = mount(TestComponent, { global: { plugins } })
+      core = CoreSetup.init()
+      const { plugins } = core.useAll()
+      wrapper = mount(TranscribeButton, { global: { plugins } })
       await flushPromises()
-      wrapper = testWrapper.findComponent(TranscribeButton)
       const { useAsrStore } = await import('@/stores/asr')
-      store = useAsrStore()
+      store = useAsrStore(core._pinia)
     })
 
     it('is visible', () => {
@@ -79,9 +74,8 @@ describe('TranscribeButton.vue', () => {
 
     beforeEach(async () => {
       const { plugins } = CoreSetup.init({ document: { contentType: 'application/pdf' } }).useAll()
-      const testWrapper = mount(TestComponent, { global: { plugins } })
+      wrapper = mount(TranscribeButton, { global: { plugins } })
       await flushPromises()
-      wrapper = testWrapper.findComponent(TranscribeButton)
     })
 
     it('is not visible', () => {
