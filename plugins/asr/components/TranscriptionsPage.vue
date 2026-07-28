@@ -399,7 +399,6 @@ onUnmounted(() => {
             <td v-if="isVisible('launchedOn')">{{ taskDate(task) }}</td>
             <td>
               <button
-                v-if="task.state === 'DONE' || task.state === 'ERROR'"
                 class="btn btn-sm btn-link text-muted p-0"
                 @click="deleteTask(task.id)"
               >
