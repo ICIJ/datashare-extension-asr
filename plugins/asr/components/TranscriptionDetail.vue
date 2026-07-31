@@ -19,6 +19,7 @@ import IPhInfo from '~icons/ph/info'
 import confirmImage from '@/assets/app-modal-default-light.svg'
 import confirmImageDark from '@/assets/app-modal-default-dark.svg'
 import IPhWarning from '~icons/ph/warning'
+import IPhMagnifyingGlass from '~icons/ph/magnifying-glass'
 import { useCore } from '@/composables/useCore'
 import { useAsrStore } from '@/stores/asr'
 import LanguageSelector from './LanguageSelector.vue'
@@ -61,15 +62,45 @@ const taskTitle = computed(() => {
 })
 
 function taskNameFromDocs() {
+  if (isQueryBased.value) return queryLabel()
   const docs = getDocs()
   if (docs.length === 0) return '—'
   if (docs.length === 1) return docDisplayName(docs[0])
   return `[batch] ${docs.length} documents`
 }
 
+function stripJacksonTypes(obj) {
+  if (Array.isArray(obj)) return obj.map(stripJacksonTypes)
+  if (obj && typeof obj === 'object') {
+    const cleaned = {}
+    for (const [k, v] of Object.entries(obj)) {
+      if (k !== '@type') cleaned[k] = stripJacksonTypes(v)
+    }
+    return cleaned
+  }
+  return obj
+}
+
+function queryLabel() {
+  const raw = task.value?.args?.docs
+  if (!raw) return '—'
+  let query = raw
+  if (Array.isArray(raw) && raw.length === 2 && typeof raw[0] === 'string' && raw[0].startsWith('java.util.')) {
+    query = raw[1]
+  }
+  if (!query || typeof query !== 'object' || Array.isArray(query)) return '—'
+  const cleaned = stripJacksonTypes(query)
+  const keys = Object.keys(cleaned)
+  if (keys.length === 0) return '*'
+  if (keys.length === 1 && keys[0] === 'match_all') return '*'
+  if (keys.length === 1 && keys[0] === 'query_string' && cleaned.query_string?.query) return cleaned.query_string.query
+  return JSON.stringify(cleaned)
+}
+
 function getDocs() {
   if (!task.value) return []
   const docs = task.value.args?.docs || []
+  if (!Array.isArray(docs)) return []
   if (docs.length === 2 && docs[0] === 'java.util.ArrayList') {
     return docs[1]
   }
@@ -91,11 +122,11 @@ function docCategory(docId) {
   return capitalize(category || '—')
 }
 
-function docProject(docId) {
+function docProject() {
   return task.value?.args?.project || '—'
 }
 
-function docState(docId) {
+function docState() {
   if (task.value?.state === 'DONE') return 'DONE'
   if (task.value?.state === 'ERROR') return 'ERROR'
   return task.value?.state || 'QUEUED'
@@ -105,6 +136,15 @@ function capitalize(str) {
   if (!str || str === '—') return str
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
 }
+
+const isQueryBased = computed(() => {
+  const raw = task.value?.args?.docs
+  if (!raw) return false
+  if (Array.isArray(raw) && raw.length === 2 && typeof raw[0] === 'string' && raw[0].startsWith('java.util.')) {
+    return typeof raw[1] === 'object' && !Array.isArray(raw[1])
+  }
+  return typeof raw === 'object' && !Array.isArray(raw)
+})
 
 const docs = computed(() => getDocs())
 
@@ -136,7 +176,15 @@ const isFinished = computed(() => {
   return state === 'DONE' || state === 'ERROR' || state === 'CANCELLED'
 })
 
+function getQueryString() {
+  const label = queryLabel()
+  return label === '—' ? '*' : label
+}
+
 const toSeeDocuments = computed(() => {
+  if (isQueryBased.value) {
+    return { name: 'search', query: { q: getQueryString() } }
+  }
   const docIds = getDocs()
   if (docIds.length === 1) {
     const project = task.value?.args?.project
@@ -148,6 +196,7 @@ const toSeeDocuments = computed(() => {
 })
 
 const seeDocumentsLabel = computed(() => {
+  if (isQueryBased.value) return core.i18n.global.t('asr.detailSeeQuery')
   return docs.value.length === 1
     ? core.i18n.global.t('asr.detailSeeDocument')
     : core.i18n.global.t('asr.detailSeeAllDocuments')
@@ -204,6 +253,7 @@ async function resolveDocDetails(taskData) {
   if (!project) return
   const docs = taskData.args?.docs || []
   const docList = docs.length === 2 && docs[0] === 'java.util.ArrayList' ? docs[1] : docs
+  if (!Array.isArray(docList)) return
   const ids = docList.filter(id => !docDetails.value[id])
   if (!ids.length) return
   try {
@@ -256,7 +306,7 @@ async function confirmTranscribeAgain() {
       method: 'POST',
       data: {
         project: args.project,
-        docs: getDocs(),
+        docs: task.value?.args?.docs,
         name: args.name,
         languages: [...asrStore.selectedLanguages],
         batch_size: args.batch_size || 2
@@ -351,7 +401,15 @@ onMounted(fetchTask)
 
       <b-row v-else>
         <b-col lg="8" cols="12">
-          <div class="table-responsive">
+          <div v-if="isQueryBased" class="d-flex flex-column align-items-center justify-content-center py-5 text-muted">
+            <component :is="IPhMagnifyingGlass" style="font-size: 3em" class="mb-3" />
+            <p class="mb-3">{{ $t('asr.detailQueryBased') }}</p>
+            <router-link :to="toSeeDocuments" class="btn btn-outline-primary d-inline-flex align-items-center gap-2">
+              <component :is="IPhMagnifyingGlass" />
+              {{ $t('asr.detailSeeQuery') }}
+            </router-link>
+          </div>
+          <div v-else class="table-responsive">
             <table class="table table-borderless table-striped table-hover page-table align-middle">
               <thead>
                 <tr>
@@ -453,7 +511,7 @@ onMounted(fetchTask)
                     </div>
                   </div>
                 </li>
-                <li>
+                <li v-if="!isQueryBased">
                   <div class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2" :title="$t('asr.detailNbDocuments')">
                     <div class="d-flex flex-nowrap align-items-start gap-2">
                       <component :is="IPhFiles" class="transcription-detail__card__entry__icon text-secondary-emphasis flex-shrink-0" />
@@ -466,13 +524,13 @@ onMounted(fetchTask)
                     :is="ButtonIcon"
                     :label="seeDocumentsLabel"
                     :to="toSeeDocuments"
-                    :icon-left="IPhList"
+                    :icon-left="isQueryBased ? IPhMagnifyingGlass : IPhList"
                     :icon-right="IPhCaretRight"
                     variant="action"
                     class="flex-shrink-1"
                   />
                 </li>
-                <li>
+                <li v-if="!isQueryBased">
                   <component
                     :is="ButtonIcon"
                     :label="$t('asr.detailDownloadCsv')"

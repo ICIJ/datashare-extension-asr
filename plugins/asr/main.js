@@ -80,6 +80,8 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       detailDeleteTitle: 'Are you sure?',
       detailDeleteConfirm: 'Yes, proceed',
       detailDeleteDescription: 'You are about to delete the transcriptions of {count} documents.',
+      detailQueryBased: 'This transcription is based on a search query.',
+      detailSeeQuery: 'See query in Search',
       detailNbDocuments: 'Number of documents',
       detailModel: 'Model',
       detailLanguage: 'Language',

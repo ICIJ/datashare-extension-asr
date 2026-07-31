@@ -116,9 +116,8 @@ async function deleteTask(taskId) {
 }
 
 function getDocs(task) {
-  const args = task.args || {}
-  const docs = args.docs || []
-  // Jackson format: ["java.util.ArrayList", ["doc1", "doc2"]]
+  const docs = task.args?.docs || []
+  if (!Array.isArray(docs)) return []
   if (docs.length === 2 && docs[0] === 'java.util.ArrayList') {
     return docs[1]
   }
@@ -129,8 +128,34 @@ function docDisplayName(docId) {
   return docNames.value[docId] || docId
 }
 
+function isQueryBasedDocs(docs) {
+  return !!docs && typeof docs === 'object' && !Array.isArray(docs)
+}
+
+function stripJacksonTypes(obj) {
+  if (Array.isArray(obj)) return obj.map(stripJacksonTypes)
+  if (obj && typeof obj === 'object') {
+    const cleaned = {}
+    for (const [k, v] of Object.entries(obj)) {
+      if (k !== '@type') cleaned[k] = stripJacksonTypes(v)
+    }
+    return cleaned
+  }
+  return obj
+}
+
+function queryLabel(docs) {
+  const cleaned = stripJacksonTypes(docs)
+  const keys = Object.keys(cleaned)
+  if (keys.length === 0) return '*'
+  if (keys.length === 1 && keys[0] === 'match_all') return '*'
+  if (keys.length === 1 && keys[0] === 'query_string' && cleaned.query_string?.query) return cleaned.query_string.query
+  return JSON.stringify(cleaned)
+}
+
 function taskName(task) {
   if (task.args?.name) return task.args.name
+  if (isQueryBasedDocs(task.args?.docs)) return queryLabel(task.args.docs)
   const docs = getDocs(task)
   if (docs.length === 0) return '—'
   if (docs.length === 1) return docDisplayName(docs[0])
