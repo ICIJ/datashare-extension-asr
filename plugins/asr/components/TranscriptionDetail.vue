@@ -463,7 +463,7 @@ onMounted(fetchTask)
             :title="taskTitle"
             no-x-icon
           >
-            <div class="d-flex gap-3">
+            <div class="d-flex flex-wrap gap-3">
               <component
                 :is="ButtonIcon"
                 :icon-left="IPhArrowClockwise"
@@ -487,7 +487,7 @@ onMounted(fetchTask)
                     <component :is="TaskStatus" :status="taskState" with-label />
                   </div>
                 </li>
-                <li v-if="isRunning">
+                <li v-if="isRunning && !isQueryBased">
                   <div class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2">
                     <div class="d-flex flex-nowrap align-items-start gap-2">
                       <component :is="IPhInfo" class="transcription-detail__card__entry__icon text-info flex-shrink-0" />
@@ -495,7 +495,7 @@ onMounted(fetchTask)
                     </div>
                   </div>
                 </li>
-                <li v-if="successCount > 0">
+                <li v-if="successCount > 0 && !isQueryBased">
                   <div class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2">
                     <div class="d-flex flex-nowrap align-items-start gap-2">
                       <component :is="IPhCheckCircle" class="transcription-detail__card__entry__icon text-success flex-shrink-0" />
@@ -503,7 +503,7 @@ onMounted(fetchTask)
                     </div>
                   </div>
                 </li>
-                <li v-if="failureCount > 0">
+                <li v-if="failureCount > 0 && !isQueryBased">
                   <div class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2">
                     <div class="d-flex flex-nowrap align-items-start gap-2">
                       <component :is="IPhXCircle" class="transcription-detail__card__entry__icon text-danger flex-shrink-0" />

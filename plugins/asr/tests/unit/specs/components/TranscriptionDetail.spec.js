@@ -261,6 +261,80 @@ describe('TranscriptionDetail.vue', () => {
     })
   })
 
+  describe('query-based tasks', () => {
+    const queryTask = {
+      ...baseTask,
+      args: {
+        ...baseTask.args,
+        name: null,
+        docs: { '@type': 'java.util.LinkedHashMap', match_all: {} }
+      }
+    }
+
+    it('shows the search query message instead of the document table', async () => {
+      const { wrapper } = createWrapper(queryTask)
+      await flushPromises()
+      expect(wrapper.text()).toContain('asr.detailQueryBased')
+      expect(wrapper.text()).toContain('asr.detailSeeQuery')
+      expect(wrapper.find('table').exists()).toBe(false)
+    })
+
+    it('uses * as title for match_all query', async () => {
+      const { wrapper } = createWrapper(queryTask)
+      await flushPromises()
+      expect(wrapper.vm.taskTitle).toBe('*')
+    })
+
+    it('uses query text as title for query_string query', async () => {
+      const task = {
+        ...baseTask,
+        args: {
+          ...baseTask.args,
+          name: null,
+          docs: { '@type': 'java.util.LinkedHashMap', query_string: { query: 'doudou' } }
+        }
+      }
+      const { wrapper } = createWrapper(task)
+      await flushPromises()
+      expect(wrapper.vm.taskTitle).toBe('doudou')
+    })
+
+    it('uses compact JSON as title for complex queries', async () => {
+      const task = {
+        ...baseTask,
+        args: {
+          ...baseTask.args,
+          name: null,
+          docs: { '@type': 'java.util.LinkedHashMap', bool: { must: [], filter: [] } }
+        }
+      }
+      const { wrapper } = createWrapper(task)
+      await flushPromises()
+      expect(wrapper.vm.taskTitle).toBe('{"bool":{"must":[],"filter":[]}}')
+    })
+
+    it('sends original docs in transcribe again', async () => {
+      const docs = { '@type': 'java.util.LinkedHashMap', match_all: {} }
+      const task = { ...queryTask, args: { ...queryTask.args, docs } }
+      sendActionMock.mockResolvedValueOnce(task)
+      sendActionMock.mockResolvedValueOnce({ taskId: 'asr.transcription-new-uuid' })
+      const { wrapper } = createWrapper(task)
+      await flushPromises()
+
+      const { useAsrStore } = await import('@/stores/asr')
+      const store = useAsrStore()
+      store.selectedLanguages = ['fr']
+
+      await wrapper.vm.confirmTranscribeAgain()
+      await flushPromises()
+
+      expect(sendActionMock).toHaveBeenCalledWith('/api/asr/transcribe', {
+        method: 'POST',
+        data: expect.objectContaining({ docs })
+      })
+    })
+  })
+
   describe('document count', () => {
     it('displays the correct number of documents', async () => {
       const { wrapper } = createWrapper()
