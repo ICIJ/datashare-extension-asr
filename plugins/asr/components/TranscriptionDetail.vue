@@ -5,8 +5,6 @@ import IPhFileAudio from '~icons/ph/file-audio'
 import IPhArrowClockwise from '~icons/ph/arrow-clockwise'
 import IPhTrash from '~icons/ph/trash'
 import IPhFiles from '~icons/ph/files'
-import IPhList from '~icons/ph/list'
-import IPhCaretRight from '~icons/ph/caret-right'
 import IPhDownloadSimple from '~icons/ph/download-simple'
 import IPhTranslate from '~icons/ph/translate'
 import IPhCalendarBlank from '~icons/ph/calendar-blank'
@@ -37,7 +35,7 @@ const DisplayStatus = defineAsyncComponent(() => core.findComponent('Display/Dis
 const DisplayProjectList = defineAsyncComponent(() => core.findComponent('Display/DisplayProjectList'))
 const CardPanel = defineAsyncComponent(() => core.findComponent('CardPanel/CardPanel'))
 const ButtonIcon = defineAsyncComponent(() => core.findComponent('Button/ButtonIcon'))
-const TaskStatus = defineAsyncComponent(() => core.findComponent('Task/TaskStatus'))
+const DisplayStatusLabel = defineAsyncComponent(() => core.findComponent('Display/DisplayStatusLabel'))
 const DisplayDatetime = defineAsyncComponent(() => core.findComponent('Display/DisplayDatetime'))
 const DisplayUser = defineAsyncComponent(() => core.findComponent('Display/DisplayUser'))
 const ProjectButton = defineAsyncComponent(() => core.findComponent('Project/ProjectButton'))
@@ -176,13 +174,6 @@ const toSeeDocuments = computed(() => {
     }
   }
   return { name: 'search', query: { q: getDocs().map(id => `_id:${id}`).join(' OR ') } }
-})
-
-const seeDocumentsLabel = computed(() => {
-  if (isQueryBased.value) return core.i18n.global.t('asr.detailSeeQuery')
-  return docs.value.length === 1
-    ? core.i18n.global.t('asr.detailSeeDocument')
-    : core.i18n.global.t('asr.detailSeeAllDocuments')
 })
 
 const taskLanguages = computed(() => {
@@ -467,7 +458,10 @@ onMounted(fetchTask)
               <ul class="transcription-detail__card__details__list list-unstyled">
                 <li>
                   <div class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2">
-                    <component :is="TaskStatus" :status="taskState" with-label />
+                    <span class="d-inline-flex gap-2 align-items-center">
+                      <component :is="DisplayStatus" class="border-0" :value="taskState" no-tooltip />
+                      <component :is="DisplayStatusLabel" :value="taskState" />
+                    </span>
                   </div>
                 </li>
                 <li v-if="!isQueryBased">
@@ -477,17 +471,6 @@ onMounted(fetchTask)
                       {{ nbDocumentsLabel }}
                     </div>
                   </div>
-                </li>
-                <li>
-                  <component
-                    :is="ButtonIcon"
-                    :label="seeDocumentsLabel"
-                    :to="toSeeDocuments"
-                    :icon-left="isQueryBased ? IPhMagnifyingGlass : IPhList"
-                    :icon-right="IPhCaretRight"
-                    variant="action"
-                    class="flex-shrink-1"
-                  />
                 </li>
                 <li v-if="!isQueryBased">
                   <component
@@ -536,9 +519,11 @@ onMounted(fetchTask)
                   </div>
                 </li>
                 <li>
-                  <div class="transcription-detail__card__entry transcription-detail__card__entry--buttons d-flex align-items-center justify-content-between gap-2" :title="$t('asr.detailProjects')">
+                  <div class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2" :title="$t('asr.detailProjects')">
                     <div class="d-flex flex-nowrap align-items-start gap-2">
-                      <component :is="IPhCirclesThreePlus" class="transcription-detail__card__entry__icon text-secondary-emphasis flex-shrink-0" style="width: 1.75rem; font-size: 1.25em; padding: 0.75rem 0" />
+                      <span class="transcription-detail__card__entry__icon text-secondary-emphasis flex-shrink-0 d-inline-flex justify-content-center" style="padding: 0.75rem 0">
+                        <i-ph-circles-three-plus />
+                      </span>
                       <div class="d-flex flex-wrap gap-2">
                         <component
                           :is="ProjectButton"
