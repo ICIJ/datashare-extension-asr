@@ -4,8 +4,6 @@ import { BRow, BCol, useModal } from 'bootstrap-vue-next'
 import IPhFileAudio from '~icons/ph/file-audio'
 import IPhArrowClockwise from '~icons/ph/arrow-clockwise'
 import IPhTrash from '~icons/ph/trash'
-import IPhCheckCircle from '~icons/ph/check-circle'
-import IPhXCircle from '~icons/ph/x-circle'
 import IPhFiles from '~icons/ph/files'
 import IPhList from '~icons/ph/list'
 import IPhCaretRight from '~icons/ph/caret-right'
@@ -154,21 +152,6 @@ const nbDocuments = computed(() => docs.value.length)
 
 const nbDocumentsLabel = computed(() => {
   return `${nbDocuments.value} document${nbDocuments.value !== 1 ? 's' : ''}`
-})
-
-const successCount = computed(() => {
-  if (task.value?.state === 'DONE') return docs.value.length
-  return 0
-})
-
-const failureCount = computed(() => {
-  if (task.value?.state === 'ERROR') return docs.value.length
-  return 0
-})
-
-const isRunning = computed(() => {
-  const state = task.value?.state
-  return state === 'RUNNING' || state === 'QUEUED'
 })
 
 const isFinished = computed(() => {
@@ -487,30 +470,6 @@ onMounted(fetchTask)
                     <component :is="TaskStatus" :status="taskState" with-label />
                   </div>
                 </li>
-                <li v-if="isRunning && !isQueryBased">
-                  <div class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2">
-                    <div class="d-flex flex-nowrap align-items-start gap-2">
-                      <component :is="IPhInfo" class="transcription-detail__card__entry__icon text-info flex-shrink-0" />
-                      {{ $t('asr.detailRunningCount', { count: nbDocuments }) }}
-                    </div>
-                  </div>
-                </li>
-                <li v-if="successCount > 0 && !isQueryBased">
-                  <div class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2">
-                    <div class="d-flex flex-nowrap align-items-start gap-2">
-                      <component :is="IPhCheckCircle" class="transcription-detail__card__entry__icon text-success flex-shrink-0" />
-                      {{ $t('asr.detailSuccessCount', { count: successCount }) }}
-                    </div>
-                  </div>
-                </li>
-                <li v-if="failureCount > 0 && !isQueryBased">
-                  <div class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2">
-                    <div class="d-flex flex-nowrap align-items-start gap-2">
-                      <component :is="IPhXCircle" class="transcription-detail__card__entry__icon text-danger flex-shrink-0" />
-                      {{ $t('asr.detailFailureCount', { count: failureCount }) }}
-                    </div>
-                  </div>
-                </li>
                 <li v-if="!isQueryBased">
                   <div class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2" :title="$t('asr.detailNbDocuments')">
                     <div class="d-flex flex-nowrap align-items-start gap-2">
@@ -551,7 +510,7 @@ onMounted(fetchTask)
                     </div>
                   </div>
                 </li>
-                <li>
+                <li class="mt-2">
                   <div class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2" :title="$t('asr.detailLanguage')">
                     <div class="d-flex flex-nowrap align-items-start gap-2">
                       <component :is="IPhTranslate" class="transcription-detail__card__entry__icon text-secondary-emphasis flex-shrink-0" />
@@ -579,7 +538,7 @@ onMounted(fetchTask)
                 <li>
                   <div class="transcription-detail__card__entry transcription-detail__card__entry--buttons d-flex align-items-center justify-content-between gap-2" :title="$t('asr.detailProjects')">
                     <div class="d-flex flex-nowrap align-items-start gap-2">
-                      <component :is="IPhCirclesThreePlus" class="transcription-detail__card__entry__icon text-secondary-emphasis flex-shrink-0" />
+                      <component :is="IPhCirclesThreePlus" class="transcription-detail__card__entry__icon text-secondary-emphasis flex-shrink-0" style="width: 1.75rem; font-size: 1.25em; padding: 0.75rem 0" />
                       <div class="d-flex flex-wrap gap-2">
                         <component
                           :is="ProjectButton"
@@ -678,7 +637,7 @@ onMounted(fetchTask)
 }
 
 .transcription-detail__card__details__list li {
-  margin: 0.5rem 0;
+  margin: 0.75rem 0;
 }
 
 .transcription-detail__card__details__list li:first-of-type {

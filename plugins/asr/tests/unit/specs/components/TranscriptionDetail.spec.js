@@ -144,41 +144,12 @@ describe('TranscriptionDetail.vue', () => {
     })
   })
 
-  describe('task state display', () => {
-    it('shows success count when task is DONE', async () => {
-      const { wrapper } = createWrapper()
-      await flushPromises()
-      expect(wrapper.text()).toContain('asr.detailSuccessCount')
-    })
-
-    it('shows failure count when task is ERROR', async () => {
-      const task = { ...baseTask, state: 'ERROR' }
-      const { wrapper } = createWrapper(task)
-      await flushPromises()
-      expect(wrapper.text()).toContain('asr.detailFailureCount')
-    })
-
-    it('shows running count when task is RUNNING', async () => {
-      const task = { ...baseTask, state: 'RUNNING' }
-      const { wrapper } = createWrapper(task)
-      await flushPromises()
-      expect(wrapper.text()).toContain('asr.detailRunningCount')
-    })
-
-    it('does not show running count when task is DONE', async () => {
-      const { wrapper } = createWrapper()
-      await flushPromises()
-      expect(wrapper.text()).not.toContain('asr.detailRunningCount')
-    })
-  })
-
   describe('transcribe again button', () => {
     it('is not finished when task is RUNNING', async () => {
       const task = { ...baseTask, state: 'RUNNING' }
       const { wrapper } = createWrapper(task)
       await flushPromises()
       expect(wrapper.vm.isFinished).toBe(false)
-      expect(wrapper.vm.isRunning).toBe(true)
     })
 
     it('is enabled when task is DONE', async () => {
