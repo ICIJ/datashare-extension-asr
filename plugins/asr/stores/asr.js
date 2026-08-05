@@ -39,7 +39,7 @@ export const useAsrStore = defineStore('asr', () => {
   const transcription = ref(null)
   const isTranscribing = computed(() => taskState.value === 'RUNNING')
   const hasTranscription = computed(() => transcription.value !== null)
-  const languages = computed(() => Object.keys(availableModels.value).sort())
+  const languages = computed(() => Object.keys(availableModels.value || {}).sort())
 
   async function fetchTranscription(project, docId) {
     try {
