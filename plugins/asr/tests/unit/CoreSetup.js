@@ -1,4 +1,5 @@
 import { createPinia } from 'pinia'
+import { RouterLinkStub } from '@vue/test-utils'
 import { vi } from 'vitest'
 
 class CoreSetup {
@@ -41,6 +42,7 @@ class CoreSetup {
     app.config.globalProperties.$core = this
     app.config.globalProperties.$t = (key) => key
     app.config.globalProperties.$toast = this._toast
+    app.component('RouterLink', RouterLinkStub)
   }
 
   findComponent(path) {
