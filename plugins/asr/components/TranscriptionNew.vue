@@ -3,9 +3,8 @@ import { ref, computed, defineAsyncComponent, onMounted } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
 import IPhTextAa from '~icons/ph/text-aa'
 import IPhCirclesThreePlus from '~icons/ph/circles-three-plus'
-import IPhTranslate from '~icons/ph/translate'
 import IPhBrain from '~icons/ph/brain'
-import IPhGear from '~icons/ph/gear'
+import IPhMagnifyingGlass from '~icons/ph/magnifying-glass'
 
 import { useCore } from '@/composables/useCore'
 import { useAsrStore } from '@/stores/asr'
@@ -16,12 +15,34 @@ const asrStore = useAsrStore()
 
 const PageHeader = defineAsyncComponent(() => core.findComponent('PageHeader/PageHeader'))
 const PageContainer = defineAsyncComponent(() => core.findComponent('PageContainer/PageContainer'))
+const FormCreation = defineAsyncComponent(() => core.findComponent('Form/FormCreation'))
+const FormStep = defineAsyncComponent(() => core.findComponent('Form/FormStep/FormStep'))
+const FilterTypePath = defineAsyncComponent(() => core.findComponent('Filter/FilterType/FilterTypePath'))
+const FilterType = defineAsyncComponent(() => core.findComponent('Filter/FilterType/FilterType'))
+const FilterTypeDateRange = defineAsyncComponent(() => core.findComponent('Filter/FilterType/FilterTypeDateRange'))
+const FilterTypeStarred = defineAsyncComponent(() => core.findComponent('Filter/FilterType/FilterTypeStarred'))
+const FilterTypeRecommendedBy = defineAsyncComponent(() => core.findComponent('Filter/FilterType/FilterTypeRecommendedBy'))
 const ProjectDropdownSelector = defineAsyncComponent(() => core.findComponent('Project/ProjectDropdownSelector/ProjectDropdownSelector'))
 
+const { useSearchStore } = core.stores
+const searchStore = useSearchStore()
+const formSearchStore = useSearchStore.disposable()
+formSearchStore.setIndices(searchStore.indices)
+
+const filterPath = formSearchStore.getFilter({ name: 'path' })
+const filterContentType = formSearchStore.getFilter({ name: 'contentType' })
+const filterCreationDate = formSearchStore.getFilter({ name: 'creationDate' })
+const filterLanguage = formSearchStore.getFilter({ name: 'language' })
+const filterExtractionLevel = formSearchStore.getFilter({ name: 'extractionLevel' })
+const filterIndexingDate = formSearchStore.getFilter({ name: 'indexingDate' })
+const filterStarred = formSearchStore.getFilter({ name: 'starred' })
+const filterTags = formSearchStore.getFilter({ name: 'tags' })
+const filterRecommendedBy = formSearchStore.getFilter({ name: 'recommendedBy' })
+
+const query = ref('')
 const name = ref('')
 const selectedProjects = ref(core.projectIds.map(name => ({ name })))
 const selectedModel = ref('parakeet')
-const skipAlreadyTranscribed = ref(true)
 const submitting = ref(false)
 
 const allProjects = computed(() => core.projects ?? core.projectIds.map(name => ({ name })))
@@ -40,11 +61,12 @@ onMounted(() => {
 })
 
 function reset() {
+  query.value = ''
   name.value = ''
   selectedProjects.value = core.projectIds.map(name => ({ name }))
   asrStore.selectedLanguages = []
   selectedModel.value = 'parakeet'
-  skipAlreadyTranscribed.value = true
+  formSearchStore.resetFilterValues()
 }
 
 async function submit() {
@@ -65,203 +87,180 @@ async function submit() {
 <template>
   <component :is="PageHeader" no-toggle-settings :breadcrumb-routes="breadcrumbRoutes" />
   <component :is="PageContainer" fluid>
-    <form class="transcription-new d-flex flex-column gap-3" novalidate @submit.prevent="submit" @reset.prevent="reset">
+    <component
+      :is="FormCreation"
+      class="transcription-new d-flex flex-column gap-4"
+      content-class-list="d-flex flex-column gap-3"
+      :valid="isValid"
+      :submit-label="$t('asr.newForm.transcribe')"
+      :submit-icon="IPhFileAudio"
+      :reset-label="$t('asr.newForm.reset')"
+      @reset="reset"
+      @submit="submit"
+    >
       <!-- Step 1: Name and project -->
-      <div class="transcription-new__step bg-tertiary-subtle p-3 rounded-4">
-        <div class="d-flex align-items-center gap-2 mb-3">
-          <span class="transcription-new__step__index badge rounded-pill bg-action text-white">1</span>
-          <h6 class="m-0">{{ $t('asr.newForm.nameAndProject') }}</h6>
-        </div>
-        <div class="ms-md-5 d-flex flex-column gap-3">
-          <div class="row align-items-center">
-            <label class="col-auto d-flex align-items-center gap-1 form-label m-0">
-              <i-ph-text-aa />
-              {{ $t('asr.newForm.name') }} *
-            </label>
-            <div class="col">
-              <input
-                v-model="name"
-                type="text"
-                class="form-control"
-                :placeholder="$t('asr.newForm.namePlaceholder')"
-              >
-            </div>
-          </div>
-          <div class="row align-items-center">
-            <label class="col-auto d-flex align-items-center gap-1 form-label m-0">
-              <i-ph-circles-three-plus />
-              {{ $t('asr.newForm.project') }} *
-            </label>
-            <div class="col">
-              <component
-                :is="ProjectDropdownSelector"
-                v-model="selectedProjects"
-                :projects="allProjects"
-              />
-            </div>
+      <component :is="FormStep" :title="$t('asr.newForm.nameAndProject')" :index="1">
+        <div class="row align-items-center mb-3">
+          <label class="col-sm-12 col-md-4 col-lg-3 d-flex align-items-center gap-2 form-label text-body-emphasis m-0">
+            <i-ph-text-aa class="text-tertiary" style="font-size: 1.25em" />
+            {{ $t('asr.newForm.name') }} *
+          </label>
+          <div class="col">
+            <input
+              v-model="name"
+              type="text"
+              class="form-control"
+              :placeholder="$t('asr.newForm.namePlaceholder')"
+            >
           </div>
         </div>
-      </div>
+        <div class="row align-items-center">
+          <label class="col-sm-12 col-md-4 col-lg-3 d-flex align-items-center gap-2 form-label text-body-emphasis m-0">
+            <i-ph-circles-three-plus class="text-tertiary" style="font-size: 1.25em" />
+            {{ $t('asr.newForm.project') }} *
+          </label>
+          <div class="col">
+            <component
+              :is="ProjectDropdownSelector"
+              v-model="selectedProjects"
+              :projects="allProjects"
+            />
+          </div>
+        </div>
+      </component>
 
       <!-- Step 2: Documents to transcribe -->
-      <div class="transcription-new__step bg-tertiary-subtle p-3 rounded-4">
-        <div class="d-flex align-items-center gap-2 mb-3">
-          <span class="transcription-new__step__index badge rounded-pill bg-action text-white">2</span>
-          <h6 class="m-0">{{ $t('asr.newForm.documents') }}</h6>
-        </div>
-        <div class="ms-md-5">
-          <p class="text-muted small mb-2">
-            <i-ph-file-audio class="me-1" />
-            {{ $t('asr.newForm.documentsHint') }}
-          </p>
+      <component
+        :is="FormStep"
+        :title="$t('asr.newForm.documents')"
+        :index="2"
+        class="transcription-new__filters"
+        content-class="bg-transparent rounded-0 d-flex flex-column gap-3 px-0 m-0"
+      >
+        <div class="input-group">
+          <span class="input-group-text bg-transparent border-end-0">
+            <i-ph-magnifying-glass />
+          </span>
           <input
+            v-model="query"
             type="text"
-            class="form-control"
+            class="form-control border-start-0"
             :placeholder="$t('asr.newForm.documentsPlaceholder')"
-            disabled
           >
         </div>
-      </div>
+        <component
+          :is="FilterTypePath"
+          :filter="filterPath"
+          actions-position-title
+          hide-contextualize
+          class="p-3"
+          content-class="pb-0"
+        />
+        <component
+          :is="FilterType"
+          :filter="filterContentType"
+          actions-position-title
+          hide-contextualize
+          class="p-3"
+          content-class="pb-0"
+        />
+        <component
+          :is="FilterTypeDateRange"
+          :filter="filterCreationDate"
+          class="p-3"
+        />
+        <component
+          :is="FilterType"
+          :filter="filterLanguage"
+          actions-position-title
+          hide-contextualize
+          class="p-3"
+          content-class="pb-0"
+        />
+        <component
+          :is="FilterType"
+          :filter="filterExtractionLevel"
+          actions-position-title
+          hide-contextualize
+          class="p-3"
+          content-class="pb-0"
+        />
+        <component
+          :is="FilterTypeDateRange"
+          :filter="filterIndexingDate"
+          class="p-3"
+        />
+        <component
+          :is="FilterTypeStarred"
+          :filter="filterStarred"
+          class="p-3"
+          content-class="pb-0"
+        />
+        <component
+          :is="FilterType"
+          :filter="filterTags"
+          actions-position-title
+          hide-contextualize
+          class="p-3"
+          content-class="pb-0"
+        />
+        <component
+          :is="FilterTypeRecommendedBy"
+          :filter="filterRecommendedBy"
+          class="p-3"
+          content-class="pb-0"
+        />
+      </component>
 
       <!-- Step 3: Languages -->
-      <div class="transcription-new__step bg-tertiary-subtle p-3 rounded-4">
-        <div class="d-flex align-items-center gap-2 mb-3">
-          <span class="transcription-new__step__index badge rounded-pill bg-action text-white">3</span>
-          <h6 class="m-0">{{ $t('asr.newForm.languages') }}</h6>
-        </div>
-        <div class="ms-md-5">
-          <language-selector />
-          <p class="text-muted small mt-2 mb-0">
-            {{ $t('asr.newForm.languagesHint') }}
-          </p>
-        </div>
-      </div>
+      <component :is="FormStep" :title="$t('asr.newForm.languages')" :index="3">
+        <language-selector />
+        <p class="text-muted small mt-2 mb-0">
+          {{ $t('asr.newForm.languagesHint') }}
+        </p>
+      </component>
 
       <!-- Step 3: Model -->
-      <div class="transcription-new__step bg-tertiary-subtle p-3 rounded-4">
-        <div class="d-flex align-items-center gap-2 mb-3">
-          <span class="transcription-new__step__index badge rounded-pill bg-action text-white">3</span>
-          <h6 class="m-0">{{ $t('asr.newForm.model') }}</h6>
-        </div>
-        <div class="ms-md-5 d-flex flex-column gap-2">
-          <div class="row align-items-center">
-            <label class="col-auto d-flex align-items-center gap-1 form-label m-0">
-              <i-ph-brain />
-              {{ $t('asr.newForm.selectModel') }} *
-            </label>
-            <div class="col d-flex flex-column gap-1">
-              <div class="form-check">
-                <input
-                  id="model-parakeet"
-                  v-model="selectedModel"
-                  class="form-check-input"
-                  type="radio"
-                  value="parakeet"
-                >
-                <label class="form-check-label" for="model-parakeet">Parakeet</label>
-              </div>
-              <div class="form-check">
-                <input
-                  id="model-faster-whisper"
-                  v-model="selectedModel"
-                  class="form-check-input"
-                  type="radio"
-                  value="faster-whisper"
-                >
-                <label class="form-check-label" for="model-faster-whisper">Faster-Whisper</label>
-              </div>
+      <component :is="FormStep" :title="$t('asr.newForm.model')" :index="3">
+        <div class="row align-items-center mb-3">
+          <label class="col-sm-12 col-md-4 col-lg-3 d-flex align-items-center gap-2 form-label text-body-emphasis m-0">
+            <i-ph-brain class="text-tertiary" style="font-size: 1.25em" />
+            {{ $t('asr.newForm.selectModel') }} *
+          </label>
+          <div class="col d-flex flex-column gap-1">
+            <div class="form-check">
+              <input
+                id="model-parakeet"
+                v-model="selectedModel"
+                class="form-check-input"
+                type="radio"
+                value="parakeet"
+              >
+              <label class="form-check-label" for="model-parakeet">Parakeet</label>
             </div>
-          </div>
-          <p class="text-muted small mb-0">
-            {{ $t('asr.newForm.parakeetInfo') }}
-          </p>
-          <p class="text-muted small mb-0">
-            {{ $t('asr.newForm.fasterWhisperInfo') }}
-          </p>
-          <p class="text-muted small mb-0">
-            {{ $t('asr.info') }}
-          </p>
-        </div>
-      </div>
-
-      <!-- Step 4: Options (NOT IN V1) -->
-      <div class="transcription-new__step bg-tertiary-subtle p-3 rounded-4">
-        <div class="d-flex align-items-center gap-2 mb-3">
-          <span class="transcription-new__step__index badge rounded-pill bg-action text-white">4</span>
-          <h6 class="m-0">
-            {{ $t('asr.newForm.options') }}
-            <span class="badge bg-warning text-dark ms-1">NOT IN V1</span>
-          </h6>
-        </div>
-        <div class="ms-md-5">
-          <div class="row align-items-center">
-            <label class="col-auto d-flex align-items-center gap-1 form-label m-0">
-              <i-ph-gear />
-              {{ $t('asr.newForm.skipAlreadyTranscribed') }}
-            </label>
-            <div class="col d-flex gap-3">
-              <div class="form-check">
-                <input
-                  id="skip-yes"
-                  v-model="skipAlreadyTranscribed"
-                  class="form-check-input"
-                  type="radio"
-                  :value="true"
-                >
-                <label class="form-check-label" for="skip-yes">{{ $t('asr.newForm.yes') }}</label>
-              </div>
-              <div class="form-check">
-                <input
-                  id="skip-no"
-                  v-model="skipAlreadyTranscribed"
-                  class="form-check-input"
-                  type="radio"
-                  :value="false"
-                >
-                <label class="form-check-label" for="skip-no">{{ $t('asr.newForm.no') }}</label>
-              </div>
+            <div class="form-check">
+              <input
+                id="model-faster-whisper"
+                v-model="selectedModel"
+                class="form-check-input"
+                type="radio"
+                value="faster-whisper"
+              >
+              <label class="form-check-label" for="model-faster-whisper">Faster-Whisper</label>
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Form footer -->
-      <div class="d-flex justify-content-end gap-3 mb-4">
-        <button type="reset" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
-          <i-ph-arrow-counter-clockwise />
-          {{ $t('asr.newForm.reset') }}
-        </button>
-        <button
-          type="submit"
-          class="btn btn-primary d-inline-flex align-items-center gap-2"
-          :disabled="!isValid || submitting"
-        >
-          {{ $t('asr.newForm.transcribe') }}
-          <i-ph-file-audio />
-        </button>
-      </div>
-    </form>
+        <p class="text-muted small mb-1">{{ $t('asr.newForm.parakeetInfo') }}</p>
+        <p class="text-muted small mb-1">{{ $t('asr.newForm.fasterWhisperInfo') }}</p>
+        <p class="text-muted small mb-0">{{ $t('asr.info') }}</p>
+      </component>
+    </component>
   </component>
 </template>
 
 <style scoped>
-.transcription-new__step {
-  box-shadow: 0 0 0 1px var(--bs-action, var(--bs-primary)) inset;
-}
-
-.transcription-new__step__index {
-  width: 1.75rem;
-  height: 1.75rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.85rem;
-  background-color: var(--bs-action, var(--bs-primary)) !important;
-}
-
-@media (prefers-color-scheme: dark) {
-  .transcription-new__step {
-    box-shadow: 0 0 0 1px var(--bs-white) inset;
-  }
+.transcription-new__filters :deep(.filters-panel-section-filter) {
+  background: var(--bs-body-bg);
+  margin: 0;
 }
 </style>

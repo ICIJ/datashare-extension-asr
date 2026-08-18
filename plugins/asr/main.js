@@ -106,10 +106,6 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
         selectModel: 'Select a model',
         parakeetInfo: "Parakeet is Nvidia's Parakeet-tdt-0.6b-v3.",
         fasterWhisperInfo: "Faster-Whisper is Systran's model.",
-        options: 'Options',
-        skipAlreadyTranscribed: 'Skip already transcribed documents',
-        yes: 'Yes',
-        no: 'No',
         reset: 'Reset',
         transcribe: 'Transcribe'
       }
