@@ -1,5 +1,6 @@
 <script setup>
 import IPhFileAudio from '~icons/ph/file-audio'
+import IPhPlus from '~icons/ph/plus'
 
 const props = defineProps({
   title: { type: String, default: '' },
@@ -22,6 +23,14 @@ const isTaskSection = () => props.to?.name === 'task.task-board'
     >
       <i-ph-file-audio class="me-2" style="font-size: 1.25em" />
       {{ $t('asr.transcriptions') }}
+    </router-link>
+    <router-link
+      :to="{ name: 'task.transcriptions.new' }"
+      class="transcriptions-sidebar-entry__action ms-2 d-flex"
+      :title="$t('asr.newTranscription')"
+    >
+      <i-ph-plus style="font-size: 1.25em" />
+      <span class="visually-hidden">{{ $t('asr.newTranscription') }}</span>
     </router-link>
   </div>
 </template>
@@ -47,13 +56,15 @@ const isTaskSection = () => props.to?.name === 'task.task-board'
   font-weight: 500;
 }
 
-.transcriptions-sidebar-entry__link {
+.transcriptions-sidebar-entry__link,
+.transcriptions-sidebar-entry__action {
   cursor: pointer;
   color: inherit;
   text-decoration: none;
 }
 
-.transcriptions-sidebar-entry__link:hover {
+.transcriptions-sidebar-entry__link:hover,
+.transcriptions-sidebar-entry__action:hover {
   color: inherit;
 }
 </style>

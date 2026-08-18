@@ -8,6 +8,7 @@ import TranscribeViewerPanel from './components/TranscribeViewerPanel.vue'
 import TranscriptionDownloadButtons from './components/TranscriptionDownloadButtons.vue'
 import TranscriptionsBoardEntry from './components/TranscriptionsBoardEntry.vue'
 import TranscriptionDetail from './components/TranscriptionDetail.vue'
+import TranscriptionNew from './components/TranscriptionNew.vue'
 
 document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
   core.i18n.global.mergeLocaleMessage('en', {
@@ -88,7 +89,30 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       detailDate: 'Date',
       detailUser: 'User',
       detailProjects: 'Projects',
-      taskNotFound: 'Task not found.'
+      taskNotFound: 'Task not found.',
+      newTranscription: 'New transcription',
+      newForm: {
+        title: 'Create a new transcription',
+        nameAndProject: 'Name and project',
+        name: 'Name',
+        namePlaceholder: 'Give a name to your transcription',
+        project: 'Project',
+        documents: 'Documents to transcribe',
+        documentsHint: "Click \"Copy search\" button from Search > \"Your search\" and paste here",
+        documentsPlaceholder: 'Type queries, use operators or type regex...',
+        languages: 'Languages',
+        languagesHint: 'All the documents must be in the same language(s). If you have documents with mixed languages, refine your document selection at step 2.',
+        model: 'Model',
+        selectModel: 'Select a model',
+        parakeetInfo: "Parakeet is Nvidia's Parakeet-tdt-0.6b-v3.",
+        fasterWhisperInfo: "Faster-Whisper is Systran's model.",
+        options: 'Options',
+        skipAlreadyTranscribed: 'Skip already transcribed documents',
+        yes: 'Yes',
+        no: 'No',
+        reset: 'Reset',
+        transcribe: 'Transcribe'
+      }
     }
   })
 
@@ -151,6 +175,17 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
         },
         meta: {
           title: 'asr.transcriptions',
+          icon: markRaw(IPhFileAudio)
+        }
+      })
+      core.router.addRoute('task', {
+        name: 'task.transcriptions.new',
+        path: 'transcriptions/new',
+        components: {
+          default: TranscriptionNew
+        },
+        meta: {
+          title: 'asr.newForm.title',
           icon: markRaw(IPhFileAudio)
         }
       })
