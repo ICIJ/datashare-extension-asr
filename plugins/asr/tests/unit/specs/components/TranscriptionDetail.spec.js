@@ -238,7 +238,7 @@ describe('TranscriptionDetail.vue', () => {
       args: {
         ...baseTask.args,
         name: null,
-        docs: { '@type': 'java.util.LinkedHashMap', match_all: {} }
+        docs: { '@type': 'java.util.LinkedHashMap', 'match_all': {} }
       }
     }
 
@@ -262,7 +262,7 @@ describe('TranscriptionDetail.vue', () => {
         args: {
           ...baseTask.args,
           name: null,
-          docs: { '@type': 'java.util.LinkedHashMap', query_string: { query: 'doudou' } }
+          docs: { '@type': 'java.util.LinkedHashMap', 'query_string': { query: 'doudou' } }
         }
       }
       const { wrapper } = createWrapper(task)
@@ -276,7 +276,7 @@ describe('TranscriptionDetail.vue', () => {
         args: {
           ...baseTask.args,
           name: null,
-          docs: { '@type': 'java.util.LinkedHashMap', bool: { must: [], filter: [] } }
+          docs: { '@type': 'java.util.LinkedHashMap', 'bool': { must: [], filter: [] } }
         }
       }
       const { wrapper } = createWrapper(task)
@@ -285,7 +285,7 @@ describe('TranscriptionDetail.vue', () => {
     })
 
     it('sends original docs in transcribe again', async () => {
-      const docs = { '@type': 'java.util.LinkedHashMap', match_all: {} }
+      const docs = { '@type': 'java.util.LinkedHashMap', 'match_all': {} }
       const task = { ...queryTask, args: { ...queryTask.args, docs } }
       sendActionMock.mockResolvedValueOnce(task)
       sendActionMock.mockResolvedValueOnce({ taskId: 'asr.transcription-new-uuid' })

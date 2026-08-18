@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, getCurrentInstance, defineAsyncComponent, onMounted } from 'vue'
+import { computed, getCurrentInstance, defineAsyncComponent, onMounted } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
 import IPhInfo from '~icons/ph/info'
 import IPhWarning from '~icons/ph/warning'
@@ -53,7 +53,8 @@ async function handleBatchTranscribe() {
       const name = `[batch] ${docIds.length} documents`
       await asrStore.transcribeBatch(project, docIds, { name })
       successCount += docIds.length
-    } catch {
+    }
+    catch {
       errorCount += docIds.length
     }
   }
@@ -101,7 +102,10 @@ async function handleBatchTranscribe() {
         {{ $t('asr.info') }}
       </p>
 
-      <div v-if="ineligibleCount > 0" class="alert alert-warning mb-0 py-2">
+      <div
+        v-if="ineligibleCount > 0"
+        class="alert alert-warning mb-0 py-2"
+      >
         {{ $t('asr.batchNotEligible', { count: ineligibleCount }, ineligibleCount) }}
       </div>
 

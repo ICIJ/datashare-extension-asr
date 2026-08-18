@@ -31,7 +31,7 @@ onMounted(async () => {
   if (container) {
     container.scrollTop = 0
     container.style.overflow = 'visible'
-    Array.from(container.children).forEach(child => {
+    Array.from(container.children).forEach((child) => {
       if (!child.classList.contains('transcribe-panel')) {
         child.style.display = 'none'
         hiddenElements.push(child)
@@ -47,10 +47,11 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  hiddenElements.forEach(el => {
+  hiddenElements.forEach((el) => {
     if (el._restoreOverflow) {
       el.style.overflow = ''
-    } else {
+    }
+    else {
       el.style.display = ''
     }
   })
@@ -66,7 +67,8 @@ async function handleTranscribe() {
     const linkLabel = t?.('asr.viewTranscriptions') ?? 'View transcriptions'
     toast?.success(t?.('asr.transcriptionLaunched', { name }) ?? `Transcription launched for ${name}`, { href, linkLabel })
     emit('close')
-  } catch {
+  }
+  catch {
     const { href } = core.router.resolve({ name: 'task.transcriptions' })
     const linkLabel = t?.('asr.viewTranscriptions') ?? 'View transcriptions'
     toast?.error(t?.('asr.transcriptionError', { name }) ?? `There was an error while launching transcription for ${name}`, { href, linkLabel })

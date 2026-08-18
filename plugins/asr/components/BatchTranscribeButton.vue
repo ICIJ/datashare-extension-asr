@@ -29,7 +29,10 @@ function handleClick() {
     :disabled="noSelection"
     @click="handleClick"
   >
-    <span class="app-icon button-icon__icon-left" style="font-size: 1.25em; display: inline-flex">
+    <span
+      class="app-icon button-icon__icon-left"
+      style="font-size: 1.25em; display: inline-flex"
+    >
       <i-ph-file-audio />
     </span>
     <span class="button-icon__label ms-2">{{ $t('asr.transcribe') }}</span>

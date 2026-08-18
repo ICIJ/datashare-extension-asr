@@ -76,17 +76,26 @@ async function submit() {
     const project = selectedProjects.value.map(p => p.name).join(',')
     await asrStore.transcribeBatch(project, [], { name: name.value })
     core.router.push({ name: 'task.transcriptions' })
-  } catch {
+  }
+  catch {
     // error handling will be added later
-  } finally {
+  }
+  finally {
     submitting.value = false
   }
 }
 </script>
 
 <template>
-  <component :is="PageHeader" no-toggle-settings :breadcrumb-routes="breadcrumbRoutes" />
-  <component :is="PageContainer" fluid>
+  <component
+    :is="PageHeader"
+    no-toggle-settings
+    :breadcrumb-routes="breadcrumbRoutes"
+  />
+  <component
+    :is="PageContainer"
+    fluid
+  >
     <component
       :is="FormCreation"
       class="transcription-new d-flex flex-column gap-4"
@@ -99,10 +108,17 @@ async function submit() {
       @submit="submit"
     >
       <!-- Step 1: Name and project -->
-      <component :is="FormStep" :title="$t('asr.newForm.nameAndProject')" :index="1">
+      <component
+        :is="FormStep"
+        :title="$t('asr.newForm.nameAndProject')"
+        :index="1"
+      >
         <div class="row align-items-center mb-3">
           <label class="col-sm-12 col-md-4 col-lg-3 d-flex align-items-center gap-2 form-label text-body-emphasis m-0">
-            <i-ph-text-aa class="text-tertiary" style="font-size: 1.25em" />
+            <i-ph-text-aa
+              class="text-tertiary"
+              style="font-size: 1.25em"
+            />
             {{ $t('asr.newForm.name') }} *
           </label>
           <div class="col">
@@ -116,7 +132,10 @@ async function submit() {
         </div>
         <div class="row align-items-center">
           <label class="col-sm-12 col-md-4 col-lg-3 d-flex align-items-center gap-2 form-label text-body-emphasis m-0">
-            <i-ph-circles-three-plus class="text-tertiary" style="font-size: 1.25em" />
+            <i-ph-circles-three-plus
+              class="text-tertiary"
+              style="font-size: 1.25em"
+            />
             {{ $t('asr.newForm.project') }} *
           </label>
           <div class="col">
@@ -213,7 +232,11 @@ async function submit() {
       </component>
 
       <!-- Step 3: Languages -->
-      <component :is="FormStep" :title="$t('asr.newForm.languages')" :index="3">
+      <component
+        :is="FormStep"
+        :title="$t('asr.newForm.languages')"
+        :index="3"
+      >
         <language-selector />
         <p class="text-muted small mt-2 mb-0">
           {{ $t('asr.newForm.languagesHint') }}
@@ -221,10 +244,17 @@ async function submit() {
       </component>
 
       <!-- Step 3: Model -->
-      <component :is="FormStep" :title="$t('asr.newForm.model')" :index="3">
+      <component
+        :is="FormStep"
+        :title="$t('asr.newForm.model')"
+        :index="3"
+      >
         <div class="row align-items-center mb-3">
           <label class="col-sm-12 col-md-4 col-lg-3 d-flex align-items-center gap-2 form-label text-body-emphasis m-0">
-            <i-ph-brain class="text-tertiary" style="font-size: 1.25em" />
+            <i-ph-brain
+              class="text-tertiary"
+              style="font-size: 1.25em"
+            />
             {{ $t('asr.newForm.selectModel') }} *
           </label>
           <div class="col d-flex flex-column gap-1">
@@ -236,7 +266,10 @@ async function submit() {
                 type="radio"
                 value="parakeet"
               >
-              <label class="form-check-label" for="model-parakeet">Parakeet</label>
+              <label
+                class="form-check-label"
+                for="model-parakeet"
+              >Parakeet</label>
             </div>
             <div class="form-check">
               <input
@@ -246,13 +279,22 @@ async function submit() {
                 type="radio"
                 value="faster-whisper"
               >
-              <label class="form-check-label" for="model-faster-whisper">Faster-Whisper</label>
+              <label
+                class="form-check-label"
+                for="model-faster-whisper"
+              >Faster-Whisper</label>
             </div>
           </div>
         </div>
-        <p class="text-muted small mb-1">{{ $t('asr.newForm.parakeetInfo') }}</p>
-        <p class="text-muted small mb-1">{{ $t('asr.newForm.fasterWhisperInfo') }}</p>
-        <p class="text-muted small mb-0">{{ $t('asr.info') }}</p>
+        <p class="text-muted small mb-1">
+          {{ $t('asr.newForm.parakeetInfo') }}
+        </p>
+        <p class="text-muted small mb-1">
+          {{ $t('asr.newForm.fasterWhisperInfo') }}
+        </p>
+        <p class="text-muted small mb-0">
+          {{ $t('asr.info') }}
+        </p>
       </component>
     </component>
   </component>

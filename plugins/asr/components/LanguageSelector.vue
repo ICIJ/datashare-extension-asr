@@ -12,7 +12,8 @@ const languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
 function languageName(code) {
   try {
     return languageNames.of(code) || code
-  } catch {
+  }
+  catch {
     return code
   }
 }
@@ -21,7 +22,7 @@ function languageName(code) {
 // by matching the display name against the available ASR languages
 function esLanguageToCode(esLang, asrLanguages) {
   const target = esLang.toLowerCase()
-  return asrLanguages.find(code => {
+  return asrLanguages.find((code) => {
     return languageName(code).toLowerCase() === target
   }) || null
 }
@@ -55,7 +56,8 @@ onMounted(async () => {
     projectLanguages.value = buckets
       .map(b => esLanguageToCode(b.key, asrStore.languages))
       .filter(Boolean)
-  } catch {
+  }
+  catch {
     projectLanguages.value = []
   }
 })
@@ -96,7 +98,8 @@ function toggle(code) {
   const idx = asrStore.selectedLanguages.indexOf(code)
   if (idx >= 0) {
     asrStore.selectedLanguages.splice(idx, 1)
-  } else {
+  }
+  else {
     asrStore.selectedLanguages.push(code)
   }
 }
@@ -125,7 +128,10 @@ function isSelected(code) {
         <template #button-content>
           {{ displayValue }}
         </template>
-        <div class="language-selector__search mb-2" @click.stop>
+        <div
+          class="language-selector__search mb-2"
+          @click.stop
+        >
           <component
             :is="FormControlSearch"
             v-model="search"
@@ -152,7 +158,10 @@ function isSelected(code) {
             </span>
             <span class="language-selector__item__code">{{ code.toUpperCase() }}</span>
           </label>
-          <hr v-if="filteredProjectLanguages.length > 0 && filteredOtherLanguages.length > 0" class="my-1">
+          <hr
+            v-if="filteredProjectLanguages.length > 0 && filteredOtherLanguages.length > 0"
+            class="my-1"
+          >
           <label
             v-for="code in filteredOtherLanguages"
             :key="code"
@@ -213,5 +222,3 @@ function isSelected(code) {
   font-weight: bold;
 }
 </style>
-
-

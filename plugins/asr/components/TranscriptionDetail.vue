@@ -50,7 +50,10 @@ const showDeleteModal = ref(false)
 const showTranscribeModal = ref(false)
 const DocumentModalComponent = ref(null)
 
-core.findComponent('Document/DocumentModal').then(c => { DocumentModalComponent.value = c })
+core.findComponent('Document/DocumentModal').then((c) => {
+  DocumentModalComponent.value = c
+  return c
+}).catch(() => {})
 
 const taskTitle = computed(() => {
   if (!task.value) return ''
@@ -181,9 +184,13 @@ const taskLanguages = computed(() => {
   if (!Array.isArray(langs)) return '—'
   langs = langs.flat().filter(v => typeof v === 'string' && !v.includes('.'))
   if (langs.length === 0) return '—'
-  return langs.map(code => {
-    try { return new Intl.DisplayNames(['en'], { type: 'language' }).of(code) }
-    catch { return code }
+  return langs.map((code) => {
+    try {
+      return new Intl.DisplayNames(['en'], { type: 'language' }).of(code)
+    }
+    catch {
+      return code
+    }
   }).join(', ')
 })
 
@@ -212,7 +219,8 @@ async function fetchTask() {
   let fetchedTask = null
   try {
     fetchedTask = await api.sendAction(`/api/task/${encodeURIComponent(fullTaskId.value)}`)
-  } catch {
+  }
+  catch {
     fetchedTask = null
   }
   if (fetchedTask) {
@@ -236,7 +244,8 @@ async function resolveDocDetails(taskData) {
     for (const hit of hits) {
       docDetails.value[hit._id] = hit
     }
-  } catch {
+  }
+  catch {
     // documents not found
   }
 }
@@ -293,7 +302,8 @@ async function confirmTranscribeAgain() {
       const newTaskId = response.taskId.replace('asr.transcription-', '')
       core.router.push({ name: 'task.transcriptions.detail', params: { taskId: newTaskId } })
     }
-  } catch {
+  }
+  catch {
     const { href } = core.router.resolve({ name: 'task.transcriptions' })
     const linkLabel = core.i18n.global.t('asr.viewTranscriptions')
     toast?.error(core.i18n.global.t('asr.transcriptionError', { name }), { href, linkLabel })
@@ -309,7 +319,8 @@ async function confirmDelete() {
   try {
     await api.sendAction(`/api/task/clean/${encodeURIComponent(fullTaskId.value)}`, { method: 'DELETE' })
     core.router.push({ name: 'task.transcriptions' })
-  } catch {
+  }
+  catch {
     // task may already be cleaned
   }
 }
@@ -344,18 +355,27 @@ onMounted(fetchTask)
 
 <template>
   <div class="transcription-detail">
-    <component :is="PageHeader" no-toggle-settings>
+    <component
+      :is="PageHeader"
+      no-toggle-settings
+    >
       <template #title>
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb m-0">
             <li class="breadcrumb-item">
               <router-link :to="{ name: 'task.transcriptions' }">
-                <component :is="IPhFileAudio" class="me-1" />
+                <component
+                  :is="IPhFileAudio"
+                  class="me-1"
+                />
                 {{ $t('asr.transcriptions') }}
               </router-link>
             </li>
             <li class="breadcrumb-item active">
-              <span v-if="loading" class="spinner-border spinner-border-sm" />
+              <span
+                v-if="loading"
+                class="spinner-border spinner-border-sm"
+              />
               <span v-else>{{ taskTitle }}</span>
             </li>
           </ol>
@@ -363,36 +383,71 @@ onMounted(fetchTask)
       </template>
     </component>
 
-    <component :is="PageContainer" fluid class="pb-3">
-      <div v-if="loading" class="text-center text-muted py-5">
+    <component
+      :is="PageContainer"
+      fluid
+      class="pb-3"
+    >
+      <div
+        v-if="loading"
+        class="text-center text-muted py-5"
+      >
         <span class="spinner-border spinner-border-sm me-2" />
         {{ $t('asr.loading') }}
       </div>
 
-      <div v-else-if="!task" class="text-center text-muted py-5">
+      <div
+        v-else-if="!task"
+        class="text-center text-muted py-5"
+      >
         {{ $t('asr.taskNotFound') }}
       </div>
 
       <b-row v-else>
-        <b-col lg="8" cols="12">
-          <div v-if="isQueryBased" class="d-flex flex-column align-items-center justify-content-center py-5 text-muted">
-            <component :is="IPhMagnifyingGlass" style="font-size: 3em" class="mb-3" />
-            <p class="mb-3">{{ $t('asr.detailQueryBased') }}</p>
-            <router-link :to="toSeeDocuments" class="btn btn-outline-primary d-inline-flex align-items-center gap-2">
+        <b-col
+          lg="8"
+          cols="12"
+        >
+          <div
+            v-if="isQueryBased"
+            class="d-flex flex-column align-items-center justify-content-center py-5 text-muted"
+          >
+            <component
+              :is="IPhMagnifyingGlass"
+              style="font-size: 3em"
+              class="mb-3"
+            />
+            <p class="mb-3">
+              {{ $t('asr.detailQueryBased') }}
+            </p>
+            <router-link
+              :to="toSeeDocuments"
+              class="btn btn-outline-primary d-inline-flex align-items-center gap-2"
+            >
               <component :is="IPhMagnifyingGlass" />
               {{ $t('asr.detailSeeQuery') }}
             </router-link>
           </div>
-          <div v-else class="table-responsive">
+          <div
+            v-else
+            class="table-responsive"
+          >
             <table class="table table-borderless table-striped table-hover page-table align-middle">
               <thead>
                 <tr>
                   <th class="page-table-th text-nowrap">
                     <span class="page-table-th__content">{{ $t('asr.colState') }}</span>
                   </th>
-                  <th class="page-table-th text-nowrap" style="min-width: 250px">
+                  <th
+                    class="page-table-th text-nowrap"
+                    style="min-width: 250px"
+                  >
                     <span class="page-table-th__content">
-                      <component :is="IPhFileAudio" class="me-1" style="font-size: 1.25em" />
+                      <component
+                        :is="IPhFileAudio"
+                        class="me-1"
+                        style="font-size: 1.25em"
+                      />
                       {{ $t('asr.detailColDocName') }}
                     </span>
                   </th>
@@ -406,18 +461,32 @@ onMounted(fetchTask)
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="docId in docs" :key="docId" class="page-table-tr">
+                <tr
+                  v-for="docId in docs"
+                  :key="docId"
+                  class="page-table-tr"
+                >
                   <td>
-                    <component :is="DisplayStatus" :value="docState(docId)" />
+                    <component
+                      :is="DisplayStatus"
+                      :value="docState(docId)"
+                    />
                   </td>
                   <td class="fw-medium">
-                    <a href="#" class="text-action" @click.prevent="openDocument(docId)">
+                    <a
+                      href="#"
+                      class="text-action"
+                      @click.prevent="openDocument(docId)"
+                    >
                       {{ docDisplayName(docId) }}
                     </a>
                   </td>
                   <td>{{ docCategory(docId) }}</td>
                   <td>
-                    <component :is="DisplayProjectList" :values="docProject(docId)" />
+                    <component
+                      :is="DisplayProjectList"
+                      :values="docProject(docId)"
+                    />
                   </td>
                   <td />
                 </tr>
@@ -426,7 +495,10 @@ onMounted(fetchTask)
           </div>
         </b-col>
 
-        <b-col lg="4" cols="12">
+        <b-col
+          lg="4"
+          cols="12"
+        >
           <component
             :is="CardPanel"
             border
@@ -459,15 +531,29 @@ onMounted(fetchTask)
                 <li>
                   <div class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2">
                     <span class="d-inline-flex gap-2 align-items-center">
-                      <component :is="DisplayStatus" class="border-0" :value="taskState" no-tooltip />
-                      <component :is="DisplayStatusLabel" :value="taskState" />
+                      <component
+                        :is="DisplayStatus"
+                        class="border-0"
+                        :value="taskState"
+                        no-tooltip
+                      />
+                      <component
+                        :is="DisplayStatusLabel"
+                        :value="taskState"
+                      />
                     </span>
                   </div>
                 </li>
                 <li v-if="!isQueryBased">
-                  <div class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2" :title="$t('asr.detailNbDocuments')">
+                  <div
+                    class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2"
+                    :title="$t('asr.detailNbDocuments')"
+                  >
                     <div class="d-flex flex-nowrap align-items-start gap-2">
-                      <component :is="IPhFiles" class="transcription-detail__card__entry__icon text-secondary-emphasis flex-shrink-0" />
+                      <component
+                        :is="IPhFiles"
+                        class="transcription-detail__card__entry__icon text-secondary-emphasis flex-shrink-0"
+                      />
                       {{ nbDocumentsLabel }}
                     </div>
                   </div>
@@ -486,42 +572,80 @@ onMounted(fetchTask)
               <hr class="my-1">
               <ul class="transcription-detail__card__details__list list-unstyled">
                 <li class="my-0">
-                  <div class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2" :title="$t('asr.detailModel')">
+                  <div
+                    class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2"
+                    :title="$t('asr.detailModel')"
+                  >
                     <div class="d-flex flex-nowrap align-items-start gap-2">
-                      <component :is="IPhBrain" class="transcription-detail__card__entry__icon text-secondary-emphasis flex-shrink-0" />
+                      <component
+                        :is="IPhBrain"
+                        class="transcription-detail__card__entry__icon text-secondary-emphasis flex-shrink-0"
+                      />
                       {{ taskModel }}
                     </div>
                   </div>
                 </li>
                 <li class="mt-2">
-                  <div class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2" :title="$t('asr.detailLanguage')">
+                  <div
+                    class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2"
+                    :title="$t('asr.detailLanguage')"
+                  >
                     <div class="d-flex flex-nowrap align-items-start gap-2">
-                      <component :is="IPhTranslate" class="transcription-detail__card__entry__icon text-secondary-emphasis flex-shrink-0" />
+                      <component
+                        :is="IPhTranslate"
+                        class="transcription-detail__card__entry__icon text-secondary-emphasis flex-shrink-0"
+                      />
                       {{ taskLanguages }}
                     </div>
                   </div>
                 </li>
                 <li>
-                  <div class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2" :title="$t('asr.detailDate')">
+                  <div
+                    class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2"
+                    :title="$t('asr.detailDate')"
+                  >
                     <div class="d-flex flex-nowrap align-items-start gap-2">
-                      <component :is="IPhCalendarBlank" class="transcription-detail__card__entry__icon text-secondary-emphasis flex-shrink-0" />
-                      <component :is="DisplayDatetime" v-if="taskDate" :value="taskDate" />
+                      <component
+                        :is="IPhCalendarBlank"
+                        class="transcription-detail__card__entry__icon text-secondary-emphasis flex-shrink-0"
+                      />
+                      <component
+                        :is="DisplayDatetime"
+                        v-if="taskDate"
+                        :value="taskDate"
+                      />
                       <span v-else>—</span>
                     </div>
                   </div>
                 </li>
                 <li>
-                  <div class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2" :title="$t('asr.detailUser')">
+                  <div
+                    class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2"
+                    :title="$t('asr.detailUser')"
+                  >
                     <div class="d-flex flex-nowrap align-items-start gap-2">
-                      <component :is="IPhUser" class="transcription-detail__card__entry__icon text-secondary-emphasis flex-shrink-0" />
-                      <component :is="DisplayUser" hide-avatar :value="taskUser" />
+                      <component
+                        :is="IPhUser"
+                        class="transcription-detail__card__entry__icon text-secondary-emphasis flex-shrink-0"
+                      />
+                      <component
+                        :is="DisplayUser"
+                        hide-avatar
+                        :value="taskUser"
+                      />
                     </div>
                   </div>
                 </li>
                 <li>
-                  <div class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2" :title="$t('asr.detailProjects')">
+                  <div
+                    class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2"
+                    :title="$t('asr.detailProjects')"
+                  >
                     <div class="d-flex flex-nowrap align-items-start gap-2">
-                      <span class="transcription-detail__card__entry__icon text-secondary-emphasis flex-shrink-0 d-inline-flex justify-content-center" style="padding: 0.75rem 0">
+                      <span
+                        class="transcription-detail__card__entry__icon text-secondary-emphasis flex-shrink-0 d-inline-flex justify-content-center"
+                        style="padding: 0.75rem 0"
+                      >
                         <i-ph-circles-three-plus />
                       </span>
                       <div class="d-flex flex-wrap gap-2">
@@ -579,14 +703,20 @@ onMounted(fetchTask)
 
       <div class="d-flex flex-column gap-4">
         <p class="text-muted mb-0">
-          <component :is="IPhInfo" class="me-1" />
+          <component
+            :is="IPhInfo"
+            class="me-1"
+          />
           {{ $t('asr.info') }}
         </p>
 
         <div>
           <language-selector />
           <p class="text-muted mb-0 small mt-2">
-            <component :is="IPhWarning" class="me-1" />
+            <component
+              :is="IPhWarning"
+              class="me-1"
+            />
             <strong>{{ $t('asr.batchLanguageWarningTitle') }}</strong>
             {{ $t('asr.batchLanguageWarningText') }}
           </p>
@@ -604,7 +734,6 @@ onMounted(fetchTask)
         </button>
       </template>
     </component>
-
   </div>
 </template>
 

@@ -84,12 +84,18 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div v-if="isAudioVideo && !isDuplicateInline" class="transcribe-button alert alert-warning d-flex align-items-center justify-content-between w-100 mb-0 px-3 py-2">
+  <div
+    v-if="isAudioVideo && !isDuplicateInline"
+    class="transcribe-button alert alert-warning d-flex align-items-center justify-content-between w-100 mb-0 px-3 py-2"
+  >
     <span v-if="asrStore.isTranscribing">
       <span class="spinner-border spinner-border-sm me-2" />
       {{ $t('asr.transcriptionInProgress') }}
     </span>
-    <span v-else class="d-flex align-items-center gap-2">
+    <span
+      v-else
+      class="d-flex align-items-center gap-2"
+    >
       <i-ph-file-audio style="font-size: 1.25em" />
       {{ $t('asr.noTextTranscribed') }}
     </span>
@@ -108,12 +114,18 @@ onUnmounted(() => {
       A cleaner alternative would be a dedicated hook in datashare-client
       (e.g. "document-entries-list:replace") that hides the list when a plugin registers on it.
     -->
-    <teleport v-if="!isInModal" to=".document-entries-list__start__list">
-      <transcribe-panel v-if="panelOpen" @close="closePanel" />
+    <teleport
+      v-if="!isInModal"
+      to=".document-entries-list__start__list"
+    >
+      <transcribe-panel
+        v-if="panelOpen"
+        @close="closePanel"
+      />
     </teleport>
     <component
-      v-else
       :is="AppModal"
+      v-else
       v-model="panelOpen"
       size="md"
       no-header-close
@@ -121,7 +133,10 @@ onUnmounted(() => {
       <template #header>
         <span />
       </template>
-      <transcribe-panel v-if="panelOpen" @close="closePanel" />
+      <transcribe-panel
+        v-if="panelOpen"
+        @close="closePanel"
+      />
       <template #footer>
         <span />
       </template>

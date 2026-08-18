@@ -24,7 +24,7 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       noTextTranscribedVisitor: 'No text transcribed. Ask an editor or an admin to run transcription.',
       transcriptionInProgress: 'Transcription in progress...',
       stopTranscription: 'Stop transcription',
-      info: "Datashare uses Nvidia's Parakeet-tdt-0.6b-v3 for Automatic Speech Recognition (ASR). All the processing is done within Datashare — no data is sent to third parties.",
+      info: 'Datashare uses Nvidia\'s Parakeet-tdt-0.6b-v3 for Automatic Speech Recognition (ASR). All the processing is done within Datashare — no data is sent to third parties.',
       selectLanguages: 'Select languages*',
       selectLanguagesHint: 'Select all the languages you can hear in the file.',
       search: 'Search',
@@ -98,14 +98,14 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
         namePlaceholder: 'Give a name to your transcription',
         project: 'Project',
         documents: 'Documents to transcribe',
-        documentsHint: "Click \"Copy search\" button from Search > \"Your search\" and paste here",
+        documentsHint: 'Click "Copy search" button from Search > "Your search" and paste here',
         documentsPlaceholder: 'Type queries, use operators or type regex...',
         languages: 'Languages',
         languagesHint: 'All the documents must be in the same language(s). If you have documents with mixed languages, refine your document selection at step 2.',
         model: 'Model',
         selectModel: 'Select a model',
-        parakeetInfo: "Parakeet is Nvidia's Parakeet-tdt-0.6b-v3.",
-        fasterWhisperInfo: "Faster-Whisper is Systran's model.",
+        parakeetInfo: 'Parakeet is Nvidia\'s Parakeet-tdt-0.6b-v3.',
+        fasterWhisperInfo: 'Faster-Whisper is Systran\'s model.',
         reset: 'Reset',
         transcribe: 'Transcribe'
       }
@@ -117,8 +117,8 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
     title: 'asr.transcription',
     listRoute: { name: 'task.transcriptions' },
     linkTitle: 'asr.transcription',
-    getProjects: (item) => [item.args?.project].filter(Boolean),
-    getTitle: (item) => item.args?.name ?? 'asr.transcription'
+    getProjects: item => [item.args?.project].filter(Boolean),
+    getTitle: item => item.args?.name ?? 'asr.transcription'
   })
 
   core.registerHook({

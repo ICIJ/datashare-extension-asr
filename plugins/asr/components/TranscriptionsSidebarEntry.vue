@@ -21,7 +21,10 @@ const isTaskSection = () => props.to?.name === 'task.task-board'
       :to="{ name: 'task.transcriptions' }"
       class="transcriptions-sidebar-entry__link text-truncate d-flex flex-grow-1"
     >
-      <i-ph-file-audio class="me-2" style="font-size: 1.25em" />
+      <i-ph-file-audio
+        class="me-2"
+        style="font-size: 1.25em"
+      />
       {{ $t('asr.transcriptions') }}
     </router-link>
     <router-link

@@ -52,7 +52,7 @@ function downloadTranscription() {
 }
 
 function downloadWithTimestamps() {
-  const text = asrStore.transcription.transcripts.map(t => {
+  const text = asrStore.transcription.transcripts.map((t) => {
     const ts = t.timestamp ? `[${formatTimeRange(t.timestamp)}] ` : ''
     return `${ts}${t.text}`
   }).join('\n')

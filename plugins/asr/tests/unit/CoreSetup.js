@@ -26,7 +26,7 @@ class CoreSetup {
     }
     this.i18n = {
       global: {
-        t: (key, params) => key,
+        t: (key, _params) => key,
         mergeLocaleMessage: vi.fn()
       }
     }
@@ -40,7 +40,7 @@ class CoreSetup {
 
   install(app) {
     app.config.globalProperties.$core = this
-    app.config.globalProperties.$t = (key) => key
+    app.config.globalProperties.$t = key => key
     app.config.globalProperties.$toast = this._toast
     app.component('RouterLink', RouterLinkStub)
   }

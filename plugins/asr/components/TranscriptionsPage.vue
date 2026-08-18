@@ -70,11 +70,13 @@ async function fetchTasks() {
       if (result.length < perPage.value && page.value === 1) {
         totalRows.value = result.length
       }
-    } else if (result?.items) {
+    }
+    else if (result?.items) {
       fetchedTasks = result.items
       totalRows.value = result.pagination?.total ?? result.items.length
     }
-  } catch {
+  }
+  catch {
     fetchedTasks = []
   }
   await resolveDocNames(fetchedTasks)
@@ -99,7 +101,8 @@ async function resolveDocNames(taskList) {
         if (doc?.language) {
           docLanguages.value[docId] = doc.language
         }
-      } catch {
+      }
+      catch {
         // document not found
       }
     }
@@ -110,7 +113,8 @@ async function deleteTask(taskId) {
   try {
     await api.sendAction(`/api/task/clean/${encodeURIComponent(taskId)}`, { method: 'DELETE' })
     await fetchTasks()
-  } catch {
+  }
+  catch {
     // task may already be cleaned
   }
 }
@@ -188,9 +192,13 @@ function taskLanguages(task) {
   if (Array.isArray(taskLangs)) {
     taskLangs = taskLangs.flat().filter(v => typeof v === 'string' && !v.includes('.'))
     if (taskLangs.length > 0) {
-      return taskLangs.map(code => {
-        try { return new Intl.DisplayNames(['en'], { type: 'language' }).of(code) }
-        catch { return code }
+      return taskLangs.map((code) => {
+        try {
+          return new Intl.DisplayNames(['en'], { type: 'language' }).of(code)
+        }
+        catch {
+          return code
+        }
       }).join(', ')
     }
   }
@@ -234,7 +242,7 @@ function toggleOrder() {
 const filteredTasks = computed(() => {
   if (!search.value) return tasks.value
   const q = search.value.toLowerCase()
-  return tasks.value.filter(task => {
+  return tasks.value.filter((task) => {
     const name = taskName(task).toLowerCase()
     const docs = getDocs(task).some(id => (docNames.value[id] || id).toLowerCase().includes(q))
     return name.includes(q) || docs
@@ -263,8 +271,14 @@ function taskErrorFull(task) {
 }
 
 watch(page, () => fetchTasks())
-watch(perPage, () => { page.value = 1; fetchTasks() })
-watch(order, () => { page.value = 1; fetchTasks() })
+watch(perPage, () => {
+  page.value = 1
+  fetchTasks()
+})
+watch(order, () => {
+  page.value = 1
+  fetchTasks()
+})
 
 onMounted(() => {
   fetchTasks()
@@ -304,7 +318,10 @@ onUnmounted(() => {
       </template>
     </component>
 
-    <component :is="PageContainer" fluid>
+    <component
+      :is="PageContainer"
+      fluid
+    >
       <component
         :is="DismissableAlert"
         variant="info"
@@ -315,124 +332,225 @@ onUnmounted(() => {
       </component>
 
       <div class="transcriptions-page__table table-responsive">
-      <table class="table table-borderless table-striped table-hover page-table align-middle">
-        <thead>
-          <tr>
-            <th v-if="isVisible('state')" class="page-table-th text-nowrap">
-              <span class="page-table-th__content">
-                <i-ph-clock-countdown class="me-1 my-2" style="font-size: 1.25em" />
-                <span>{{ $t('asr.colState') }}</span>
-              </span>
-            </th>
-            <th v-if="isVisible('name')" class="page-table-th text-nowrap" style="min-width: 250px">
-              <span class="page-table-th__content">
-                <i-ph-file-audio class="me-1 my-2" style="font-size: 1.25em" />
-                <span>{{ $t('asr.colName') }}</span>
-              </span>
-            </th>
-            <th v-if="isVisible('progress')" class="page-table-th text-nowrap" style="min-width: 150px">
-              <span class="page-table-th__content">
-                <i-ph-clock-countdown class="me-1 my-2" style="font-size: 1.25em" />
-                <span>{{ $t('asr.colProgress') }}</span>
-              </span>
-            </th>
-            <th v-if="isVisible('category')" class="page-table-th text-nowrap">
-              <span class="page-table-th__content">
-                <i-ph-play class="me-1 my-2" style="font-size: 1.25em" />
-                <span>{{ $t('asr.colCategory') }}</span>
-              </span>
-            </th>
-            <th v-if="isVisible('languages')" class="page-table-th text-nowrap">
-              <span class="page-table-th__content">
-                <i-ph-translate class="me-1 my-2" style="font-size: 1.25em" />
-                <span>{{ $t('asr.colLanguages') }}</span>
-              </span>
-            </th>
-            <th v-if="isVisible('model')" class="page-table-th text-nowrap">
-              <span class="page-table-th__content">
-                <i-ph-brain class="me-1 my-2" style="font-size: 1.25em" />
-                <span>{{ $t('asr.colModel') }}</span>
-              </span>
-            </th>
-            <th v-if="isVisible('project')" class="page-table-th text-nowrap">
-              <span class="page-table-th__content">
-                <i-ph-circles-three-plus class="me-1 my-2" style="font-size: 1.25em" />
-                <span>{{ $t('asr.colProject') }}</span>
-              </span>
-            </th>
-            <th v-if="isVisible('user')" class="page-table-th text-nowrap">
-              <span class="page-table-th__content">
-                <i-ph-user-circle class="me-1 my-2" style="font-size: 1.25em" />
-                <span>{{ $t('asr.colUser') }}</span>
-              </span>
-            </th>
-            <th v-if="isVisible('launchedOn')" class="page-table-th page-table-th--sortable page-table-th--sorted text-nowrap">
-              <span class="page-table-th__content">
-                <i-ph-calendar-blank class="me-1 my-2" style="font-size: 1.25em" />
-                <span>{{ $t('asr.colLaunchedOn') }}</span>
-                <button-icon
-                  :icon-left="sortIcon"
-                  class="page-table-th-sort page-table-th-sort--sorted ms-1"
-                  variant="outline-tertiary"
-                  icon-left-size="1em"
-                  hide-label
-                  @click="toggleOrder"
+        <table class="table table-borderless table-striped table-hover page-table align-middle">
+          <thead>
+            <tr>
+              <th
+                v-if="isVisible('state')"
+                class="page-table-th text-nowrap"
+              >
+                <span class="page-table-th__content">
+                  <i-ph-clock-countdown
+                    class="me-1 my-2"
+                    style="font-size: 1.25em"
+                  />
+                  <span>{{ $t('asr.colState') }}</span>
+                </span>
+              </th>
+              <th
+                v-if="isVisible('name')"
+                class="page-table-th text-nowrap"
+                style="min-width: 250px"
+              >
+                <span class="page-table-th__content">
+                  <i-ph-file-audio
+                    class="me-1 my-2"
+                    style="font-size: 1.25em"
+                  />
+                  <span>{{ $t('asr.colName') }}</span>
+                </span>
+              </th>
+              <th
+                v-if="isVisible('progress')"
+                class="page-table-th text-nowrap"
+                style="min-width: 150px"
+              >
+                <span class="page-table-th__content">
+                  <i-ph-clock-countdown
+                    class="me-1 my-2"
+                    style="font-size: 1.25em"
+                  />
+                  <span>{{ $t('asr.colProgress') }}</span>
+                </span>
+              </th>
+              <th
+                v-if="isVisible('category')"
+                class="page-table-th text-nowrap"
+              >
+                <span class="page-table-th__content">
+                  <i-ph-play
+                    class="me-1 my-2"
+                    style="font-size: 1.25em"
+                  />
+                  <span>{{ $t('asr.colCategory') }}</span>
+                </span>
+              </th>
+              <th
+                v-if="isVisible('languages')"
+                class="page-table-th text-nowrap"
+              >
+                <span class="page-table-th__content">
+                  <i-ph-translate
+                    class="me-1 my-2"
+                    style="font-size: 1.25em"
+                  />
+                  <span>{{ $t('asr.colLanguages') }}</span>
+                </span>
+              </th>
+              <th
+                v-if="isVisible('model')"
+                class="page-table-th text-nowrap"
+              >
+                <span class="page-table-th__content">
+                  <i-ph-brain
+                    class="me-1 my-2"
+                    style="font-size: 1.25em"
+                  />
+                  <span>{{ $t('asr.colModel') }}</span>
+                </span>
+              </th>
+              <th
+                v-if="isVisible('project')"
+                class="page-table-th text-nowrap"
+              >
+                <span class="page-table-th__content">
+                  <i-ph-circles-three-plus
+                    class="me-1 my-2"
+                    style="font-size: 1.25em"
+                  />
+                  <span>{{ $t('asr.colProject') }}</span>
+                </span>
+              </th>
+              <th
+                v-if="isVisible('user')"
+                class="page-table-th text-nowrap"
+              >
+                <span class="page-table-th__content">
+                  <i-ph-user-circle
+                    class="me-1 my-2"
+                    style="font-size: 1.25em"
+                  />
+                  <span>{{ $t('asr.colUser') }}</span>
+                </span>
+              </th>
+              <th
+                v-if="isVisible('launchedOn')"
+                class="page-table-th page-table-th--sortable page-table-th--sorted text-nowrap"
+              >
+                <span class="page-table-th__content">
+                  <i-ph-calendar-blank
+                    class="me-1 my-2"
+                    style="font-size: 1.25em"
+                  />
+                  <span>{{ $t('asr.colLaunchedOn') }}</span>
+                  <button-icon
+                    :icon-left="sortIcon"
+                    class="page-table-th-sort page-table-th-sort--sorted ms-1"
+                    variant="outline-tertiary"
+                    icon-left-size="1em"
+                    hide-label
+                    @click="toggleOrder"
+                  />
+                </span>
+              </th>
+              <th class="page-table-th text-nowrap" />
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-if="loading && filteredTasks.length === 0"
+              class="page-table-tr"
+            >
+              <td
+                :colspan="colSpan"
+                class="text-center text-muted py-4"
+              >
+                <span class="spinner-border spinner-border-sm me-2" />
+                {{ $t('asr.loading') }}
+              </td>
+            </tr>
+            <tr
+              v-else-if="filteredTasks.length === 0"
+              class="page-table-tr"
+            >
+              <td
+                :colspan="colSpan"
+                class="text-center text-muted py-4"
+              >
+                {{ $t('asr.noTranscriptions') }}
+              </td>
+            </tr>
+            <tr
+              v-for="task in filteredTasks"
+              :key="task.id"
+              class="page-table-tr"
+            >
+              <td v-if="isVisible('state')">
+                <button
+                  v-if="task.state === 'ERROR'"
+                  class="btn btn-link p-0 border-0"
+                  @click="showError(task)"
+                >
+                  <component
+                    :is="DisplayStatus"
+                    :value="task.state"
+                  />
+                </button>
+                <component
+                  :is="DisplayStatus"
+                  v-else
+                  :value="task.state"
                 />
-              </span>
-            </th>
-            <th class="page-table-th text-nowrap" />
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="loading && filteredTasks.length === 0" class="page-table-tr">
-            <td :colspan="colSpan" class="text-center text-muted py-4">
-              <span class="spinner-border spinner-border-sm me-2" />
-              {{ $t('asr.loading') }}
-            </td>
-          </tr>
-          <tr v-else-if="filteredTasks.length === 0" class="page-table-tr">
-            <td :colspan="colSpan" class="text-center text-muted py-4">
-              {{ $t('asr.noTranscriptions') }}
-            </td>
-          </tr>
-          <tr v-for="task in filteredTasks" :key="task.id" class="page-table-tr">
-            <td v-if="isVisible('state')">
-              <button
-                v-if="task.state === 'ERROR'"
-                class="btn btn-link p-0 border-0"
-                @click="showError(task)"
+              </td>
+              <td
+                v-if="isVisible('name')"
+                class="fw-medium"
               >
-                <component :is="DisplayStatus" :value="task.state" />
-              </button>
-              <component :is="DisplayStatus" v-else :value="task.state" />
-            </td>
-            <td v-if="isVisible('name')" class="fw-medium">
-              <router-link :to="{ name: 'task.transcriptions.detail', params: { taskId: taskUuid(task) } }" class="text-action">
-                {{ taskName(task) }}
-              </router-link>
-            </td>
-            <td v-if="isVisible('progress')">
-              <component :is="DisplayProgress" :value="taskProgress(task)" />
-            </td>
-            <td v-if="isVisible('category')">{{ taskCategory(task) }}</td>
-            <td v-if="isVisible('languages')">{{ taskLanguages(task) }}</td>
-            <td v-if="isVisible('model')">{{ taskModel(task) }}</td>
-            <td v-if="isVisible('project')">
-              <component :is="DisplayProjectList" :values="taskProject(task)" />
-            </td>
-            <td v-if="isVisible('user')">{{ taskUser(task) }}</td>
-            <td v-if="isVisible('launchedOn')">{{ taskDate(task) }}</td>
-            <td>
-              <button
-                class="btn btn-sm btn-link text-muted p-0"
-                @click="deleteTask(task.id)"
-              >
-                <i-ph-trash style="font-size: 1.1em" />
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+                <router-link
+                  :to="{ name: 'task.transcriptions.detail', params: { taskId: taskUuid(task) } }"
+                  class="text-action"
+                >
+                  {{ taskName(task) }}
+                </router-link>
+              </td>
+              <td v-if="isVisible('progress')">
+                <component
+                  :is="DisplayProgress"
+                  :value="taskProgress(task)"
+                />
+              </td>
+              <td v-if="isVisible('category')">
+                {{ taskCategory(task) }}
+              </td>
+              <td v-if="isVisible('languages')">
+                {{ taskLanguages(task) }}
+              </td>
+              <td v-if="isVisible('model')">
+                {{ taskModel(task) }}
+              </td>
+              <td v-if="isVisible('project')">
+                <component
+                  :is="DisplayProjectList"
+                  :values="taskProject(task)"
+                />
+              </td>
+              <td v-if="isVisible('user')">
+                {{ taskUser(task) }}
+              </td>
+              <td v-if="isVisible('launchedOn')">
+                {{ taskDate(task) }}
+              </td>
+              <td>
+                <button
+                  class="btn btn-sm btn-link text-muted p-0"
+                  @click="deleteTask(task.id)"
+                >
+                  <i-ph-trash style="font-size: 1.1em" />
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </component>
 
@@ -447,16 +565,23 @@ onUnmounted(() => {
       class="transcription-error-modal"
     >
       <template #header-image-source>
-        <source :srcset="errorImageDark" media="(prefers-color-scheme: dark)" />
+        <source
+          :srcset="errorImageDark"
+          media="(prefers-color-scheme: dark)"
+        >
       </template>
       <div class="d-flex flex-column gap-4 mt-0 pt-0">
         <div>
-          <p class="text-center fw-medium">{{ $t('asr.errorTitle') }}</p>
+          <p class="text-center fw-medium">
+            {{ $t('asr.errorTitle') }}
+          </p>
           <div class="bg-tertiary-subtle d-block text-body-emphasis m-0 rounded-1">
             <pre class="p-3 m-0"><code>{{ taskErrorFull(errorModalTask) }}</code></pre>
           </div>
         </div>
-        <p class="m-0">{{ $t('asr.errorDescription') }}</p>
+        <p class="m-0">
+          {{ $t('asr.errorDescription') }}
+        </p>
       </div>
     </component>
   </div>

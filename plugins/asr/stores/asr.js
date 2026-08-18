@@ -44,7 +44,8 @@ export const useAsrStore = defineStore('asr', () => {
   async function fetchTranscription(project, docId) {
     try {
       transcription.value = await api.sendAction(`/api/asr/transcription/${project}/${docId}`)
-    } catch {
+    }
+    catch {
       transcription.value = null
     }
   }
@@ -52,7 +53,8 @@ export const useAsrStore = defineStore('asr', () => {
   async function fetchModels() {
     try {
       availableModels.value = await api.sendAction('/api/asr/models')
-    } catch {
+    }
+    catch {
       availableModels.value = {}
     }
   }
@@ -90,7 +92,8 @@ export const useAsrStore = defineStore('asr', () => {
     try {
       await api.sendAction(`/api/task/stop/${taskId.value}`, { method: 'PUT' })
       taskState.value = 'CANCELLED'
-    } catch {
+    }
+    catch {
       // task may already be finished
     }
   }
@@ -100,7 +103,8 @@ export const useAsrStore = defineStore('asr', () => {
     try {
       const task = await api.sendAction(`/api/task/${taskId.value}`)
       taskState.value = task.state
-    } catch {
+    }
+    catch {
       // task not found
     }
   }

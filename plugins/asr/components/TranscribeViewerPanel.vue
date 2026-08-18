@@ -39,7 +39,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="isEligible" class="mt-3">
+  <div
+    v-if="isEligible"
+    class="mt-3"
+  >
     <div v-if="asrStore.hasTranscription">
       <div class="alert alert-warning d-flex align-items-center justify-content-between mb-3 px-3 py-2">
         <span class="d-flex align-items-center gap-2">
@@ -55,13 +58,23 @@ onMounted(() => {
         </button>
       </div>
       <div class="transcribe-viewer-panel__content px-3">
-        <div v-for="(t, i) in asrStore.transcription.transcripts" :key="i" class="transcribe-viewer-panel__line d-flex mb-2">
-          <span v-if="t.timestamp" class="transcribe-viewer-panel__timestamp text-muted text-nowrap me-3 flex-shrink-0">{{ formatTimeRange(t.timestamp) }}</span>
+        <div
+          v-for="(t, i) in asrStore.transcription.transcripts"
+          :key="i"
+          class="transcribe-viewer-panel__line d-flex mb-2"
+        >
+          <span
+            v-if="t.timestamp"
+            class="transcribe-viewer-panel__timestamp text-muted text-nowrap me-3 flex-shrink-0"
+          >{{ formatTimeRange(t.timestamp) }}</span>
           <span>{{ t.text }}</span>
         </div>
       </div>
     </div>
-    <div v-else class="alert alert-warning d-flex align-items-center justify-content-between px-3 py-2">
+    <div
+      v-else
+      class="alert alert-warning d-flex align-items-center justify-content-between px-3 py-2"
+    >
       <span class="d-flex align-items-center gap-2">
         <i-ph-file-audio style="font-size: 1.25em" />
         {{ $t('asr.noTextTranscribed') }}
@@ -74,12 +87,18 @@ onMounted(() => {
       </button>
     </div>
   </div>
-  <teleport v-if="!isInModal" to=".document-entries-list__start__list">
-    <transcribe-panel v-if="panelOpen" @close="panelOpen = false" />
+  <teleport
+    v-if="!isInModal"
+    to=".document-entries-list__start__list"
+  >
+    <transcribe-panel
+      v-if="panelOpen"
+      @close="panelOpen = false"
+    />
   </teleport>
   <component
-    v-else
     :is="AppModal"
+    v-else
     v-model="panelOpen"
     size="md"
     no-header-close
@@ -87,7 +106,10 @@ onMounted(() => {
     <template #header>
       <span />
     </template>
-    <transcribe-panel v-if="panelOpen" @close="panelOpen = false" />
+    <transcribe-panel
+      v-if="panelOpen"
+      @close="panelOpen = false"
+    />
     <template #footer>
       <span />
     </template>
