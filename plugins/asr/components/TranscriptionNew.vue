@@ -41,11 +41,11 @@ const filterRecommendedBy = formSearchStore.getFilter({ name: 'recommendedBy' })
 
 const query = ref('')
 const name = ref('')
-const selectedProjects = ref(core.projectIds.map(name => ({ name })))
+const selectedProjects = ref(core.projectIds.map(id => ({ name: id })))
 const selectedModel = ref('parakeet')
 const submitting = ref(false)
 
-const allProjects = computed(() => core.projects ?? core.projectIds.map(name => ({ name })))
+const allProjects = computed(() => core.projects ?? core.projectIds.map(id => ({ name: id })))
 
 const breadcrumbRoutes = ['task', 'task.transcriptions', 'task.transcriptions.new']
 
@@ -63,7 +63,7 @@ onMounted(() => {
 function reset() {
   query.value = ''
   name.value = ''
-  selectedProjects.value = core.projectIds.map(name => ({ name }))
+  selectedProjects.value = core.projectIds.map(id => ({ name: id }))
   asrStore.selectedLanguages = []
   selectedModel.value = 'parakeet'
   formSearchStore.resetFilterValues()
@@ -243,11 +243,11 @@ async function submit() {
         </p>
       </component>
 
-      <!-- Step 3: Model -->
+      <!-- Step 4: Model -->
       <component
         :is="FormStep"
         :title="$t('asr.newForm.model')"
-        :index="3"
+        :index="4"
       >
         <div class="row align-items-center mb-3">
           <label class="col-sm-12 col-md-4 col-lg-3 d-flex align-items-center gap-2 form-label text-body-emphasis m-0">

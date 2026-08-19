@@ -2,6 +2,8 @@ import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { useApi } from '@/composables/useApi'
 
+const DEFAULT_BATCH_SIZE = 2
+
 const SUPPORTED_CONTENT_TYPES = new Set([
   'audio/aac',
   'audio/aiff',
@@ -59,21 +61,6 @@ export const useAsrStore = defineStore('asr', () => {
     }
   }
 
-  async function transcribe(project, docId, { name } = {}) {
-    const response = await api.sendAction('/api/asr/transcribe', {
-      method: 'POST',
-      data: {
-        project,
-        docs: [docId],
-        name,
-        languages: [...selectedLanguages.value],
-        batch_size: 2
-      }
-    })
-    taskId.value = response.taskId
-    taskState.value = 'RUNNING'
-  }
-
   async function transcribeBatch(project, docIds, { name } = {}) {
     return api.sendAction('/api/asr/transcribe', {
       method: 'POST',
@@ -82,9 +69,15 @@ export const useAsrStore = defineStore('asr', () => {
         docs: docIds,
         name,
         languages: [...selectedLanguages.value],
-        batch_size: 2
+        batch_size: DEFAULT_BATCH_SIZE
       }
     })
+  }
+
+  async function transcribe(project, docId, { name } = {}) {
+    const response = await transcribeBatch(project, [docId], { name })
+    taskId.value = response.taskId
+    taskState.value = 'RUNNING'
   }
 
   async function stopTranscription() {

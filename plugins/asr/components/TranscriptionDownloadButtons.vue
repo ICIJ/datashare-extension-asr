@@ -3,6 +3,7 @@ import { computed, defineAsyncComponent, onMounted } from 'vue'
 import IPhDownloadSimple from '~icons/ph/download-simple'
 import { useCore } from '@/composables/useCore'
 import { useAsrStore, isEligibleForAsr } from '@/stores/asr'
+import { formatTimeRange } from '@/utils/formatting'
 
 const props = defineProps({
   document: {
@@ -23,17 +24,6 @@ onMounted(() => {
     asrStore.fetchTranscription(props.document.index, props.document.id)
   }
 })
-
-function formatTimestamp(seconds) {
-  const h = Math.floor(seconds / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  const s = Math.floor(seconds % 60)
-  return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
-}
-
-function formatTimeRange(timestamp) {
-  return `${formatTimestamp(timestamp.start_s)}-${formatTimestamp(timestamp.end_s)}`
-}
 
 function downloadFile(content, filename) {
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })

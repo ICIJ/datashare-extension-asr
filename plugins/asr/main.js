@@ -159,7 +159,12 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
 
   // The router is created after the 'datashare:ready' event (in the .then() callback),
   // so we wait for it to be available before adding the route.
+  let retries = 0
   const waitForRouter = setInterval(() => {
+    if (++retries > 100) {
+      clearInterval(waitForRouter)
+      return
+    }
     if (core.router) {
       clearInterval(waitForRouter)
       core.router.addRoute('task', {

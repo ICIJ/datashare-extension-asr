@@ -3,13 +3,13 @@ import { ref, computed, inject, defineAsyncComponent, onMounted } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
 import { useCore } from '@/composables/useCore'
 import { useAsrStore, isEligibleForAsr } from '@/stores/asr'
+import { formatTimeRange } from '@/utils/formatting'
 import TranscribePanel from './TranscribePanel.vue'
 
 const core = useCore()
+const { stores } = core
 const AppModal = defineAsyncComponent(() => core.findComponent('AppModal/AppModal'))
 const isInModal = inject('modal', false)
-
-const { stores } = useCore()
 const documentStore = stores.useDocumentStore()
 const asrStore = useAsrStore()
 
@@ -18,17 +18,6 @@ const panelOpen = ref(false)
 const document = computed(() => documentStore.document)
 const contentType = computed(() => document.value?.contentType || '')
 const isEligible = computed(() => isEligibleForAsr(contentType.value))
-
-function formatTimestamp(seconds) {
-  const h = Math.floor(seconds / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  const s = Math.floor(seconds % 60)
-  return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
-}
-
-function formatTimeRange(timestamp) {
-  return `${formatTimestamp(timestamp.start_s)}-${formatTimestamp(timestamp.end_s)}`
-}
 
 onMounted(() => {
   if (isEligible.value) {
@@ -86,34 +75,34 @@ onMounted(() => {
         {{ $t('asr.transcribe') }}
       </button>
     </div>
+    <teleport
+      v-if="!isInModal"
+      to=".document-entries-list__start__list"
+    >
+      <transcribe-panel
+        v-if="panelOpen"
+        @close="panelOpen = false"
+      />
+    </teleport>
+    <component
+      :is="AppModal"
+      v-else
+      v-model="panelOpen"
+      size="md"
+      no-header-close
+    >
+      <template #header>
+        <span />
+      </template>
+      <transcribe-panel
+        v-if="panelOpen"
+        @close="panelOpen = false"
+      />
+      <template #footer>
+        <span />
+      </template>
+    </component>
   </div>
-  <teleport
-    v-if="!isInModal"
-    to=".document-entries-list__start__list"
-  >
-    <transcribe-panel
-      v-if="panelOpen"
-      @close="panelOpen = false"
-    />
-  </teleport>
-  <component
-    :is="AppModal"
-    v-else
-    v-model="panelOpen"
-    size="md"
-    no-header-close
-  >
-    <template #header>
-      <span />
-    </template>
-    <transcribe-panel
-      v-if="panelOpen"
-      @close="panelOpen = false"
-    />
-    <template #footer>
-      <span />
-    </template>
-  </component>
 </template>
 
 <style scoped>

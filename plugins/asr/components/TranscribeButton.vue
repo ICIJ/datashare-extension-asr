@@ -6,9 +6,8 @@ import { useAsrStore } from '@/stores/asr'
 import TranscribePanel from './TranscribePanel.vue'
 
 const core = useCore()
+const { stores } = core
 const AppModal = defineAsyncComponent(() => core.findComponent('AppModal/AppModal'))
-
-const { stores } = useCore()
 const documentStore = stores.useDocumentStore()
 const asrStore = useAsrStore()
 
@@ -18,11 +17,6 @@ const document = computed(() => documentStore.document)
 const isAudioVideo = computed(() => {
   const ct = document.value?.contentType || ''
   return ct.startsWith('audio/') || ct.startsWith('video/')
-})
-
-const canTranscribe = computed(() => {
-  // TODO: check user role (editor/admin)
-  return true
 })
 
 const isInModal = inject('modal', false)
@@ -40,7 +34,6 @@ function closePanel() {
 // when this plugin handles the content area for audio/video files.
 // A cleaner alternative would be a hook-aware condition in datashare-client's
 // DocumentContent.vue (e.g. hide the message when document.content.body:before has registered hooks).
-let noContentObserver = null
 
 function hideNoContent() {
   const el = window.document.querySelector('.document-content__body--no-content')
@@ -58,24 +51,18 @@ onMounted(() => {
     isDuplicateInline.value = true
     return
   }
-  if (isAudioVideo.value) {
-    if (!hideNoContent()) {
-      noContentObserver = new MutationObserver(() => {
-        if (hideNoContent()) {
-          noContentObserver.disconnect()
-          noContentObserver = null
-        }
-      })
-      noContentObserver.observe(window.document.body, { childList: true, subtree: true })
+  if (isAudioVideo.value && !hideNoContent()) {
+    let attempts = 0
+    const maxAttempts = 20
+    function tryHide() {
+      if (hideNoContent() || ++attempts >= maxAttempts) return
+      requestAnimationFrame(tryHide)
     }
+    requestAnimationFrame(tryHide)
   }
 })
 
 onUnmounted(() => {
-  if (noContentObserver) {
-    noContentObserver.disconnect()
-    noContentObserver = null
-  }
   const el = window.document.querySelector('.document-content__body--no-content')
   if (el) {
     el.style.display = ''
@@ -100,7 +87,6 @@ onUnmounted(() => {
       {{ $t('asr.noTextTranscribed') }}
     </span>
     <button
-      v-if="canTranscribe"
       class="btn btn-outline-warning transcribe-button__btn"
       :disabled="asrStore.isTranscribing"
       @click="openPanel"

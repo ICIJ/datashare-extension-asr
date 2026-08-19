@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
 import IPhPlus from '~icons/ph/plus'
 
@@ -9,12 +10,12 @@ const props = defineProps({
   active: { type: Boolean, default: false }
 })
 
-const isTaskSection = () => props.to?.name === 'task.task-board'
+const isTaskSection = computed(() => props.to?.name === 'task.task-board')
 </script>
 
 <template>
   <div
-    v-if="isTaskSection()"
+    v-if="isTaskSection"
     class="transcriptions-sidebar-entry d-flex align-items-center flex-truncate"
   >
     <router-link

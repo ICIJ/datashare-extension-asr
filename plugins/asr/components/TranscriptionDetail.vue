@@ -18,6 +18,8 @@ import IPhWarning from '~icons/ph/warning'
 import IPhMagnifyingGlass from '~icons/ph/magnifying-glass'
 import { useCore } from '@/composables/useCore'
 import { useAsrStore } from '@/stores/asr'
+import { capitalize } from '@/utils/formatting'
+import { getDocs as getDocsFromTask, queryLabel as queryLabelFromTask } from '@/utils/task'
 import LanguageSelector from './LanguageSelector.vue'
 
 const props = defineProps({
@@ -27,7 +29,7 @@ const props = defineProps({
 const core = useCore()
 const { api } = core
 const asrStore = useAsrStore()
-const toast = getCurrentInstance().appContext.config.globalProperties.$toast
+const { $toast: toast } = getCurrentInstance()?.proxy ?? {}
 
 const PageHeader = defineAsyncComponent(() => core.findComponent('PageHeader/PageHeader'))
 const PageContainer = defineAsyncComponent(() => core.findComponent('PageContainer/PageContainer'))
@@ -68,42 +70,12 @@ function taskNameFromDocs() {
   return `[batch] ${docs.length} documents`
 }
 
-function stripJacksonTypes(obj) {
-  if (Array.isArray(obj)) return obj.map(stripJacksonTypes)
-  if (obj && typeof obj === 'object') {
-    const cleaned = {}
-    for (const [k, v] of Object.entries(obj)) {
-      if (k !== '@type') cleaned[k] = stripJacksonTypes(v)
-    }
-    return cleaned
-  }
-  return obj
-}
-
 function queryLabel() {
-  const raw = task.value?.args?.docs
-  if (!raw) return '—'
-  let query = raw
-  if (Array.isArray(raw) && raw.length === 2 && typeof raw[0] === 'string' && raw[0].startsWith('java.util.')) {
-    query = raw[1]
-  }
-  if (!query || typeof query !== 'object' || Array.isArray(query)) return '—'
-  const cleaned = stripJacksonTypes(query)
-  const keys = Object.keys(cleaned)
-  if (keys.length === 0) return '*'
-  if (keys.length === 1 && keys[0] === 'match_all') return '*'
-  if (keys.length === 1 && keys[0] === 'query_string' && cleaned.query_string?.query) return cleaned.query_string.query
-  return JSON.stringify(cleaned)
+  return queryLabelFromTask(task.value)
 }
 
 function getDocs() {
-  if (!task.value) return []
-  const docs = task.value.args?.docs || []
-  if (!Array.isArray(docs)) return []
-  if (docs.length === 2 && docs[0] === 'java.util.ArrayList') {
-    return docs[1]
-  }
-  return docs
+  return getDocsFromTask(task.value)
 }
 
 function docDisplayName(docId) {
@@ -122,18 +94,13 @@ function docCategory(docId) {
 }
 
 function docProject() {
-  return task.value?.args?.project || '—'
+  return [task.value?.args?.project].filter(Boolean)
 }
 
 function docState() {
   if (task.value?.state === 'DONE') return 'DONE'
   if (task.value?.state === 'ERROR') return 'ERROR'
   return task.value?.state || 'QUEUED'
-}
-
-function capitalize(str) {
-  if (!str || str === '—') return str
-  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
 }
 
 const isQueryBased = computed(() => {
@@ -179,6 +146,8 @@ const toSeeDocuments = computed(() => {
   return { name: 'search', query: { q: getDocs().map(id => `_id:${id}`).join(' OR ') } }
 })
 
+const languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
+
 const taskLanguages = computed(() => {
   let langs = task.value?.args?.languages
   if (!Array.isArray(langs)) return '—'
@@ -186,7 +155,7 @@ const taskLanguages = computed(() => {
   if (langs.length === 0) return '—'
   return langs.map((code) => {
     try {
-      return new Intl.DisplayNames(['en'], { type: 'language' }).of(code)
+      return languageNames.of(code)
     }
     catch {
       return code
@@ -290,7 +259,7 @@ async function confirmTranscribeAgain() {
       data: {
         project: args.project,
         docs: task.value?.args?.docs,
-        name: args.name,
+        name,
         languages: [...asrStore.selectedLanguages],
         batch_size: args.batch_size || 2
       }
@@ -334,10 +303,10 @@ function downloadCsv() {
   const rows = [['State', 'Document name', 'Category', 'Project']]
   for (const docId of getDocs()) {
     rows.push([
-      docState(docId),
+      docState(),
       docDisplayName(docId),
       docCategory(docId),
-      docProject(docId)
+      docProject().join(', ') || '—'
     ])
   }
   const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n')
@@ -469,7 +438,7 @@ onMounted(fetchTask)
                   <td>
                     <component
                       :is="DisplayStatus"
-                      :value="docState(docId)"
+                      :value="docState()"
                     />
                   </td>
                   <td class="fw-medium">
@@ -485,7 +454,7 @@ onMounted(fetchTask)
                   <td>
                     <component
                       :is="DisplayProjectList"
-                      :values="docProject(docId)"
+                      :values="docProject()"
                     />
                   </td>
                   <td />

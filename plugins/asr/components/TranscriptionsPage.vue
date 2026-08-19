@@ -13,6 +13,8 @@ import IPhSortAscending from '~icons/ph/sort-ascending'
 import IPhSortDescending from '~icons/ph/sort-descending'
 import { useCore } from '@/composables/useCore'
 import { useAsrStore } from '@/stores/asr'
+import { capitalize } from '@/utils/formatting'
+import { getDocs as getDocsFromTask, queryLabel as queryLabelFromTask } from '@/utils/task'
 import errorImageLight from '@/assets/app-modal-error-light.svg'
 import errorImageDark from '@/assets/app-modal-error-dark.svg'
 
@@ -26,6 +28,7 @@ function taskUuid(task) {
 const core = useCore()
 const { api } = core
 const asrStore = useAsrStore()
+const languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
 
 const PageHeader = defineAsyncComponent(() => core.findComponent('PageHeader/PageHeader'))
 const PageContainer = defineAsyncComponent(() => core.findComponent('PageContainer/PageContainer'))
@@ -34,6 +37,7 @@ const DisplayStatus = defineAsyncComponent(() => core.findComponent('Display/Dis
 const DisplayProgress = defineAsyncComponent(() => core.findComponent('Display/DisplayProgress'))
 const DisplayProjectList = defineAsyncComponent(() => core.findComponent('Display/DisplayProjectList'))
 const DismissableAlert = defineAsyncComponent(() => core.findComponent('Dismissable/DismissableAlert'))
+const ButtonIcon = defineAsyncComponent(() => core.findComponent('Button/ButtonIcon'))
 const AppModal = defineAsyncComponent(() => core.findComponent('AppModal/AppModal'))
 
 const tasks = ref([])
@@ -85,28 +89,23 @@ async function fetchTasks() {
 }
 
 async function resolveDocNames(taskList) {
+  const pending = []
   for (const task of taskList) {
     const project = task.args?.project
     if (!project) continue
     for (const docId of getDocs(task)) {
       if (docNames.value[docId]) continue
-      try {
-        const doc = await api.sendAction(`/api/${project}/documents/${docId}`)
-        if (doc?.title) {
-          docNames.value[docId] = doc.title
-        }
-        if (doc?.contentTypeCategory) {
-          docCategories.value[docId] = doc.contentTypeCategory
-        }
-        if (doc?.language) {
-          docLanguages.value[docId] = doc.language
-        }
-      }
-      catch {
-        // document not found
-      }
+      pending.push(
+        api.sendAction(`/api/${project}/documents/${docId}`).then((doc) => {
+          if (doc?.title) docNames.value[docId] = doc.title
+          if (doc?.contentTypeCategory) docCategories.value[docId] = doc.contentTypeCategory
+          if (doc?.language) docLanguages.value[docId] = doc.language
+          return doc
+        }).catch(() => {})
+      )
     }
   }
+  await Promise.all(pending)
 }
 
 async function deleteTask(taskId) {
@@ -120,12 +119,7 @@ async function deleteTask(taskId) {
 }
 
 function getDocs(task) {
-  const docs = task.args?.docs || []
-  if (!Array.isArray(docs)) return []
-  if (docs.length === 2 && docs[0] === 'java.util.ArrayList') {
-    return docs[1]
-  }
-  return docs
+  return getDocsFromTask(task)
 }
 
 function docDisplayName(docId) {
@@ -136,30 +130,9 @@ function isQueryBasedDocs(docs) {
   return !!docs && typeof docs === 'object' && !Array.isArray(docs)
 }
 
-function stripJacksonTypes(obj) {
-  if (Array.isArray(obj)) return obj.map(stripJacksonTypes)
-  if (obj && typeof obj === 'object') {
-    const cleaned = {}
-    for (const [k, v] of Object.entries(obj)) {
-      if (k !== '@type') cleaned[k] = stripJacksonTypes(v)
-    }
-    return cleaned
-  }
-  return obj
-}
-
-function queryLabel(docs) {
-  const cleaned = stripJacksonTypes(docs)
-  const keys = Object.keys(cleaned)
-  if (keys.length === 0) return '*'
-  if (keys.length === 1 && keys[0] === 'match_all') return '*'
-  if (keys.length === 1 && keys[0] === 'query_string' && cleaned.query_string?.query) return cleaned.query_string.query
-  return JSON.stringify(cleaned)
-}
-
 function taskName(task) {
   if (task.args?.name) return task.args.name
-  if (isQueryBasedDocs(task.args?.docs)) return queryLabel(task.args.docs)
+  if (isQueryBasedDocs(task.args?.docs)) return queryLabelFromTask(task)
   const docs = getDocs(task)
   if (docs.length === 0) return '—'
   if (docs.length === 1) return docDisplayName(docs[0])
@@ -181,10 +154,6 @@ function taskCategory(task) {
   return 'Mixed'
 }
 
-function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
-}
-
 function taskLanguages(task) {
   // Use languages from task args if available (set by the user)
   // Jackson serializes arrays with type info: ["java.util.ArrayList", ["fr"]]
@@ -194,7 +163,7 @@ function taskLanguages(task) {
     if (taskLangs.length > 0) {
       return taskLangs.map((code) => {
         try {
-          return new Intl.DisplayNames(['en'], { type: 'language' }).of(code)
+          return languageNames.of(code)
         }
         catch {
           return code
@@ -443,7 +412,8 @@ onUnmounted(() => {
                     style="font-size: 1.25em"
                   />
                   <span>{{ $t('asr.colLaunchedOn') }}</span>
-                  <button-icon
+                  <component
+                    :is="ButtonIcon"
                     :icon-left="sortIcon"
                     class="page-table-th-sort page-table-th-sort--sorted ms-1"
                     variant="outline-tertiary"

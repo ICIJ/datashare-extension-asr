@@ -11,9 +11,8 @@ import LanguageSelector from './LanguageSelector.vue'
 const emit = defineEmits(['close'])
 
 const core = useCore()
+const { stores } = core
 const ButtonIcon = defineAsyncComponent(() => core.findComponent('Button/ButtonIcon'))
-
-const { stores } = useCore()
 const documentStore = stores.useDocumentStore()
 const asrStore = useAsrStore()
 const { $toast: toast, $t: t } = getCurrentInstance()?.proxy ?? {}
