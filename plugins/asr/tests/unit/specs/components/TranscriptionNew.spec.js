@@ -45,7 +45,7 @@ describe('TranscriptionNew.vue', () => {
       expect(wrapper.vm.isValid).toBe(false)
     })
 
-    it('is valid when name is set and languages are selected', async () => {
+    it('is valid when name and languages are set', async () => {
       createWrapper()
       await flushPromises()
       const asrStore = useAsrStore()
@@ -57,18 +57,20 @@ describe('TranscriptionNew.vue', () => {
   })
 
   describe('reset', () => {
-    it('clears name, query and model', async () => {
+    it('clears name, query, model and skipAlreadyTranscribed', async () => {
       createWrapper()
       await flushPromises()
       wrapper.vm.name = 'My transcription'
       wrapper.vm.query = 'some query'
       wrapper.vm.selectedModel = 'faster-whisper'
+      wrapper.vm.skipAlreadyTranscribed = false
 
       wrapper.vm.reset()
 
       expect(wrapper.vm.name).toBe('')
       expect(wrapper.vm.query).toBe('')
       expect(wrapper.vm.selectedModel).toBe('parakeet')
+      expect(wrapper.vm.skipAlreadyTranscribed).toBe(true)
     })
 
     it('clears selected languages', async () => {

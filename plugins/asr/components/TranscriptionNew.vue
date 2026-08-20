@@ -2,7 +2,6 @@
 import { ref, computed, defineAsyncComponent, onMounted } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
 import IPhTextAa from '~icons/ph/text-aa'
-import IPhCirclesThreePlus from '~icons/ph/circles-three-plus'
 import IPhBrain from '~icons/ph/brain'
 import IPhMagnifyingGlass from '~icons/ph/magnifying-glass'
 
@@ -17,18 +16,19 @@ const PageHeader = defineAsyncComponent(() => core.findComponent('PageHeader/Pag
 const PageContainer = defineAsyncComponent(() => core.findComponent('PageContainer/PageContainer'))
 const FormCreation = defineAsyncComponent(() => core.findComponent('Form/FormCreation'))
 const FormStep = defineAsyncComponent(() => core.findComponent('Form/FormStep/FormStep'))
+const FilterTypeProject = defineAsyncComponent(() => core.findComponent('Filter/FilterType/FilterTypeProject'))
 const FilterTypePath = defineAsyncComponent(() => core.findComponent('Filter/FilterType/FilterTypePath'))
 const FilterType = defineAsyncComponent(() => core.findComponent('Filter/FilterType/FilterType'))
 const FilterTypeDateRange = defineAsyncComponent(() => core.findComponent('Filter/FilterType/FilterTypeDateRange'))
 const FilterTypeStarred = defineAsyncComponent(() => core.findComponent('Filter/FilterType/FilterTypeStarred'))
 const FilterTypeRecommendedBy = defineAsyncComponent(() => core.findComponent('Filter/FilterType/FilterTypeRecommendedBy'))
-const ProjectDropdownSelector = defineAsyncComponent(() => core.findComponent('Project/ProjectDropdownSelector/ProjectDropdownSelector'))
 
 const { useSearchStore } = core.stores
 const searchStore = useSearchStore()
 const formSearchStore = useSearchStore.disposable()
 formSearchStore.setIndices(searchStore.indices)
 
+const filterProject = formSearchStore.getFilter({ name: 'project' })
 const filterPath = formSearchStore.getFilter({ name: 'path' })
 const filterContentType = formSearchStore.getFilter({ name: 'contentType' })
 const filterCreationDate = formSearchStore.getFilter({ name: 'creationDate' })
@@ -41,17 +41,14 @@ const filterRecommendedBy = formSearchStore.getFilter({ name: 'recommendedBy' })
 
 const query = ref('')
 const name = ref('')
-const selectedProjects = ref(core.projectIds.map(id => ({ name: id })))
 const selectedModel = ref('parakeet')
+const skipAlreadyTranscribed = ref(true)
 const submitting = ref(false)
-
-const allProjects = computed(() => core.projects ?? core.projectIds.map(id => ({ name: id })))
 
 const breadcrumbRoutes = ['task', 'task.transcriptions', 'task.transcriptions.new']
 
 const isValid = computed(() => {
   return name.value.trim().length > 0
-    && selectedProjects.value.length > 0
     && asrStore.selectedLanguages.length > 0
 })
 
@@ -63,9 +60,9 @@ onMounted(() => {
 function reset() {
   query.value = ''
   name.value = ''
-  selectedProjects.value = core.projectIds.map(id => ({ name: id }))
   asrStore.selectedLanguages = []
   selectedModel.value = 'parakeet'
+  skipAlreadyTranscribed.value = true
   formSearchStore.resetFilterValues()
 }
 
@@ -73,7 +70,7 @@ async function submit() {
   if (!isValid.value || submitting.value) return
   submitting.value = true
   try {
-    const project = selectedProjects.value.map(p => p.name).join(',')
+    const project = formSearchStore.indices?.join(',') || core.projectIds.join(',')
     await asrStore.transcribeBatch(project, [], { name: name.value })
     core.router.push({ name: 'task.transcriptions' })
   }
@@ -107,19 +104,19 @@ async function submit() {
       @reset="reset"
       @submit="submit"
     >
-      <!-- Step 1: Name and project -->
+      <!-- Step 1: Name -->
       <component
         :is="FormStep"
-        :title="$t('asr.newForm.nameAndProject')"
+        :title="$t('asr.newForm.name')"
         :index="1"
       >
-        <div class="row align-items-center mb-3">
+        <div class="row align-items-center">
           <label class="col-sm-12 col-md-4 col-lg-3 d-flex align-items-center gap-2 form-label text-body-emphasis m-0">
             <i-ph-text-aa
               class="text-tertiary"
               style="font-size: 1.25em"
             />
-            {{ $t('asr.newForm.name') }} *
+            {{ $t('asr.newForm.name') }}
           </label>
           <div class="col">
             <input
@@ -128,22 +125,6 @@ async function submit() {
               class="form-control"
               :placeholder="$t('asr.newForm.namePlaceholder')"
             >
-          </div>
-        </div>
-        <div class="row align-items-center">
-          <label class="col-sm-12 col-md-4 col-lg-3 d-flex align-items-center gap-2 form-label text-body-emphasis m-0">
-            <i-ph-circles-three-plus
-              class="text-tertiary"
-              style="font-size: 1.25em"
-            />
-            {{ $t('asr.newForm.project') }} *
-          </label>
-          <div class="col">
-            <component
-              :is="ProjectDropdownSelector"
-              v-model="selectedProjects"
-              :projects="allProjects"
-            />
           </div>
         </div>
       </component>
@@ -156,6 +137,12 @@ async function submit() {
         class="transcription-new__filters"
         content-class="bg-transparent rounded-0 d-flex flex-column gap-3 px-0 m-0"
       >
+        <component
+          :is="FilterTypeProject"
+          :filter="filterProject"
+          class="p-3"
+          content-class="pb-0"
+        />
         <div class="input-group">
           <span class="input-group-text bg-transparent border-end-0">
             <i-ph-magnifying-glass />
@@ -243,11 +230,11 @@ async function submit() {
         </p>
       </component>
 
-      <!-- Step 4: Model -->
+      <!-- Step 3: Model -->
       <component
         :is="FormStep"
         :title="$t('asr.newForm.model')"
-        :index="4"
+        :index="3"
       >
         <div class="row align-items-center mb-3">
           <label class="col-sm-12 col-md-4 col-lg-3 d-flex align-items-center gap-2 form-label text-body-emphasis m-0">
@@ -295,6 +282,51 @@ async function submit() {
         <p class="text-muted small mb-0">
           {{ $t('asr.info') }}
         </p>
+      </component>
+
+      <!-- Step 4: Options (NOT IN V1) -->
+      <component
+        :is="FormStep"
+        :index="4"
+        class="transcription-new__options"
+      >
+        <template #title>
+          {{ $t('asr.newForm.options') }}
+          <span class="text-danger ms-2">{{ $t('asr.newForm.optionsNotInV1') }}</span>
+        </template>
+        <div class="row align-items-center">
+          <label class="col-sm-12 col-md-4 col-lg-3 d-flex align-items-center gap-2 form-label text-body-emphasis m-0">
+            {{ $t('asr.newForm.skipAlreadyTranscribed') }}
+          </label>
+          <div class="col d-flex flex-column gap-1">
+            <div class="form-check">
+              <input
+                id="skip-yes"
+                v-model="skipAlreadyTranscribed"
+                class="form-check-input"
+                type="radio"
+                :value="true"
+              >
+              <label
+                class="form-check-label"
+                for="skip-yes"
+              >{{ $t('asr.newForm.yes') }}</label>
+            </div>
+            <div class="form-check">
+              <input
+                id="skip-no"
+                v-model="skipAlreadyTranscribed"
+                class="form-check-input"
+                type="radio"
+                :value="false"
+              >
+              <label
+                class="form-check-label"
+                for="skip-no"
+              >{{ $t('asr.newForm.no') }}</label>
+            </div>
+          </div>
+        </div>
       </component>
     </component>
   </component>

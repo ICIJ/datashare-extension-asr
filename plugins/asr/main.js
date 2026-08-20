@@ -93,12 +93,9 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       newTranscription: 'New transcription',
       newForm: {
         title: 'Create a new transcription',
-        nameAndProject: 'Name and project',
         name: 'Name',
         namePlaceholder: 'Give a name to your transcription',
-        project: 'Project',
         documents: 'Documents to transcribe',
-        documentsHint: 'Click "Copy search" button from Search > "Your search" and paste here',
         documentsPlaceholder: 'Type queries, use operators or type regex...',
         languages: 'Languages',
         languagesHint: 'All the documents must be in the same language(s). If you have documents with mixed languages, refine your document selection at step 2.',
@@ -106,6 +103,11 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
         selectModel: 'Select a model',
         parakeetInfo: 'Parakeet is Nvidia\'s Parakeet-tdt-0.6b-v3.',
         fasterWhisperInfo: 'Faster-Whisper is Systran\'s model.',
+        options: 'Options',
+        optionsNotInV1: 'NOT IN V1',
+        skipAlreadyTranscribed: 'Skip already transcribed documents',
+        yes: 'Yes',
+        no: 'No',
         reset: 'Reset',
         transcribe: 'Transcribe'
       }
