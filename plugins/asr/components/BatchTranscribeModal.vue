@@ -1,6 +1,7 @@
 <script setup>
-import { computed, getCurrentInstance, defineAsyncComponent, onMounted } from 'vue'
+import { ref, computed, getCurrentInstance, defineAsyncComponent, onMounted } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
+import IPhBrain from '~icons/ph/brain'
 import IPhInfo from '~icons/ph/info'
 import IPhWarning from '~icons/ph/warning'
 import { useCore } from '@/composables/useCore'
@@ -21,6 +22,23 @@ const asrStore = useAsrStore()
 const AppModal = defineAsyncComponent(() => core.findComponent('AppModal/AppModal'))
 const { $toast: toast, $t: t } = getCurrentInstance()?.proxy ?? {}
 
+const MODEL_LABELS = {
+  'parakeet': 'Parakeet',
+  'faster-whisper': 'Faster-Whisper'
+}
+
+const selectedModel = ref('parakeet')
+
+const availableModelNames = computed(() => {
+  const models = new Set()
+  for (const langs of Object.values(asrStore.availableModels || {})) {
+    for (const m of langs) {
+      models.add(m)
+    }
+  }
+  return [...models]
+})
+
 const eligibleDocs = computed(() => {
   return props.selectedDocuments.filter(doc => isEligibleForAsr(doc.contentType || ''))
 })
@@ -33,8 +51,11 @@ const canTranscribe = computed(() => {
   return asrStore.selectedLanguages.length > 0 && eligibleDocs.value.length > 0
 })
 
-onMounted(() => {
-  asrStore.fetchModels()
+onMounted(async () => {
+  await asrStore.fetchModels()
+  if (availableModelNames.value.length && !availableModelNames.value.includes(selectedModel.value)) {
+    selectedModel.value = availableModelNames.value[0]
+  }
 })
 
 async function handleBatchTranscribe() {
@@ -51,7 +72,7 @@ async function handleBatchTranscribe() {
   for (const [project, docIds] of Object.entries(docsByProject)) {
     try {
       const name = `[batch] ${docIds.length} documents`
-      await asrStore.transcribeBatch(project, docIds, { name })
+      await asrStore.transcribeBatch(project, docIds, { name, model: selectedModel.value })
       successCount += docIds.length
     }
     catch {
@@ -117,6 +138,31 @@ async function handleBatchTranscribe() {
           {{ $t('asr.batchLanguageWarningText') }}
         </p>
       </div>
+
+      <div class="batch-transcribe-modal__model-selector">
+        <label class="form-label m-0 text-nowrap d-flex align-items-center gap-1">
+          <IPhBrain />
+          {{ $t('asr.selectModel') }}
+        </label>
+        <b-dropdown
+          variant="outline-light"
+          boundary="viewport"
+          class="w-100"
+          toggle-class="w-100 d-flex justify-content-between align-items-center text-truncate"
+        >
+          <template #button-content>
+            {{ MODEL_LABELS[selectedModel] ?? selectedModel }}
+          </template>
+          <b-dropdown-item
+            v-for="m in availableModelNames"
+            :key="m"
+            :active="selectedModel === m"
+            @click="selectedModel = m"
+          >
+            {{ MODEL_LABELS[m] ?? m }}
+          </b-dropdown-item>
+        </b-dropdown>
+      </div>
     </div>
 
     <template #footer>
@@ -131,3 +177,12 @@ async function handleBatchTranscribe() {
     </template>
   </component>
 </template>
+
+<style scoped>
+.batch-transcribe-modal__model-selector {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.5rem;
+}
+</style>

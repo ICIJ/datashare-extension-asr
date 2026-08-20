@@ -306,6 +306,24 @@ describe('TranscriptionDetail.vue', () => {
     })
   })
 
+  describe('task model display', () => {
+    it('displays the model from args.model', async () => {
+      const task = {
+        ...baseTask,
+        args: { ...baseTask.args, model: 'model-x' }
+      }
+      const { wrapper } = createWrapper(task)
+      await flushPromises()
+      expect(wrapper.text()).toContain('model-x')
+    })
+
+    it('falls back to default model when args.model is absent', async () => {
+      const { wrapper } = createWrapper()
+      await flushPromises()
+      expect(wrapper.vm.taskModel).toBeTruthy()
+    })
+  })
+
   describe('document count', () => {
     it('displays the correct number of documents', async () => {
       const { wrapper } = createWrapper()

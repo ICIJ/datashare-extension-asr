@@ -25,6 +25,7 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       transcriptionInProgress: 'Transcription in progress...',
       stopTranscription: 'Stop transcription',
       info: 'Datashare uses Nvidia\'s Parakeet-tdt-0.6b-v3 for Automatic Speech Recognition (ASR). All the processing is done within Datashare — no data is sent to third parties.',
+      selectModel: 'Select a model',
       selectLanguages: 'Select languages*',
       selectLanguagesHint: 'Select all the languages you can hear in the file.',
       search: 'Search',

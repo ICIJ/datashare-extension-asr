@@ -98,6 +98,22 @@ describe('BatchTranscribeModal.vue', () => {
     })
   })
 
+  describe('model selector', () => {
+    it('renders the model selector dropdown', async () => {
+      const wrapper = createWrapper(audioDocs)
+      await flushPromises()
+      const modal = wrapper.findComponent(BatchTranscribeModal)
+      expect(modal.text()).toContain('asr.selectModel')
+    })
+
+    it('has a default selectedModel', async () => {
+      const wrapper = createWrapper(audioDocs)
+      await flushPromises()
+      const modal = wrapper.findComponent(BatchTranscribeModal)
+      expect(modal.vm.selectedModel).toBeTruthy()
+    })
+  })
+
   describe('batch transcription', () => {
     it('calls transcribeBatch with correct project and doc IDs', async () => {
       const wrapper = createWrapper(audioDocs)
@@ -112,7 +128,7 @@ describe('BatchTranscribeModal.vue', () => {
 
       expect(sendActionMock).toHaveBeenCalledWith('/api/asr/transcribe', {
         method: 'POST',
-        data: { project: 'project-a', docs: ['doc1', 'doc2'], name: '[batch] 2 documents', languages: ['en'], batch_size: 2 }
+        data: expect.objectContaining({ project: 'project-a', docs: ['doc1', 'doc2'], name: '[batch] 2 documents', languages: ['en'], batch_size: 2, model: expect.any(String) })
       })
     })
 
@@ -135,11 +151,11 @@ describe('BatchTranscribeModal.vue', () => {
       expect(sendActionMock).toHaveBeenCalledTimes(3)
       expect(sendActionMock).toHaveBeenCalledWith('/api/asr/transcribe', {
         method: 'POST',
-        data: { project: 'project-a', docs: ['doc1'], name: '[batch] 1 documents', languages: ['en'], batch_size: 2 }
+        data: expect.objectContaining({ project: 'project-a', docs: ['doc1'], name: '[batch] 1 documents', languages: ['en'], batch_size: 2, model: expect.any(String) })
       })
       expect(sendActionMock).toHaveBeenCalledWith('/api/asr/transcribe', {
         method: 'POST',
-        data: { project: 'project-b', docs: ['doc2'], name: '[batch] 1 documents', languages: ['en'], batch_size: 2 }
+        data: expect.objectContaining({ project: 'project-b', docs: ['doc2'], name: '[batch] 1 documents', languages: ['en'], batch_size: 2, model: expect.any(String) })
       })
     })
 

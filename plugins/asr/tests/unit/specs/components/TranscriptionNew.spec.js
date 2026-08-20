@@ -60,16 +60,17 @@ describe('TranscriptionNew.vue', () => {
     it('clears name, query, model and skipAlreadyTranscribed', async () => {
       createWrapper()
       await flushPromises()
+      const defaultModel = wrapper.vm.selectedModel
       wrapper.vm.name = 'My transcription'
       wrapper.vm.query = 'some query'
-      wrapper.vm.selectedModel = 'faster-whisper'
+      wrapper.vm.selectedModel = 'model-b'
       wrapper.vm.skipAlreadyTranscribed = false
 
       wrapper.vm.reset()
 
       expect(wrapper.vm.name).toBe('')
       expect(wrapper.vm.query).toBe('')
-      expect(wrapper.vm.selectedModel).toBe('parakeet')
+      expect(wrapper.vm.selectedModel).toBe(defaultModel)
       expect(wrapper.vm.skipAlreadyTranscribed).toBe(true)
     })
 
@@ -101,6 +102,23 @@ describe('TranscriptionNew.vue', () => {
         method: 'POST'
       }))
       expect(core.router.push).toHaveBeenCalledWith({ name: 'task.transcriptions' })
+    })
+
+    it('includes the selected model in the payload', async () => {
+      createWrapper()
+      await flushPromises()
+      const asrStore = useAsrStore()
+      wrapper.vm.name = 'My transcription'
+      wrapper.vm.selectedModel = 'model-b'
+      asrStore.selectedLanguages = ['en']
+      sendActionMock.mockResolvedValue({ taskId: 'task-123' })
+
+      await wrapper.vm.submit()
+      await flushPromises()
+
+      expect(sendActionMock).toHaveBeenCalledWith('/api/asr/transcribe', expect.objectContaining({
+        data: expect.objectContaining({ model: 'model-b' })
+      }))
     })
 
     it('does not submit when form is invalid', async () => {

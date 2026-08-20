@@ -163,9 +163,15 @@ const taskLanguages = computed(() => {
   }).join(', ')
 })
 
+const MODEL_LABELS = {
+  'parakeet': 'Parakeet',
+  'faster-whisper': 'Faster-Whisper'
+}
+
 const taskModel = computed(() => {
-  const config = task.value?.args?.config || {}
-  return config.model || 'Nvidia Parakeet-tdt-0.6b-v3'
+  const args = task.value?.args || {}
+  const model = args.model || args.config?.model || 'parakeet'
+  return MODEL_LABELS[model] ?? model
 })
 
 const taskDate = computed(() => {

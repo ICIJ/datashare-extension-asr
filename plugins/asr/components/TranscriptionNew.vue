@@ -101,8 +101,23 @@ const selectedLanguageNames = computed(() => {
     .join(' and ')
 })
 
+const MODEL_LABELS = {
+  'parakeet': 'Parakeet',
+  'faster-whisper': 'Faster-Whisper'
+}
+
+const availableModelNames = computed(() => {
+  const models = new Set()
+  for (const langs of Object.values(asrStore.availableModels || {})) {
+    for (const m of langs) {
+      models.add(m)
+    }
+  }
+  return [...models]
+})
+
 const modelDisplayName = computed(() => {
-  return selectedModel.value === 'parakeet' ? 'Parakeet' : 'Faster-Whisper'
+  return MODEL_LABELS[selectedModel.value] ?? selectedModel.value
 })
 
 const audioCount = ref(0)
@@ -171,8 +186,11 @@ watch(
   fetchDocumentCounts
 )
 
-onMounted(() => {
-  asrStore.fetchModels()
+onMounted(async () => {
+  await asrStore.fetchModels()
+  if (availableModelNames.value.length && !availableModelNames.value.includes(selectedModel.value)) {
+    selectedModel.value = availableModelNames.value[0]
+  }
   asrStore.selectedLanguages = []
   fetchDocumentCounts()
 })
@@ -200,7 +218,7 @@ async function submit() {
   submitting.value = true
   try {
     const project = formSearchStore.indices?.join(',') || core.projectIds.join(',')
-    await asrStore.transcribeBatch(project, [], { name: name.value })
+    await asrStore.transcribeBatch(project, [], { name: name.value, model: selectedModel.value })
     core.router.push({ name: 'task.transcriptions' })
   }
   catch {
@@ -374,38 +392,35 @@ async function submit() {
             {{ $t('asr.newForm.selectModel') }} *
           </label>
           <div class="col d-flex flex-column gap-1">
-            <div class="form-check">
+            <div
+              v-for="m in availableModelNames"
+              :key="m"
+              class="form-check"
+            >
               <input
-                id="model-parakeet"
+                :id="`model-${m}`"
                 v-model="selectedModel"
                 class="form-check-input"
                 type="radio"
-                value="parakeet"
+                :value="m"
               >
               <label
                 class="form-check-label"
-                for="model-parakeet"
-              >Parakeet</label>
-            </div>
-            <div class="form-check">
-              <input
-                id="model-faster-whisper"
-                v-model="selectedModel"
-                class="form-check-input"
-                type="radio"
-                value="faster-whisper"
-              >
-              <label
-                class="form-check-label"
-                for="model-faster-whisper"
-              >Faster-Whisper</label>
+                :for="`model-${m}`"
+              >{{ MODEL_LABELS[m] ?? m }}</label>
             </div>
           </div>
         </div>
-        <p class="text-muted small mb-1">
+        <p
+          v-if="availableModelNames.includes('parakeet')"
+          class="text-muted small mb-1"
+        >
           {{ $t('asr.newForm.parakeetInfo') }}
         </p>
-        <p class="text-muted small mb-1">
+        <p
+          v-if="availableModelNames.includes('faster-whisper')"
+          class="text-muted small mb-1"
+        >
           {{ $t('asr.newForm.fasterWhisperInfo') }}
         </p>
         <p class="text-muted small mb-0">

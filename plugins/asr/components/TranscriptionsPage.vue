@@ -179,10 +179,15 @@ function taskLanguages(task) {
   return [...languages].map(capitalize).join(', ')
 }
 
+const MODEL_LABELS = {
+  'parakeet': 'Parakeet',
+  'faster-whisper': 'Faster-Whisper'
+}
+
 function taskModel(task) {
   const args = task.args || task.properties || {}
-  const config = args.config || {}
-  return config.model || 'Parakeet'
+  const model = args.model || args.config?.model || 'parakeet'
+  return MODEL_LABELS[model] ?? model
 }
 
 function taskProject(task) {
