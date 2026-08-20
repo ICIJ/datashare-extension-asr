@@ -70,9 +70,11 @@ class CoreSetup {
     const doc = this.documentOptions
     const projectIds = this.projectIds
     const mockFormSearchStore = {
+      activeFilters: [],
       setIndices: vi.fn(),
       getFilter: vi.fn().mockReturnValue({}),
-      resetFilterValues: vi.fn()
+      resetFilterValues: vi.fn(),
+      removeFilterValue: vi.fn()
     }
     const useSearchStore = vi.fn().mockReturnValue({ indices: projectIds })
     useSearchStore.disposable = vi.fn().mockReturnValue(mockFormSearchStore)

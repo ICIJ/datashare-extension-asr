@@ -4,7 +4,7 @@ import { useApi } from '@/composables/useApi'
 
 const DEFAULT_BATCH_SIZE = 2
 
-const SUPPORTED_CONTENT_TYPES = new Set([
+export const SUPPORTED_CONTENT_TYPES = new Set([
   'audio/aac',
   'audio/aiff',
   'audio/mp4',

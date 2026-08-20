@@ -108,6 +108,11 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
         skipAlreadyTranscribed: 'Skip already transcribed documents',
         yes: 'Yes',
         no: 'No',
+        yourSelection: 'Your selection :',
+        selectionSummaryCount: '{audioCount} audio and {videoCount} video documents',
+        selectionSummaryRest: 'in {languages} are selected to be transcribed with {model}.',
+        selectionWarningCount: '{count} selected documents',
+        selectionWarningRest: 'won\'t be transcribed because their format is not supported.',
         reset: 'Reset',
         transcribe: 'Transcribe'
       }
