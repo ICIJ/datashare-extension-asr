@@ -133,6 +133,26 @@ describe('TranscriptionNew.vue', () => {
     })
   })
 
+  describe('selectedLanguageNames', () => {
+    it('shows the full name for a single language', async () => {
+      createWrapper()
+      await flushPromises()
+      const asrStore = useAsrStore()
+      asrStore.selectedLanguages = ['fr']
+      await flushPromises()
+      expect(wrapper.vm.selectedLanguageNames).toBe('French')
+    })
+
+    it('condenses multiple languages to first name and count', async () => {
+      createWrapper()
+      await flushPromises()
+      const asrStore = useAsrStore()
+      asrStore.selectedLanguages = ['fr', 'en', 'de', 'es']
+      await flushPromises()
+      expect(wrapper.vm.selectedLanguageNames).toBe('French and 3 other languages')
+    })
+  })
+
   describe('initialization', () => {
     it('fetches models on mount', async () => {
       createWrapper()

@@ -29,7 +29,7 @@ const PageHeader = defineAsyncComponent(() => core.findComponent('PageHeader/Pag
 const PageContainer = defineAsyncComponent(() => core.findComponent('PageContainer/PageContainer'))
 const FormCreation = defineAsyncComponent(() => core.findComponent('Form/FormCreation'))
 const FormStep = defineAsyncComponent(() => core.findComponent('Form/FormStep/FormStep'))
-const FilterTypeProject = defineAsyncComponent(() => core.findComponent('Filter/FilterType/FilterTypeProject'))
+const ProjectDropdownSelector = defineAsyncComponent(() => core.findComponent('Project/ProjectDropdownSelector/ProjectDropdownSelector'))
 const FilterTypePath = defineAsyncComponent(() => core.findComponent('Filter/FilterType/FilterTypePath'))
 const FilterType = defineAsyncComponent(() => core.findComponent('Filter/FilterType/FilterType'))
 const FilterTypeDateRange = defineAsyncComponent(() => core.findComponent('Filter/FilterType/FilterTypeDateRange'))
@@ -41,7 +41,11 @@ const searchStore = useSearchStore()
 const formSearchStore = useSearchStore.disposable()
 formSearchStore.setIndices(searchStore.indices)
 
-const filterProject = formSearchStore.getFilter({ name: 'project' })
+const allProjects = computed(() => core.projects || [])
+const selectedProjects = computed({
+  get: () => formSearchStore.indices.map(name => ({ name })),
+  set: projects => formSearchStore.setIndices(projects.map(p => p.name))
+})
 const filterPath = formSearchStore.getFilter({ name: 'path' })
 const filterContentType = formSearchStore.getFilter({ name: 'contentType' })
 const filterCreationDate = formSearchStore.getFilter({ name: 'creationDate' })
@@ -82,6 +86,10 @@ const isValid = computed(() => {
 
 const selectionBadges = computed(() => {
   const badges = []
+  for (const project of selectedProjects.value) {
+    const label = allProjects.value.find(p => p.name === project.name)?.label || project.name
+    badges.push({ type: 'project', value: project.name, label, icon: IPhCirclesThreePlus })
+  }
   if (query.value.trim()) {
     badges.push({ type: 'query', label: query.value.trim(), icon: IPhMagnifyingGlass })
   }
@@ -95,10 +103,14 @@ const selectionBadges = computed(() => {
 })
 
 const selectedLanguageNames = computed(() => {
-  return asrStore.selectedLanguages
+  const names = asrStore.selectedLanguages
     .map(code => languageDisplayNames.of(code))
     .filter(Boolean)
-    .join(' and ')
+  if (names.length <= 1) {
+    return names[0] || ''
+  }
+  const rest = names.length - 1
+  return `${names[0]} and ${rest} other language${rest > 1 ? 's' : ''}`
 })
 
 const MODEL_LABELS = {
@@ -182,7 +194,7 @@ const filterKey = computed(() => {
 })
 
 watch(
-  () => [filterKey.value, query.value],
+  () => [filterKey.value, query.value, (formSearchStore.indices ?? []).join(',')],
   fetchDocumentCounts
 )
 
@@ -198,6 +210,9 @@ onMounted(async () => {
 function dismissBadge(badge) {
   if (badge.type === 'query') {
     query.value = ''
+  }
+  else if (badge.type === 'project') {
+    selectedProjects.value = selectedProjects.value.filter(p => p.name !== badge.value)
   }
   else {
     formSearchStore.removeFilterValue({ name: badge.filterName, value: badge.value })
@@ -284,12 +299,22 @@ async function submit() {
         class="transcription-new__filters"
         content-class="bg-transparent rounded-0 d-flex flex-column gap-3 px-0 m-0"
       >
-        <component
-          :is="FilterTypeProject"
-          :filter="filterProject"
-          class="p-3"
-          content-class="pb-0"
-        />
+        <div class="row align-items-center p-3">
+          <label class="col-sm-12 col-md-4 col-lg-3 d-flex align-items-center gap-2 form-label text-body-emphasis m-0">
+            <i-ph-circles-three-plus
+              class="text-tertiary"
+              style="font-size: 1.25em"
+            />
+            {{ $t('asr.newForm.project') }}
+          </label>
+          <div class="col">
+            <component
+              :is="ProjectDropdownSelector"
+              v-model="selectedProjects"
+              :projects="allProjects"
+            />
+          </div>
+        </div>
         <div class="input-group">
           <span class="input-group-text bg-transparent border-end-0">
             <i-ph-magnifying-glass />
