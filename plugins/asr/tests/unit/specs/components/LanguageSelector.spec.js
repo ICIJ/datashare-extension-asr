@@ -59,9 +59,14 @@ describe('LanguageSelector.vue', () => {
   })
 
   it('displays selected language names', async () => {
-    store.selectedLanguages.push('pt', 'fr')
+    store.selectedLanguages.push('pt')
     await flushPromises()
-    expect(wrapper.text()).toContain('Portuguese, French')
+    expect(wrapper.text()).toContain('Portuguese')
+
+    store.selectedLanguages.push('fr')
+    await flushPromises()
+    expect(wrapper.text()).toContain('Portuguese')
+    expect(wrapper.text()).toContain('French')
   })
 
   it('filters languages by search', async () => {

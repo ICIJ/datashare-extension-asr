@@ -6,6 +6,7 @@ import { useCore } from '@/composables/useCore'
 
 const core = useCore()
 const FormControlSearch = defineAsyncComponent(() => core.findComponent('Form/FormControl/FormControlSearch'))
+const ParentOverflow = defineAsyncComponent(() => core.findComponent('ParentOverflow/ParentOverflow'))
 
 const languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
 
@@ -88,10 +89,16 @@ const filteredOtherLanguages = computed(() => {
 })
 
 const displayValue = computed(() => {
-  if (asrStore.selectedLanguages.length === 0) return 'Unknown'
-  return asrStore.selectedLanguages
-    .map(code => languageName(code))
-    .join(', ')
+  const names = asrStore.selectedLanguages.map(code => languageName(code))
+  if (names.length === 0) return 'Unknown'
+  return names.join(', ')
+})
+
+const displayValueCondensed = computed(() => {
+  const names = asrStore.selectedLanguages.map(code => languageName(code))
+  if (names.length <= 1) return names[0] || 'Unknown'
+  const rest = names.length - 1
+  return `${names[0]} + ${rest} other language${rest > 1 ? 's' : ''}`
 })
 
 function toggle(code) {
@@ -126,7 +133,15 @@ function isSelected(code) {
         toggle-class="w-100 d-flex justify-content-between align-items-center text-truncate"
       >
         <template #button-content>
-          {{ displayValue }}
+          <component
+            :is="ParentOverflow"
+            class="flex-grow-1 text-start"
+          >
+            {{ displayValue }}
+            <template #fallback>
+              {{ displayValueCondensed }}
+            </template>
+          </component>
         </template>
         <div
           class="language-selector__search mb-2"
