@@ -435,6 +435,7 @@ async function submit() {
                 class="form-check-input"
                 type="radio"
                 :value="true"
+                disabled
               >
               <label
                 class="form-check-label"
@@ -448,6 +449,7 @@ async function submit() {
                 class="form-check-input"
                 type="radio"
                 :value="false"
+                disabled
               >
               <label
                 class="form-check-label"
@@ -526,6 +528,11 @@ async function submit() {
 .transcription-new__filters :deep(.filters-panel-section-filter) {
   background: var(--bs-body-bg);
   margin: 0;
+}
+
+.transcription-new__options {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .transcription-new__badge {
