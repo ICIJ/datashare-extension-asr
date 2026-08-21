@@ -104,6 +104,7 @@ function docState() {
 }
 
 const isQueryBased = computed(() => {
+  if (task.value?.args?.query) return true
   const raw = task.value?.args?.docs
   if (!raw) return false
   if (Array.isArray(raw) && raw.length === 2 && typeof raw[0] === 'string' && raw[0].startsWith('java.util.')) {
@@ -128,6 +129,13 @@ const isFinished = computed(() => {
 })
 
 function getQueryString() {
+  const q = task.value?.args?.query
+  if (q) {
+    if (q.query_string?.query) return q.query_string.query
+    if (q.match_all !== undefined) return '*'
+    if (q.bool?.must?.[0]?.query_string?.query) return q.bool.must[0].query_string.query
+    return JSON.stringify(q)
+  }
   const label = queryLabel()
   return label === '—' ? '*' : label
 }
@@ -572,6 +580,22 @@ onMounted(fetchTask)
                       />
                       {{ taskLanguages }}
                     </div>
+                  </div>
+                </li>
+                <li v-if="isQueryBased">
+                  <div
+                    class="transcription-detail__card__entry d-flex align-items-center gap-2"
+                  >
+                    <component
+                      :is="IPhMagnifyingGlass"
+                      class="transcription-detail__card__entry__icon text-secondary-emphasis flex-shrink-0"
+                    />
+                    <router-link
+                      :to="toSeeDocuments"
+                      class="text-truncate"
+                    >
+                      {{ getQueryString() }}
+                    </router-link>
                   </div>
                 </li>
                 <li>

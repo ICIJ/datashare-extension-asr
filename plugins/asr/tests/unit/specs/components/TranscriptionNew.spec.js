@@ -87,7 +87,7 @@ describe('TranscriptionNew.vue', () => {
   })
 
   describe('submit', () => {
-    it('calls transcribeBatch and navigates to the list', async () => {
+    it('calls transcribeBatch with docs and query and navigates to the list', async () => {
       createWrapper()
       await flushPromises()
       const asrStore = useAsrStore()
@@ -99,9 +99,32 @@ describe('TranscriptionNew.vue', () => {
       await flushPromises()
 
       expect(sendActionMock).toHaveBeenCalledWith('/api/asr/transcribe', expect.objectContaining({
-        method: 'POST'
+        method: 'POST',
+        data: expect.objectContaining({
+          docs: [],
+          query: { match_all: {} }
+        })
       }))
       expect(core.router.push).toHaveBeenCalledWith({ name: 'task.transcriptions' })
+    })
+
+    it('sends a query_string query when search text is provided', async () => {
+      createWrapper()
+      await flushPromises()
+      const asrStore = useAsrStore()
+      wrapper.vm.name = 'My transcription'
+      wrapper.vm.query = 'exp*'
+      asrStore.selectedLanguages = ['en']
+      sendActionMock.mockResolvedValue({ taskId: 'task-123' })
+
+      await wrapper.vm.submit()
+      await flushPromises()
+
+      expect(sendActionMock).toHaveBeenCalledWith('/api/asr/transcribe', expect.objectContaining({
+        data: expect.objectContaining({
+          query: { query_string: { query: 'exp*' } }
+        })
+      }))
     })
 
     it('includes the selected model in the payload', async () => {

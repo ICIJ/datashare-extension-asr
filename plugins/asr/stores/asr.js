@@ -61,18 +61,19 @@ export const useAsrStore = defineStore('asr', () => {
     }
   }
 
-  async function transcribeBatch(project, docIds, { name, model } = {}) {
-    return api.sendAction('/api/asr/transcribe', {
-      method: 'POST',
-      data: {
-        project,
-        docs: docIds,
-        name,
-        model,
-        languages: [...selectedLanguages.value],
-        batch_size: DEFAULT_BATCH_SIZE
-      }
-    })
+  async function transcribeBatch(project, docIds, { name, model, query } = {}) {
+    const data = {
+      project,
+      docs: docIds,
+      name,
+      model,
+      languages: [...selectedLanguages.value],
+      batch_size: DEFAULT_BATCH_SIZE
+    }
+    if (query) {
+      data.query = query
+    }
+    return api.sendAction('/api/asr/transcribe', { method: 'POST', data })
   }
 
   async function transcribe(project, docId, { name, model } = {}) {

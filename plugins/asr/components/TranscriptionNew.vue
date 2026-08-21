@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, defineAsyncComponent, onMounted, watch } from 'vue'
+import { ref, computed, defineAsyncComponent, onMounted, watch, getCurrentInstance } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
 import IPhTextAa from '~icons/ph/text-aa'
 import IPhBrain from '~icons/ph/brain'
@@ -24,6 +24,7 @@ import LanguageSelector from '@/components/LanguageSelector.vue'
 
 const core = useCore()
 const asrStore = useAsrStore()
+const { $toast: toast } = getCurrentInstance()?.proxy ?? {}
 
 const PageHeader = defineAsyncComponent(() => core.findComponent('PageHeader/PageHeader'))
 const PageContainer = defineAsyncComponent(() => core.findComponent('PageContainer/PageContainer'))
@@ -245,16 +246,40 @@ function reset() {
   formSearchStore.resetFilterValues()
 }
 
+function buildSearchQuery() {
+  const filterClauses = (formSearchStore.activeFilters ?? []).map(filter => ({
+    terms: { [filter.key]: filter.values }
+  }))
+  const hasQuery = query.value.trim().length > 0
+  const hasFilters = filterClauses.length > 0
+  if (!hasQuery && !hasFilters) {
+    return { match_all: {} }
+  }
+  if (hasQuery && !hasFilters) {
+    return { query_string: { query: query.value.trim() } }
+  }
+  return {
+    bool: {
+      must: hasQuery
+        ? [{ query_string: { query: query.value.trim() } }]
+        : [{ match_all: {} }],
+      filter: filterClauses
+    }
+  }
+}
+
 async function submit() {
   if (!isValid.value || submitting.value) return
   submitting.value = true
   try {
     const project = formSearchStore.indices?.join(',') || core.projectIds.join(',')
-    await asrStore.transcribeBatch(project, [], { name: name.value, model: selectedModel.value })
+    await asrStore.transcribeBatch(project, [], { name: name.value, model: selectedModel.value, query: buildSearchQuery() })
     core.router.push({ name: 'task.transcriptions' })
   }
   catch {
-    // error handling will be added later
+    const { href } = core.router.resolve({ name: 'task.transcriptions' })
+    const linkLabel = core.i18n.global.t('asr.viewTranscriptions')
+    toast?.error(core.i18n.global.t('asr.transcriptionError', { name: name.value }), { href, linkLabel })
   }
   finally {
     submitting.value = false
