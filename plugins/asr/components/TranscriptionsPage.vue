@@ -35,7 +35,7 @@ const PageContainer = defineAsyncComponent(() => core.findComponent('PageContain
 const RowPagination = defineAsyncComponent(() => core.findComponent('RowPagination/RowPagination'))
 const DisplayStatus = defineAsyncComponent(() => core.findComponent('Display/DisplayStatus'))
 const DisplayProgress = defineAsyncComponent(() => core.findComponent('Display/DisplayProgress'))
-const DisplayProjectList = defineAsyncComponent(() => core.findComponent('Display/DisplayProjectList'))
+const ProjectsButton = defineAsyncComponent(() => core.findComponent('Project/ProjectsButton'))
 const DismissableAlert = defineAsyncComponent(() => core.findComponent('Dismissable/DismissableAlert'))
 const ButtonIcon = defineAsyncComponent(() => core.findComponent('Button/ButtonIcon'))
 const AppModal = defineAsyncComponent(() => core.findComponent('AppModal/AppModal'))
@@ -192,7 +192,10 @@ function taskModel(task) {
 
 function taskProject(task) {
   const args = task.args || task.properties || {}
-  return args.project || '—'
+  const project = args.project
+  if (!project) return ['—']
+  if (Array.isArray(project)) return project.flat().filter(p => typeof p === 'string')
+  return String(project).split(',').map(p => p.trim())
 }
 
 function taskUser(task) {
@@ -505,8 +508,8 @@ onUnmounted(() => {
               </td>
               <td v-if="isVisible('project')">
                 <component
-                  :is="DisplayProjectList"
-                  :values="taskProject(task)"
+                  :is="ProjectsButton"
+                  :projects="taskProject(task)"
                 />
               </td>
               <td v-if="isVisible('user')">

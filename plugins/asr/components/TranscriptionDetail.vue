@@ -94,7 +94,10 @@ function docCategory(docId) {
 }
 
 function docProject() {
-  return [task.value?.args?.project].filter(Boolean)
+  const project = task.value?.args?.project
+  if (!project) return []
+  if (Array.isArray(project)) return project.flat().filter(p => typeof p === 'string')
+  return String(project).split(',').map(p => p.trim())
 }
 
 function docState() {
@@ -192,7 +195,10 @@ const taskUser = computed(() => {
 })
 
 const taskProjects = computed(() => {
-  return [task.value?.args?.project].filter(Boolean)
+  const project = task.value?.args?.project
+  if (!project) return []
+  if (Array.isArray(project)) return project.flat().filter(p => typeof p === 'string')
+  return String(project).split(',').map(p => p.trim())
 })
 
 const fullTaskId = computed(() => `asr.transcription-${props.taskId}`)
