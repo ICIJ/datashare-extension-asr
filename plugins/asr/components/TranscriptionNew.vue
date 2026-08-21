@@ -35,6 +35,7 @@ const FilterType = defineAsyncComponent(() => core.findComponent('Filter/FilterT
 const FilterTypeDateRange = defineAsyncComponent(() => core.findComponent('Filter/FilterType/FilterTypeDateRange'))
 const FilterTypeStarred = defineAsyncComponent(() => core.findComponent('Filter/FilterType/FilterTypeStarred'))
 const FilterTypeRecommendedBy = defineAsyncComponent(() => core.findComponent('Filter/FilterType/FilterTypeRecommendedBy'))
+const FiltersPanelSectionFilterEntry = defineAsyncComponent(() => core.findComponent('FiltersPanel/FiltersPanelSectionFilterEntry'))
 
 const { useSearchStore } = core.stores
 const searchStore = useSearchStore()
@@ -207,6 +208,22 @@ onMounted(async () => {
   fetchDocumentCounts()
 })
 
+function filterSupportedEntries(entries) {
+  return entries.filter(({ item }) => SUPPORTED_CONTENT_TYPES.has(item.key))
+}
+
+function hasContentTypeValue(item) {
+  return formSearchStore.hasFilterValue({ name: 'contentType', value: item.key })
+}
+
+function toggleContentTypeValue(item, checked) {
+  if (checked) {
+    formSearchStore.addFilterValue({ name: 'contentType', value: item.key })
+  } else {
+    formSearchStore.removeFilterValue({ name: 'contentType', value: item.key })
+  }
+}
+
 function dismissBadge(badge) {
   if (badge.type === 'query') {
     query.value = ''
@@ -341,7 +358,19 @@ async function submit() {
           hide-contextualize
           class="p-3"
           content-class="pb-0"
-        />
+        >
+          <template #default="{ entries }">
+            <component
+              :is="FiltersPanelSectionFilterEntry"
+              v-for="{ item, label } in filterSupportedEntries(entries)"
+              :key="item.key"
+              :label="label"
+              :count="item.doc_count"
+              :model-value="hasContentTypeValue(item)"
+              @update:model-value="toggleContentTypeValue(item, $event)"
+            />
+          </template>
+        </component>
         <component
           :is="FilterTypeDateRange"
           :filter="filterCreationDate"
