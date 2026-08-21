@@ -105,8 +105,10 @@ public class AsrResourceTest implements FluentRestTest {
 
         // THEN
         Map<String, Object> args = taskManager.startedTasks.getFirst().args;
-        assertThat(args).includes(entry("batch_size", 5));
-        assertThat((List<?>) args.get("project")).containsOnly(PROJECT);
+        assertThat(args).includes(
+                entry("project", PROJECT),
+                entry("batch_size", 5)
+        );
         assertThat((List<?>) args.get("docs")).containsOnly("doc1", "doc2");
     }
 

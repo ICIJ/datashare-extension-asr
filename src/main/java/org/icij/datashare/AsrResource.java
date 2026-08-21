@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,9 +84,8 @@ public class AsrResource {
             return new JsonPayload(400, new ErrorResponse("missing docs"));
         }
 
-        List<String> projects = Arrays.stream(project.split(",")).map(String::trim).toList();
         Map<String, Object> taskArgs = new HashMap<>();
-        taskArgs.put("project", projects);
+        taskArgs.put("project", project);
         taskArgs.put("docs", docs);
         if (body.containsKey("config")) {
             taskArgs.put("config", body.get("config"));
