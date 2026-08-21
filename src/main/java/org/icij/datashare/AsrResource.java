@@ -73,8 +73,10 @@ public class AsrResource {
         }
 
         User user = (User) context.currentUser();
-        if (!user.isGranted(project)) {
-            throw new net.codestory.http.errors.UnauthorizedException();
+        for (String p : project.split(",")) {
+            if (!user.isGranted(p.trim())) {
+                throw new net.codestory.http.errors.UnauthorizedException();
+            }
         }
 
         Object docs = body.get("docs");
@@ -95,6 +97,12 @@ public class AsrResource {
             taskArgs.put("name", body.get("name"));
         }
         taskArgs.put("batch_size", body.getOrDefault("batch_size", 2));
+        if (body.containsKey("query")) {
+            taskArgs.put("query", body.get("query"));
+        }
+        if (body.containsKey("model")) {
+            taskArgs.put("model", body.get("model"));
+        }
 
         Task<String> task = new Task<>(ASR_WORKFLOW, user, taskArgs);
         String taskId = taskManager.startTask(task, new Group(ASR_GROUP));
