@@ -14,7 +14,7 @@ import IPhCalendarPlus from '~icons/ph/calendar-plus'
 import IPhStar from '~icons/ph/star'
 import IPhHash from '~icons/ph/hash'
 import IPhUsers from '~icons/ph/users'
-import IPhFunnelSimple from '~icons/ph/funnel-simple'
+import IPhPath from '~icons/ph/path'
 import IPhCheckCircle from '~icons/ph/check-circle'
 import IPhWarning from '~icons/ph/warning'
 
@@ -320,7 +320,7 @@ async function submit() {
               class="text-tertiary"
               style="font-size: 1.25em"
             />
-            {{ $t('asr.newForm.name') }}
+            {{ $t('asr.newForm.name') }} *
           </label>
           <div class="col">
             <input
@@ -560,7 +560,7 @@ async function submit() {
         class="transcription-new__selection"
       >
         <h6 class="d-flex align-items-center gap-2 text-body-secondary mb-3">
-          <IPhFunnelSimple />
+          <IPhPath />
           {{ $t('asr.newForm.yourSelection') }}
         </h6>
         <div class="d-flex flex-wrap gap-2">
