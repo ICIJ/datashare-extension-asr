@@ -1,0 +1,15 @@
+export function capitalize(str) {
+  if (!str || str === '—') return str
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
+}
+
+export function formatTimestamp(seconds) {
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = Math.floor(seconds % 60)
+  return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+}
+
+export function formatTimeRange(timestamp) {
+  return `${formatTimestamp(timestamp.start_s)}-${formatTimestamp(timestamp.end_s)}`
+}

@@ -25,3 +25,12 @@ release:
 unit:
 	mvn test
 
+plugin-install:
+	cd plugins/asr && yarn install
+
+plugin-build:
+	cd plugins/asr && yarn build
+
+plugin-test:
+	cd plugins/asr && npx vitest run
+
