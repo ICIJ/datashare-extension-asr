@@ -33,6 +33,10 @@ export const useAsrStore = defineStore('asr', () => {
   const taskId = ref(null)
   const taskState = ref(null) // null | 'RUNNING' | 'DONE' | 'ERROR' | 'CANCELLED'
 
+  const settingsOrder = ref('desc')
+  const settingsPerPage = ref(25)
+  const settingsProperties = ref(['state', 'name', 'progress', 'category', 'languages', 'model', 'project', 'user', 'launchedOn'])
+
   const transcription = ref(null)
   const isTranscribing = computed(() => taskState.value === 'RUNNING')
   const hasTranscription = computed(() => transcription.value !== null)
@@ -129,6 +133,9 @@ export const useAsrStore = defineStore('asr', () => {
     transcribeBatch,
     stopTranscription,
     pollTaskStatus,
+    settingsOrder,
+    settingsPerPage,
+    settingsProperties,
     openPanel,
     closePanel,
     reset
