@@ -10,6 +10,7 @@ import TranscribePanelHook from './components/TranscribePanelHook.vue'
 import TranscriptionDownloadButtons from './components/TranscriptionDownloadButtons.vue'
 import TranscriptionsBoardEntry from './components/TranscriptionsBoardEntry.vue'
 import TranscriptionDetail from './components/TranscriptionDetail.vue'
+import TranscriptionNew from './components/TranscriptionNew.vue'
 
 document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
   core.i18n.global.mergeLocaleMessage('en', {
@@ -94,7 +95,33 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       detailProjects: 'Projects',
       taskNotFound: 'Task not found.',
       newTranscription: 'New transcription',
-      allSupportedTypes: 'All supported types'
+      allSupportedTypes: 'All supported types',
+      newForm: {
+        title: 'Create a new transcription',
+        name: 'Name',
+        namePlaceholder: 'Give a name to your transcription',
+        project: 'Project',
+        documents: 'Documents to transcribe',
+        documentsPlaceholder: 'Type queries, use operators or type regex...',
+        languages: 'Languages',
+        languagesHint: 'All the documents must be in the same language(s). If you have documents with mixed languages, refine your document selection at step 2.',
+        model: 'Model',
+        selectModel: 'Select a model',
+        parakeetInfo: 'Parakeet is Nvidia\'s Parakeet-tdt-0.6b-v3.',
+        fasterWhisperInfo: 'Faster-Whisper is Systran\'s model.',
+        options: 'Options',
+        optionsNotInV1: 'NOT IN V1',
+        skipAlreadyTranscribed: 'Skip already transcribed documents',
+        yes: 'Yes',
+        no: 'No',
+        yourSelection: 'Your selection :',
+        selectionSummaryCount: '{audioCount} audio and {videoCount} video documents',
+        selectionSummaryRest: 'in {languages} are selected to be transcribed with {model}.',
+        selectionWarningCount: '{count} selected documents',
+        selectionWarningRest: 'won\'t be transcribed because their format is not supported.',
+        reset: 'Reset',
+        transcribe: 'Transcribe'
+      }
     }
   })
 
@@ -176,6 +203,17 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
         },
         meta: {
           title: 'asr.transcriptions',
+          icon: markRaw(IPhFileAudio)
+        }
+      })
+      core.router.addRoute('task', {
+        name: 'task.transcriptions.new',
+        path: 'transcriptions/new',
+        components: {
+          default: TranscriptionNew
+        },
+        meta: {
+          title: 'asr.newForm.title',
           icon: markRaw(IPhFileAudio)
         }
       })
