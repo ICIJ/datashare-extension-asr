@@ -31,25 +31,16 @@ describe('TranscriptionNew.vue', () => {
   }
 
   describe('form validation', () => {
-    it('is invalid when name is empty', async () => {
+    it('is invalid when no languages are selected', async () => {
       createWrapper()
       await flushPromises()
       expect(wrapper.vm.isValid).toBe(false)
     })
 
-    it('is invalid when name is set but no languages selected', async () => {
-      createWrapper()
-      await flushPromises()
-      wrapper.vm.name = 'My transcription'
-      await flushPromises()
-      expect(wrapper.vm.isValid).toBe(false)
-    })
-
-    it('is valid when name and languages are set', async () => {
+    it('is valid when languages are selected', async () => {
       createWrapper()
       await flushPromises()
       const asrStore = useAsrStore()
-      wrapper.vm.name = 'My transcription'
       asrStore.selectedLanguages = ['en']
       await flushPromises()
       expect(wrapper.vm.isValid).toBe(true)
@@ -57,17 +48,15 @@ describe('TranscriptionNew.vue', () => {
   })
 
   describe('reset', () => {
-    it('clears name, query and model', async () => {
+    it('clears query and model', async () => {
       createWrapper()
       await flushPromises()
       const defaultModel = wrapper.vm.selectedModel
-      wrapper.vm.name = 'My transcription'
       wrapper.vm.query = 'some query'
       wrapper.vm.selectedModel = 'model-b'
 
       wrapper.vm.reset()
 
-      expect(wrapper.vm.name).toBe('')
       expect(wrapper.vm.query).toBe('')
       expect(wrapper.vm.selectedModel).toBe(defaultModel)
     })
@@ -89,7 +78,6 @@ describe('TranscriptionNew.vue', () => {
       createWrapper()
       await flushPromises()
       const asrStore = useAsrStore()
-      wrapper.vm.name = 'My transcription'
       asrStore.selectedLanguages = ['en']
       sendActionMock.mockResolvedValue({ taskId: 'task-123' })
 
@@ -110,7 +98,6 @@ describe('TranscriptionNew.vue', () => {
       createWrapper()
       await flushPromises()
       const asrStore = useAsrStore()
-      wrapper.vm.name = 'My transcription'
       wrapper.vm.query = 'exp*'
       asrStore.selectedLanguages = ['en']
       sendActionMock.mockResolvedValue({ taskId: 'task-123' })
@@ -129,7 +116,6 @@ describe('TranscriptionNew.vue', () => {
       createWrapper()
       await flushPromises()
       const asrStore = useAsrStore()
-      wrapper.vm.name = 'My transcription'
       wrapper.vm.selectedModel = 'model-b'
       asrStore.selectedLanguages = ['en']
       sendActionMock.mockResolvedValue({ taskId: 'task-123' })
