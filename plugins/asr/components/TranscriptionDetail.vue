@@ -157,6 +157,12 @@ const toSeeDocuments = computed(() => {
   return { name: 'search', query: { q: getDocs().map(id => `_id:${id}`).join(' OR ') } }
 })
 
+const searchHref = computed(() => {
+  if (!isQueryBased.value) return ''
+  const resolved = core.router.resolve(toSeeDocuments.value)
+  return `${window.location.origin}${resolved.href}`
+})
+
 const languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
 
 const taskLanguages = computed(() => {
@@ -600,7 +606,7 @@ onMounted(fetchTask)
                       :to="toSeeDocuments"
                       class="text-truncate"
                     >
-                      {{ getQueryString() }}
+                      {{ searchHref }}
                     </router-link>
                   </div>
                 </li>
