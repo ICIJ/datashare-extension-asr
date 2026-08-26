@@ -76,7 +76,7 @@ const languageDisplayNames = new Intl.DisplayNames(['en'], { type: 'language' })
 const query = ref('')
 const name = ref('')
 const selectedModel = ref('parakeet')
-const skipAlreadyTranscribed = ref(true)
+// const skipAlreadyTranscribed = ref(true)
 const submitting = ref(false)
 
 const breadcrumbRoutes = ['task', 'task.transcriptions', 'task.transcriptions.new']
@@ -243,7 +243,7 @@ function reset() {
   name.value = ''
   asrStore.selectedLanguages = []
   selectedModel.value = 'parakeet'
-  skipAlreadyTranscribed.value = true
+  // skipAlreadyTranscribed.value = true
   formSearchStore.resetFilterValues()
 }
 
@@ -508,7 +508,7 @@ async function submit() {
         </p>
       </component>
 
-      <!-- Step 4: Options (NOT IN V1) -->
+      <!-- Step 4: Options — disabled until V2
       <component
         :is="FormStep"
         :index="4"
@@ -516,7 +516,6 @@ async function submit() {
       >
         <template #title>
           {{ $t('asr.newForm.options') }}
-          <span class="text-danger ms-2">{{ $t('asr.newForm.optionsNotInV1') }}</span>
         </template>
         <div class="row align-items-center">
           <label class="col-sm-12 col-md-4 col-lg-3 d-flex align-items-center gap-2 form-label text-body-emphasis m-0">
@@ -530,7 +529,6 @@ async function submit() {
                 class="form-check-input"
                 type="radio"
                 :value="true"
-                disabled
               >
               <label
                 class="form-check-label"
@@ -544,7 +542,6 @@ async function submit() {
                 class="form-check-input"
                 type="radio"
                 :value="false"
-                disabled
               >
               <label
                 class="form-check-label"
@@ -554,6 +551,7 @@ async function submit() {
           </div>
         </div>
       </component>
+      -->
 
       <!-- Point 5: Your selection -->
       <div
