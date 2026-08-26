@@ -98,8 +98,6 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       allSupportedTypes: 'All supported types',
       newForm: {
         title: 'Create a new transcription',
-        name: 'Name',
-        namePlaceholder: 'Give a name to your transcription',
         project: 'Project',
         documents: 'Documents to transcribe',
         documentsPlaceholder: 'Type queries, use operators or type regex...',

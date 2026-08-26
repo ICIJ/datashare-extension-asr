@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed, defineAsyncComponent, onMounted, watch, getCurrentInstance } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
-import IPhTextAa from '~icons/ph/text-aa'
 import IPhBrain from '~icons/ph/brain'
 import IPhMagnifyingGlass from '~icons/ph/magnifying-glass'
 import IPhCirclesThreePlus from '~icons/ph/circles-three-plus'
@@ -74,16 +73,13 @@ const FILTER_ICONS = {
 const languageDisplayNames = new Intl.DisplayNames(['en'], { type: 'language' })
 
 const query = ref('')
-const name = ref('')
 const selectedModel = ref('parakeet')
-// const skipAlreadyTranscribed = ref(true)
 const submitting = ref(false)
 
 const breadcrumbRoutes = ['task', 'task.transcriptions', 'task.transcriptions.new']
 
 const isValid = computed(() => {
-  return name.value.trim().length > 0
-    && asrStore.selectedLanguages.length > 0
+  return asrStore.selectedLanguages.length > 0
 })
 
 const selectionBadges = computed(() => {
@@ -240,10 +236,8 @@ function dismissBadge(badge) {
 
 function reset() {
   query.value = ''
-  name.value = ''
   asrStore.selectedLanguages = []
   selectedModel.value = 'parakeet'
-  // skipAlreadyTranscribed.value = true
   formSearchStore.resetFilterValues()
 }
 
@@ -274,13 +268,14 @@ async function submit() {
   submitting.value = true
   try {
     const project = formSearchStore.indices?.join(',') || core.projectIds.join(',')
-    await asrStore.transcribeBatch(project, [], { name: name.value, model: selectedModel.value, query: buildSearchQuery() })
+    const name = `Transcription ${new Date().toLocaleDateString()}`
+    await asrStore.transcribeBatch(project, [], { name, model: selectedModel.value, query: buildSearchQuery() })
     core.router.push({ name: 'task.transcriptions' })
   }
   catch {
     const { href } = core.router.resolve({ name: 'task.transcriptions' })
     const linkLabel = core.i18n.global.t('asr.viewTranscriptions')
-    toast?.error(core.i18n.global.t('asr.transcriptionError', { name: name.value }), { href, linkLabel })
+    toast?.error(core.i18n.global.t('asr.transcriptionError', { name: '' }), { href, linkLabel })
   }
   finally {
     submitting.value = false
@@ -309,36 +304,11 @@ async function submit() {
       @reset="reset"
       @submit="submit"
     >
-      <!-- Step 1: Name -->
-      <component
-        :is="FormStep"
-        :title="$t('asr.newForm.name')"
-        :index="1"
-      >
-        <div class="row align-items-center">
-          <label class="col-sm-12 col-md-4 col-lg-3 d-flex align-items-center gap-2 form-label text-body-emphasis m-0">
-            <i-ph-text-aa
-              class="text-tertiary"
-              style="font-size: 1.25em"
-            />
-            {{ $t('asr.newForm.name') }} *
-          </label>
-          <div class="col">
-            <input
-              v-model="name"
-              type="text"
-              class="form-control"
-              :placeholder="$t('asr.newForm.namePlaceholder')"
-            >
-          </div>
-        </div>
-      </component>
-
-      <!-- Step 2: Documents to transcribe -->
+      <!-- Step 1: Documents to transcribe -->
       <component
         :is="FormStep"
         :title="$t('asr.newForm.documents')"
-        :index="2"
+        :index="1"
         class="transcription-new__filters"
         content-class="bg-transparent rounded-0 d-flex flex-column gap-3 px-0 m-0"
       >
@@ -449,7 +419,7 @@ async function submit() {
       <component
         :is="FormStep"
         :title="$t('asr.newForm.languages')"
-        :index="3"
+        :index="2"
       >
         <language-selector />
         <p class="text-muted small mt-2 mb-0">
@@ -461,7 +431,7 @@ async function submit() {
       <component
         :is="FormStep"
         :title="$t('asr.newForm.model')"
-        :index="3"
+        :index="2"
       >
         <div class="row align-items-center mb-3">
           <label class="col-sm-12 col-md-4 col-lg-3 d-flex align-items-center gap-2 form-label text-body-emphasis m-0">
@@ -508,10 +478,10 @@ async function submit() {
         </p>
       </component>
 
-      <!-- Step 4: Options — disabled until V2
+      <!-- Step 3: Options — disabled until V2
       <component
         :is="FormStep"
-        :index="4"
+        :index="3"
         class="transcription-new__options"
       >
         <template #title>
