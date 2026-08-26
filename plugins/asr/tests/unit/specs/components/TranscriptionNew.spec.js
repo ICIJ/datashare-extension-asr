@@ -57,21 +57,19 @@ describe('TranscriptionNew.vue', () => {
   })
 
   describe('reset', () => {
-    it('clears name, query, model and skipAlreadyTranscribed', async () => {
+    it('clears name, query and model', async () => {
       createWrapper()
       await flushPromises()
       const defaultModel = wrapper.vm.selectedModel
       wrapper.vm.name = 'My transcription'
       wrapper.vm.query = 'some query'
       wrapper.vm.selectedModel = 'model-b'
-      wrapper.vm.skipAlreadyTranscribed = false
 
       wrapper.vm.reset()
 
       expect(wrapper.vm.name).toBe('')
       expect(wrapper.vm.query).toBe('')
       expect(wrapper.vm.selectedModel).toBe(defaultModel)
-      expect(wrapper.vm.skipAlreadyTranscribed).toBe(true)
     })
 
     it('clears selected languages', async () => {
