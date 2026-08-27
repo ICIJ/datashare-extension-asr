@@ -16,6 +16,15 @@ import confirmImage from '@/assets/app-modal-default-light.svg'
 import confirmImageDark from '@/assets/app-modal-default-dark.svg'
 import IPhWarning from '~icons/ph/warning'
 import IPhMagnifyingGlass from '~icons/ph/magnifying-glass'
+import IPhFunnel from '~icons/ph/funnel'
+import IPhTreeStructure from '~icons/ph/tree-structure'
+import IPhFile from '~icons/ph/file'
+import IPhGlobe from '~icons/ph/globe'
+import IPhPaperclip from '~icons/ph/paperclip'
+import IPhCalendarPlus from '~icons/ph/calendar-plus'
+import IPhStar from '~icons/ph/star'
+import IPhHash from '~icons/ph/hash'
+import IPhUsers from '~icons/ph/users'
 import { useCore } from '@/composables/useCore'
 import { useAsrStore } from '@/stores/asr'
 import { capitalize } from '@/utils/formatting'
@@ -143,9 +152,96 @@ function getQueryString() {
   return label === '—' ? '*' : label
 }
 
+const ES_KEY_TO_FILTER_NAME = {
+  'contentType': 'contentType',
+  'tags': 'tags',
+  'language': 'language',
+  'extractionLevel': 'extractionLevel',
+  'byDirname': 'path',
+  'metadata.tika_metadata_dcterms_created': 'creationDate',
+  'extractionDate': 'indexingDate',
+  '_id': 'starred'
+}
+
+const FILTER_ICONS = {
+  path: IPhTreeStructure,
+  contentType: IPhFile,
+  creationDate: IPhCalendarBlank,
+  language: IPhGlobe,
+  extractionLevel: IPhPaperclip,
+  indexingDate: IPhCalendarPlus,
+  starred: IPhStar,
+  tags: IPhHash,
+  recommendedBy: IPhUsers
+}
+
+const CONTENT_TYPE_LABELS = {
+  'audio/aac': 'AAC audio',
+  'audio/aiff': 'AIFF audio',
+  'audio/mp4': 'MP4 audio',
+  'audio/mpeg': 'MPEG audio',
+  'audio/ogg': 'OGG audio',
+  'audio/vnd.wave': 'WAV audio',
+  'audio/wav': 'WAV audio',
+  'audio/wave': 'WAV audio',
+  'audio/x-wav': 'WAV audio',
+  'audio/x-pn-wav': 'WAV audio',
+  'video/mp4': 'MP4 audio/video',
+  'video/mpeg': 'MPEG video',
+  'video/mov': 'MOV video'
+}
+
+function filterValueLabel(filterName, value) {
+  const { t } = core.i18n.global
+  if (filterName === 'contentType') {
+    return CONTENT_TYPE_LABELS[value] || value
+  }
+  if (filterName === 'language') {
+    return t(`filter.lang.${value}`, value)
+  }
+  if (filterName === 'extractionLevel') {
+    const levelKey = `level${String(value).padStart(2, '0')}`
+    return t(`filter.level.${levelKey}`, value)
+  }
+  if (filterName === 'starred') {
+    return value === 'true' ? t('filter.starred') : t('filter.notStarred')
+  }
+  return value
+}
+
+const taskFilters = computed(() => {
+  const filters = task.value?.args?.query?.bool?.filter
+  if (!Array.isArray(filters)) return []
+  const result = []
+  for (const clause of filters) {
+    if (!clause.terms) continue
+    const [esKey, values] = Object.entries(clause.terms)[0]
+    const filterName = ES_KEY_TO_FILTER_NAME[esKey] || esKey
+    const icon = FILTER_ICONS[filterName] || IPhFile
+    for (const value of values) {
+      result.push({ filterName, esKey, value, label: filterValueLabel(filterName, value), icon })
+    }
+  }
+  return result
+})
+
+function buildFilterRouteQuery() {
+  const query = {}
+  for (const { filterName, value } of taskFilters.value) {
+    const key = `f[${filterName}]`
+    if (query[key]) {
+      query[key] = [].concat(query[key], value)
+    }
+    else {
+      query[key] = value
+    }
+  }
+  return query
+}
+
 const toSeeDocuments = computed(() => {
   if (isQueryBased.value) {
-    return { name: 'search', query: { q: getQueryString() } }
+    return { name: 'search', query: { q: getQueryString(), ...buildFilterRouteQuery() } }
   }
   const docIds = getDocs()
   if (docIds.length === 1) {
@@ -670,6 +766,27 @@ onMounted(fetchTask)
                     </div>
                   </div>
                 </li>
+                <li v-if="taskFilters.length > 0">
+                  <div class="transcription-detail__card__entry d-flex align-items-start gap-2">
+                    <component
+                      :is="IPhFunnel"
+                      class="transcription-detail__card__entry__icon text-secondary-emphasis flex-shrink-0"
+                    />
+                    <div class="d-flex flex-wrap gap-2">
+                      <component
+                        :is="ButtonIcon"
+                        v-for="(filter, index) in taskFilters"
+                        :key="index"
+                        variant="outline-secondary"
+                        size="sm"
+                        :icon-left="filter.icon"
+                        :label="filter.label"
+                        no-x-icon
+                        class="transcription-detail__filter-chip"
+                      />
+                    </div>
+                  </div>
+                </li>
               </ul>
             </div>
           </component>
@@ -777,5 +894,20 @@ onMounted(fetchTask)
 
 .transcription-detail__card__entry--buttons .transcription-detail__card__entry__icon {
   padding: 0.75rem 0;
+}
+
+</style>
+
+<style>
+.transcription-detail__filter-chip.btn {
+  border-style: dashed;
+  border-color: currentColor;
+  color: var(--bs-body-color);
+  background: var(--bs-body-bg);
+  cursor: default;
+}
+
+.transcription-detail__filter-chip.btn:hover {
+  cursor: default;
 }
 </style>
