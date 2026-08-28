@@ -43,9 +43,12 @@ const formSearchStore = useSearchStore.disposable()
 formSearchStore.setIndices(searchStore.indices)
 
 const allProjects = computed(() => core.projects || [])
-const selectedProjects = computed({
-  get: () => formSearchStore.indices.map(name => ({ name })),
-  set: projects => formSearchStore.setIndices(projects.map(p => p.name))
+const selectedProject = computed({
+  get: () => {
+    const name = formSearchStore.indices?.[0]
+    return name ? { name } : null
+  },
+  set: project => formSearchStore.setIndices(project ? [project.name] : [])
 })
 const filterPath = formSearchStore.getFilter({ name: 'path' })
 const filterContentType = formSearchStore.getFilter({ name: 'contentType' })
@@ -84,7 +87,8 @@ const isValid = computed(() => {
 
 const selectionBadges = computed(() => {
   const badges = []
-  for (const project of selectedProjects.value) {
+  if (selectedProject.value) {
+    const project = selectedProject.value
     const label = allProjects.value.find(p => p.name === project.name)?.label || project.name
     badges.push({ type: 'project', value: project.name, label, icon: IPhCirclesThreePlus })
   }
@@ -135,7 +139,7 @@ const videoCount = ref(0)
 const unsupportedCount = ref(0)
 
 async function fetchDocumentCounts() {
-  const index = formSearchStore.indices?.join(',') || core.projectIds.join(',')
+  const index = formSearchStore.indices?.[0] || core.projectIds[0]
   try {
     const filterClauses = (formSearchStore.activeFilters ?? []).map(filter => ({
       terms: { [filter.key]: filter.values }
@@ -227,7 +231,7 @@ function dismissBadge(badge) {
     query.value = ''
   }
   else if (badge.type === 'project') {
-    selectedProjects.value = selectedProjects.value.filter(p => p.name !== badge.value)
+    selectedProject.value = null
   }
   else {
     formSearchStore.removeFilterValue({ name: badge.filterName, value: badge.value })
@@ -267,7 +271,7 @@ async function submit() {
   if (!isValid.value || submitting.value) return
   submitting.value = true
   try {
-    const project = formSearchStore.indices?.join(',') || core.projectIds.join(',')
+    const project = formSearchStore.indices?.[0] || core.projectIds[0]
     const name = `Transcription ${new Date().toLocaleDateString()}`
     await asrStore.transcribeBatch(project, [], { name, model: selectedModel.value, query: buildSearchQuery() })
     core.router.push({ name: 'task.transcriptions' })
@@ -323,7 +327,7 @@ async function submit() {
           <div class="col">
             <component
               :is="ProjectDropdownSelector"
-              v-model="selectedProjects"
+              v-model="selectedProject"
               :projects="allProjects"
             />
           </div>
