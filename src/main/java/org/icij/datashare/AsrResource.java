@@ -73,10 +73,8 @@ public class AsrResource {
         }
 
         User user = (User) context.currentUser();
-        for (String p : project.split(",")) {
-            if (!user.isGranted(p.trim())) {
-                throw new net.codestory.http.errors.UnauthorizedException();
-            }
+        if (!user.isGranted(project)) {
+            throw new net.codestory.http.errors.UnauthorizedException();
         }
 
         Object docs = body.get("docs");
