@@ -43,7 +43,6 @@ const { $toast: toast } = getCurrentInstance()?.proxy ?? {}
 const PageHeader = defineAsyncComponent(() => core.findComponent('PageHeader/PageHeader'))
 const PageContainer = defineAsyncComponent(() => core.findComponent('PageContainer/PageContainer'))
 const DisplayStatus = defineAsyncComponent(() => core.findComponent('Display/DisplayStatus'))
-const DisplayProjectList = defineAsyncComponent(() => core.findComponent('Display/DisplayProjectList'))
 const CardPanel = defineAsyncComponent(() => core.findComponent('CardPanel/CardPanel'))
 const ButtonIcon = defineAsyncComponent(() => core.findComponent('Button/ButtonIcon'))
 const DisplayStatusLabel = defineAsyncComponent(() => core.findComponent('Display/DisplayStatusLabel'))
@@ -103,10 +102,7 @@ function docCategory(docId) {
 }
 
 function docProject() {
-  const project = task.value?.args?.project
-  if (!project) return []
-  if (Array.isArray(project)) return project.flat().filter(p => typeof p === 'string')
-  return String(project).split(',').map(p => p.trim())
+  return task.value?.args?.project || ''
 }
 
 function docState() {
@@ -296,11 +292,8 @@ const taskUser = computed(() => {
   return args.user?.id || task.value?.user?.id || task.value?.user || '—'
 })
 
-const taskProjects = computed(() => {
-  const project = task.value?.args?.project
-  if (!project) return []
-  if (Array.isArray(project)) return project.flat().filter(p => typeof p === 'string')
-  return String(project).split(',').map(p => p.trim())
+const taskProject = computed(() => {
+  return task.value?.args?.project || null
 })
 
 const fullTaskId = computed(() => `asr.transcription-${props.taskId}`)
@@ -428,7 +421,7 @@ function downloadCsv() {
       docState(),
       docDisplayName(docId),
       docCategory(docId),
-      docProject().join(', ') || '—'
+      docProject() || '—'
     ])
   }
   const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n')
@@ -575,8 +568,9 @@ onMounted(fetchTask)
                   <td>{{ docCategory(docId) }}</td>
                   <td>
                     <component
-                      :is="DisplayProjectList"
-                      :values="docProject()"
+                      :is="ProjectButton"
+                      v-if="docProject()"
+                      :project="docProject()"
                     />
                   </td>
                   <td />
@@ -755,14 +749,11 @@ onMounted(fetchTask)
                       >
                         <i-ph-circles-three-plus />
                       </span>
-                      <div class="d-flex flex-wrap gap-2">
-                        <component
-                          :is="ProjectButton"
-                          v-for="(project, index) in taskProjects"
-                          :key="index"
-                          :project="project"
-                        />
-                      </div>
+                      <component
+                        :is="ProjectButton"
+                        v-if="taskProject"
+                        :project="taskProject"
+                      />
                     </div>
                   </div>
                 </li>
