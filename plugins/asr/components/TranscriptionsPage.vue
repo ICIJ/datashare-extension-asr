@@ -192,7 +192,8 @@ function taskModel(task) {
 
 function taskProject(task) {
   const args = task.args || task.properties || {}
-  return args.project || '—'
+  const project = args.project
+  return (Array.isArray(project) ? project[0] : project) || '—'
 }
 
 function taskUser(task) {
