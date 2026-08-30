@@ -102,7 +102,8 @@ function docCategory(docId) {
 }
 
 function docProject() {
-  return task.value?.args?.project || ''
+  const project = task.value?.args?.project
+  return (Array.isArray(project) ? project[0] : project) || ''
 }
 
 function docState() {
@@ -293,7 +294,8 @@ const taskUser = computed(() => {
 })
 
 const taskProject = computed(() => {
-  return task.value?.args?.project || null
+  const project = task.value?.args?.project
+  return (Array.isArray(project) ? project[0] : project) || null
 })
 
 const fullTaskId = computed(() => `asr.transcription-${props.taskId}`)
