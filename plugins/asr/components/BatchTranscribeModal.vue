@@ -59,36 +59,21 @@ onMounted(async () => {
 })
 
 async function handleBatchTranscribe() {
-  const docsByProject = {}
-  for (const doc of eligibleDocs.value) {
-    const project = doc.index || doc.routing
-    if (!docsByProject[project]) docsByProject[project] = []
-    docsByProject[project].push(doc.id)
-  }
+  const docs = eligibleDocs.value
+  const project = docs[0]?.index || docs[0]?.routing
+  const docIds = docs.map(doc => doc.id)
+  const name = `[batch] ${docIds.length} documents`
 
-  let successCount = 0
-  let errorCount = 0
-
-  for (const [project, docIds] of Object.entries(docsByProject)) {
-    try {
-      const name = `[batch] ${docIds.length} documents`
-      await asrStore.transcribeBatch(project, docIds, { name, model: selectedModel.value })
-      successCount += docIds.length
-    }
-    catch {
-      errorCount += docIds.length
-    }
-  }
-
-  if (successCount > 0) {
+  try {
+    await asrStore.transcribeBatch(project, docIds, { name, model: selectedModel.value })
     const { href } = core.router.resolve({ name: 'task.transcriptions' })
     const linkLabel = t?.('asr.viewTranscriptions') ?? 'View transcriptions'
-    toast?.success(t?.('asr.batchTranscriptionLaunched', { count: successCount }, successCount) ?? `Transcription launched for ${successCount} documents`, { href, linkLabel })
+    toast?.success(t?.('asr.batchTranscriptionLaunched', { count: docIds.length }, docIds.length) ?? `Transcription launched for ${docIds.length} documents`, { href, linkLabel })
   }
-  if (errorCount > 0) {
-    const { href: errorHref } = core.router.resolve({ name: 'task.transcriptions' })
-    const errorLinkLabel = t?.('asr.viewTranscriptions') ?? 'View transcriptions'
-    toast?.error(t?.('asr.batchTranscriptionError', { count: errorCount }, errorCount) ?? `There was an error while launching transcription for ${errorCount} documents`, { href: errorHref, linkLabel: errorLinkLabel })
+  catch {
+    const { href } = core.router.resolve({ name: 'task.transcriptions' })
+    const linkLabel = t?.('asr.viewTranscriptions') ?? 'View transcriptions'
+    toast?.error(t?.('asr.batchTranscriptionError', { count: docIds.length }, docIds.length) ?? `There was an error while launching transcription for ${docIds.length} documents`, { href, linkLabel })
   }
 
   modelValue.value = false
