@@ -60,20 +60,27 @@ onMounted(async () => {
 
 async function handleBatchTranscribe() {
   const docs = eligibleDocs.value
-  const project = docs[0]?.index || docs[0]?.routing
-  const docIds = docs.map(doc => doc.id)
-  const name = `[batch] ${docIds.length} documents`
+  const docsByProject = docs.reduce((acc, doc) => {
+    const key = doc.index || doc.routing
+    ;(acc[key] ??= []).push(doc)
+    return acc
+  }, {})
 
   try {
-    await asrStore.transcribeBatch(project, docIds, { name, model: selectedModel.value })
+    const promises = Object.entries(docsByProject).map(([project, projectDocs]) => {
+      const docIds = projectDocs.map((doc) => doc.id)
+      const name = `[batch] ${docIds.length} documents`
+      return asrStore.transcribeBatch(project, docIds, { name, model: selectedModel.value })
+    })
+    await Promise.all(promises)
     const { href } = core.router.resolve({ name: 'task.transcriptions' })
     const linkLabel = t?.('asr.viewTranscriptions') ?? 'View transcriptions'
-    toast?.success(t?.('asr.batchTranscriptionLaunched', { count: docIds.length }, docIds.length) ?? `Transcription launched for ${docIds.length} documents`, { href, linkLabel })
+    toast?.success(t?.('asr.batchTranscriptionLaunched', { count: docs.length }, docs.length) ?? `Transcription launched for ${docs.length} documents`, { href, linkLabel })
   }
   catch {
     const { href } = core.router.resolve({ name: 'task.transcriptions' })
     const linkLabel = t?.('asr.viewTranscriptions') ?? 'View transcriptions'
-    toast?.error(t?.('asr.batchTranscriptionError', { count: docIds.length }, docIds.length) ?? `There was an error while launching transcription for ${docIds.length} documents`, { href, linkLabel })
+    toast?.error(t?.('asr.batchTranscriptionError', { count: docs.length }, docs.length) ?? `There was an error while launching transcription for ${docs.length} documents`, { href, linkLabel })
   }
 
   modelValue.value = false
