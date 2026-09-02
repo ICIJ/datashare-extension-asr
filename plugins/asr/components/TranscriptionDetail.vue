@@ -14,6 +14,8 @@ import IPhBrain from '~icons/ph/brain'
 import IPhInfo from '~icons/ph/info'
 import confirmImage from '@/assets/app-modal-default-light.svg'
 import confirmImageDark from '@/assets/app-modal-default-dark.svg'
+import errorImage from '@/assets/app-modal-error-light.svg'
+import errorImageDark from '@/assets/app-modal-error-dark.svg'
 import IPhWarning from '~icons/ph/warning'
 import IPhMagnifyingGlass from '~icons/ph/magnifying-glass'
 import IPhFunnel from '~icons/ph/funnel'
@@ -58,6 +60,7 @@ const loading = ref(true)
 const docDetails = ref({})
 const showDeleteModal = ref(false)
 const showTranscribeModal = ref(false)
+const showErrorModal = ref(false)
 const DocumentModalComponent = ref(null)
 
 core.findComponent('Document/DocumentModal').then((c) => {
@@ -147,6 +150,17 @@ function getQueryString() {
   }
   const label = queryLabel()
   return label === '—' ? '*' : label
+}
+
+function taskErrorFull() {
+  if (!task.value?.error) return 'Unknown error'
+  const error = task.value.error
+  const message = error.message || error.cause || error.name || 'Unknown error'
+  if (!error.stacktrace?.length) return message
+  const stacktrace = error.stacktrace
+    .map(frame => `  at ${frame.name}(${frame.file}:${frame.lineno})`)
+    .join('\n')
+  return `${message}\n${stacktrace}`
 }
 
 const ES_KEY_TO_FILTER_NAME = {
@@ -553,8 +567,19 @@ onMounted(fetchTask)
                   class="page-table-tr"
                 >
                   <td>
+                    <button
+                      v-if="docState() === 'ERROR'"
+                      class="btn btn-link p-0 border-0"
+                      @click="showErrorModal = true"
+                    >
+                      <component
+                        :is="DisplayStatus"
+                        :value="docState()"
+                      />
+                    </button>
                     <component
                       :is="DisplayStatus"
+                      v-else
                       :value="docState()"
                     />
                   </td>
@@ -617,7 +642,26 @@ onMounted(fetchTask)
               <ul class="transcription-detail__card__details__list list-unstyled">
                 <li>
                   <div class="transcription-detail__card__entry d-flex align-items-center justify-content-between gap-2">
-                    <span class="d-inline-flex gap-2 align-items-center">
+                    <button
+                      v-if="taskState === 'ERROR'"
+                      class="btn btn-link p-0 border-0 d-inline-flex gap-2 align-items-center"
+                      @click="showErrorModal = true"
+                    >
+                      <component
+                        :is="DisplayStatus"
+                        class="border-0"
+                        :value="taskState"
+                        no-tooltip
+                      />
+                      <component
+                        :is="DisplayStatusLabel"
+                        :value="taskState"
+                      />
+                    </button>
+                    <span
+                      v-else
+                      class="d-inline-flex gap-2 align-items-center"
+                    >
                       <component
                         :is="DisplayStatus"
                         class="border-0"
@@ -785,6 +829,36 @@ onMounted(fetchTask)
           </component>
         </b-col>
       </b-row>
+    </component>
+
+    <component
+      :is="AppModal"
+      v-model="showErrorModal"
+      :image="errorImage"
+      :image-width="70"
+      :ok-title="$t('asr.ok')"
+      ok-only
+      size="lg"
+    >
+      <template #header-image-source>
+        <source
+          :srcset="errorImageDark"
+          media="(prefers-color-scheme: dark)"
+        >
+      </template>
+      <div class="d-flex flex-column gap-4 mt-0 pt-0">
+        <div>
+          <p class="text-center fw-medium">
+            {{ $t('asr.errorTitle') }}
+          </p>
+          <div class="bg-tertiary-subtle d-block text-body-emphasis m-0 rounded-1">
+            <pre class="p-3 m-0"><code>{{ taskErrorFull() }}</code></pre>
+          </div>
+        </div>
+        <p class="m-0">
+          {{ $t('asr.errorDescription') }}
+        </p>
+      </div>
     </component>
 
     <component
