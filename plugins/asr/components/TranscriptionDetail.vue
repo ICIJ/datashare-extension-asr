@@ -31,6 +31,7 @@ import { useCore } from '@/composables/useCore'
 import { useAsrStore } from '@/stores/asr'
 import { capitalize } from '@/utils/formatting'
 import { getDocs as getDocsFromTask, queryLabel as queryLabelFromTask } from '@/utils/task'
+import { stripJacksonTypes } from '@/utils/jackson'
 import LanguageSelector from './LanguageSelector.vue'
 
 const props = defineProps({
@@ -112,7 +113,6 @@ function docState() {
 }
 
 const isQueryBased = computed(() => {
-  if (task.value?.args?.query) return true
   const raw = task.value?.args?.docs
   if (!raw) return false
   if (Array.isArray(raw) && raw.length === 2 && typeof raw[0] === 'string' && raw[0].startsWith('java.util.')) {
@@ -137,13 +137,6 @@ const isFinished = computed(() => {
 })
 
 function getQueryString() {
-  const q = task.value?.args?.query
-  if (q) {
-    if (q.query_string?.query) return q.query_string.query
-    if (q.match_all !== undefined) return '*'
-    if (q.bool?.must?.[0]?.query_string?.query) return q.bool.must[0].query_string.query
-    return JSON.stringify(q)
-  }
   const label = queryLabel()
   return label === '—' ? '*' : label
 }
@@ -216,8 +209,17 @@ function filterValueLabel(filterName, value) {
   return value
 }
 
+function docsQuery() {
+  const raw = task.value?.args?.docs
+  if (!raw || Array.isArray(raw) && !raw[0]?.startsWith?.('java.util.')) return null
+  if (Array.isArray(raw) && raw.length === 2 && typeof raw[0] === 'string' && raw[0].startsWith('java.util.')) {
+    return stripJacksonTypes(raw[1])
+  }
+  return stripJacksonTypes(raw)
+}
+
 const taskFilters = computed(() => {
-  const filters = task.value?.args?.query?.bool?.filter
+  const filters = docsQuery()?.bool?.filter
   if (!Array.isArray(filters)) return []
   const result = []
   for (const clause of filters) {
