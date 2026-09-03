@@ -72,7 +72,7 @@ export const useAsrStore = defineStore('asr', () => {
       batch_size: DEFAULT_BATCH_SIZE
     }
     if (query) {
-      data.query = query
+      data.docs = query
     }
     return api.sendAction('/api/asr/transcribe', { method: 'POST', data })
   }
