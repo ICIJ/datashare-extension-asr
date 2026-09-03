@@ -399,21 +399,20 @@ function requestTranscribeAgain() {
 async function confirmTranscribeAgain() {
   showTranscribeModal.value = false
   const args = task.value?.args || {}
-  const name = args.name || taskTitle.value
+  const displayName = taskTitle.value
   try {
     const response = await api.sendAction('/api/asr/transcribe', {
       method: 'POST',
       data: {
         project: args.project,
         docs: task.value?.args?.docs,
-        name,
         language: asrStore.selectedLanguage,
         batch_size: args.batch_size || 2
       }
     })
     const { href } = core.router.resolve({ name: 'task.transcriptions' })
     const linkLabel = core.i18n.global.t('asr.viewTranscriptions')
-    toast?.success(core.i18n.global.t('asr.transcriptionLaunched', { name }), { href, linkLabel })
+    toast?.success(core.i18n.global.t('asr.transcriptionLaunched', { name: displayName }), { href, linkLabel })
     if (response?.taskId) {
       const newTaskId = response.taskId.replace('asr.transcription-', '')
       core.router.push({ name: 'task.transcriptions.detail', params: { taskId: newTaskId } })
@@ -422,7 +421,7 @@ async function confirmTranscribeAgain() {
   catch {
     const { href } = core.router.resolve({ name: 'task.transcriptions' })
     const linkLabel = core.i18n.global.t('asr.viewTranscriptions')
-    toast?.error(core.i18n.global.t('asr.transcriptionError', { name }), { href, linkLabel })
+    toast?.error(core.i18n.global.t('asr.transcriptionError', { name: displayName }), { href, linkLabel })
   }
 }
 
