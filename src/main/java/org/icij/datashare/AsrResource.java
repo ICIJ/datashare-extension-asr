@@ -91,9 +91,6 @@ public class AsrResource {
         if (body.containsKey("languages")) {
             taskArgs.put("languages", body.get("languages"));
         }
-        if (body.containsKey("name")) {
-            taskArgs.put("name", body.get("name"));
-        }
         taskArgs.put("batch_size", body.getOrDefault("batch_size", 2));
         if (body.containsKey("query")) {
             taskArgs.put("query", body.get("query"));
