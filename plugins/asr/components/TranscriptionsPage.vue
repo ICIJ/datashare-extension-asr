@@ -355,7 +355,7 @@ onUnmounted(() => {
                     class="me-1 my-2"
                     style="font-size: 1.25em"
                   />
-                  <span>{{ $t('asr.colLanguages') }}</span>
+                  <span>{{ $t('asr.colLanguage') }}</span>
                 </span>
               </th>
               <th
