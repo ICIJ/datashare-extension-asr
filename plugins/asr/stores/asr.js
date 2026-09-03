@@ -56,11 +56,10 @@ export const useAsrStore = defineStore('asr', () => {
     }
   }
 
-  async function transcribeBatch(project, docIds, { name, model, query } = {}) {
+  async function transcribeBatch(project, docIds, { model, query } = {}) {
     const data = {
       project,
       docs: docIds,
-      name,
       model,
       languages: [...selectedLanguages.value],
       batch_size: DEFAULT_BATCH_SIZE
@@ -71,8 +70,8 @@ export const useAsrStore = defineStore('asr', () => {
     return api.sendAction('/api/asr/transcribe', { method: 'POST', data })
   }
 
-  async function transcribe(project, docId, { name, model } = {}) {
-    const response = await transcribeBatch(project, [docId], { name, model })
+  async function transcribe(project, docId, { model } = {}) {
+    const response = await transcribeBatch(project, [docId], { model })
     taskId.value = response.taskId
     taskState.value = 'RUNNING'
   }

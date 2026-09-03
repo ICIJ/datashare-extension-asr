@@ -80,18 +80,18 @@ onUnmounted(() => {
 
 async function handleTranscribe() {
   const doc = documentStore.document
-  const name = doc.title || doc.id
+  const displayName = doc.title || doc.id
   try {
-    await asrStore.transcribe(doc.index, doc.id, { name, model: selectedModel.value })
+    await asrStore.transcribe(doc.index, doc.id, { model: selectedModel.value })
     const { href } = core.router.resolve({ name: 'task.transcriptions' })
     const linkLabel = t?.('asr.viewTranscriptions') ?? 'View transcriptions'
-    toast?.success(t?.('asr.transcriptionLaunched', { name }) ?? `Transcription launched for ${name}`, { href, linkLabel })
+    toast?.success(t?.('asr.transcriptionLaunched', { name: displayName }) ?? `Transcription launched for ${displayName}`, { href, linkLabel })
     emit('close')
   }
   catch {
     const { href } = core.router.resolve({ name: 'task.transcriptions' })
     const linkLabel = t?.('asr.viewTranscriptions') ?? 'View transcriptions'
-    toast?.error(t?.('asr.transcriptionError', { name }) ?? `There was an error while launching transcription for ${name}`, { href, linkLabel })
+    toast?.error(t?.('asr.transcriptionError', { name: displayName }) ?? `There was an error while launching transcription for ${displayName}`, { href, linkLabel })
   }
 }
 </script>
