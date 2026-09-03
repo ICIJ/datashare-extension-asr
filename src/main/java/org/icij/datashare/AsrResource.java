@@ -88,8 +88,8 @@ public class AsrResource {
         if (body.containsKey("config")) {
             taskArgs.put("config", body.get("config"));
         }
-        if (body.containsKey("languages")) {
-            taskArgs.put("languages", body.get("languages"));
+        if (body.containsKey("language")) {
+            taskArgs.put("language", body.get("language"));
         }
         taskArgs.put("batch_size", body.getOrDefault("batch_size", 2));
         if (body.containsKey("query")) {
