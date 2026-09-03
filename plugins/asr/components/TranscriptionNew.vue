@@ -82,7 +82,7 @@ const submitting = ref(false)
 const breadcrumbRoutes = ['task', 'task.transcriptions', 'task.transcriptions.new']
 
 const isValid = computed(() => {
-  return asrStore.selectedLanguages.length > 0
+  return !!asrStore.selectedLanguage
 })
 
 const selectionBadges = computed(() => {
@@ -104,15 +104,9 @@ const selectionBadges = computed(() => {
   return badges
 })
 
-const selectedLanguageNames = computed(() => {
-  const names = asrStore.selectedLanguages
-    .map(code => languageDisplayNames.of(code))
-    .filter(Boolean)
-  if (names.length <= 1) {
-    return names[0] || ''
-  }
-  const rest = names.length - 1
-  return `${names[0]} and ${rest} other language${rest > 1 ? 's' : ''}`
+const selectedLanguageName = computed(() => {
+  if (!asrStore.selectedLanguage) return ''
+  return languageDisplayNames.of(asrStore.selectedLanguage) || asrStore.selectedLanguage
 })
 
 const MODEL_LABELS = {
@@ -205,7 +199,7 @@ onMounted(async () => {
   if (availableModelNames.value.length && !availableModelNames.value.includes(selectedModel.value)) {
     selectedModel.value = availableModelNames.value[0]
   }
-  asrStore.selectedLanguages = []
+  asrStore.selectedLanguage = null
   fetchDocumentCounts()
 })
 
@@ -240,7 +234,7 @@ function dismissBadge(badge) {
 
 function reset() {
   query.value = ''
-  asrStore.selectedLanguages = []
+  asrStore.selectedLanguage = null
   selectedModel.value = 'parakeet'
   formSearchStore.resetFilterValues()
 }
@@ -421,12 +415,12 @@ async function submit() {
       <!-- Step 3: Languages -->
       <component
         :is="FormStep"
-        :title="$t('asr.newForm.languages')"
+        :title="$t('asr.newForm.language')"
         :index="2"
       >
         <language-selector />
         <p class="text-muted small mt-2 mb-0">
-          {{ $t('asr.newForm.languagesHint') }}
+          {{ $t('asr.newForm.languageHint') }}
         </p>
       </component>
 
@@ -559,7 +553,7 @@ async function submit() {
 
       <!-- Point 6: Selection summary -->
       <div
-        v-if="asrStore.selectedLanguages.length && (audioCount > 0 || videoCount > 0)"
+        v-if="asrStore.selectedLanguage && (audioCount > 0 || videoCount > 0)"
         class="transcription-new__summary d-flex align-items-center gap-2"
       >
         <IPhCheckCircle
@@ -568,7 +562,7 @@ async function submit() {
         />
         <span>
           <strong class="text-decoration-underline">{{ $t('asr.newForm.selectionSummaryCount', { audioCount, videoCount }) }}</strong>
-          {{ $t('asr.newForm.selectionSummaryRest', { languages: selectedLanguageNames, model: modelDisplayName }) }}
+          {{ $t('asr.newForm.selectionSummaryRest', { language: selectedLanguageName, model: modelDisplayName }) }}
         </span>
       </div>
 
