@@ -6,7 +6,6 @@ import { useCore } from '@/composables/useCore'
 
 const core = useCore()
 const FormControlSearch = defineAsyncComponent(() => core.findComponent('Form/FormControl/FormControlSearch'))
-const ParentOverflow = defineAsyncComponent(() => core.findComponent('ParentOverflow/ParentOverflow'))
 
 const languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
 
@@ -89,30 +88,16 @@ const filteredOtherLanguages = computed(() => {
 })
 
 const displayValue = computed(() => {
-  const names = asrStore.selectedLanguages.map(code => languageName(code))
-  if (names.length === 0) return 'Unknown'
-  return names.join(', ')
+  if (!asrStore.selectedLanguage) return 'Unknown'
+  return languageName(asrStore.selectedLanguage)
 })
 
-const displayValueCondensed = computed(() => {
-  const names = asrStore.selectedLanguages.map(code => languageName(code))
-  if (names.length <= 1) return names[0] || 'Unknown'
-  const rest = names.length - 1
-  return `${names[0]} + ${rest} other language${rest > 1 ? 's' : ''}`
-})
-
-function toggle(code) {
-  const idx = asrStore.selectedLanguages.indexOf(code)
-  if (idx >= 0) {
-    asrStore.selectedLanguages.splice(idx, 1)
-  }
-  else {
-    asrStore.selectedLanguages.push(code)
-  }
+function select(code) {
+  asrStore.selectedLanguage = asrStore.selectedLanguage === code ? null : code
 }
 
 function isSelected(code) {
-  return asrStore.selectedLanguages.includes(code)
+  return asrStore.selectedLanguage === code
 }
 </script>
 
@@ -121,10 +106,10 @@ function isSelected(code) {
     <div class="language-selector__row">
       <label class="form-label m-0 text-nowrap d-flex align-items-center gap-1">
         <i-ph-translate />
-        {{ $t('asr.selectLanguages') }}
+        {{ $t('asr.selectLanguage') }}
       </label>
       <b-dropdown
-        auto-close="outside"
+        auto-close
         variant="outline-light"
         boundary="viewport"
         :floating-middleware="floatingMiddleware"
@@ -133,15 +118,9 @@ function isSelected(code) {
         toggle-class="w-100 d-flex justify-content-between align-items-center text-truncate"
       >
         <template #button-content>
-          <component
-            :is="ParentOverflow"
-            class="flex-grow-1 text-start"
-          >
+          <span class="flex-grow-1 text-start text-truncate">
             {{ displayValue }}
-            <template #fallback>
-              {{ displayValueCondensed }}
-            </template>
-          </component>
+          </span>
         </template>
         <div
           class="language-selector__search mb-2"
@@ -164,10 +143,11 @@ function isSelected(code) {
           >
             <span class="d-flex align-items-center">
               <input
-                type="checkbox"
+                type="radio"
+                name="language"
                 class="form-check-input me-2"
                 :checked="isSelected(code)"
-                @change="toggle(code)"
+                @change="select(code)"
               >
               <span>{{ languageName(code) }}</span>
             </span>
@@ -186,10 +166,11 @@ function isSelected(code) {
           >
             <span class="d-flex align-items-center">
               <input
-                type="checkbox"
+                type="radio"
+                name="language"
                 class="form-check-input me-2"
                 :checked="isSelected(code)"
-                @change="toggle(code)"
+                @change="select(code)"
               >
               <span>{{ languageName(code) }}</span>
             </span>

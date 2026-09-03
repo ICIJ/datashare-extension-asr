@@ -68,19 +68,19 @@ describe('BatchTranscribeModal.vue', () => {
   })
 
   describe('transcribe button state', () => {
-    it('disables the transcribe button when no languages are selected', async () => {
+    it('disables the transcribe button when no language is selected', async () => {
       const wrapper = createWrapper(audioDocs)
       await flushPromises()
       const btn = wrapper.find('.btn-action')
       expect(btn.attributes('disabled')).toBeDefined()
     })
 
-    it('enables the transcribe button when languages are selected and eligible docs exist', async () => {
+    it('enables the transcribe button when a language is selected and eligible docs exist', async () => {
       const wrapper = createWrapper(audioDocs)
       await flushPromises()
       const { useAsrStore } = await import('@/stores/asr')
       const store = useAsrStore()
-      store.selectedLanguages = ['en']
+      store.selectedLanguage = 'en'
       await nextTick()
       const btn = wrapper.find('.btn-action')
       expect(btn.attributes('disabled')).toBeUndefined()
@@ -91,7 +91,7 @@ describe('BatchTranscribeModal.vue', () => {
       await flushPromises()
       const { useAsrStore } = await import('@/stores/asr')
       const store = useAsrStore()
-      store.selectedLanguages = ['en']
+      store.selectedLanguage = 'en'
       await nextTick()
       const btn = wrapper.find('.btn-action')
       expect(btn.attributes('disabled')).toBeDefined()
@@ -120,7 +120,7 @@ describe('BatchTranscribeModal.vue', () => {
       await flushPromises()
       const { useAsrStore } = await import('@/stores/asr')
       const store = useAsrStore()
-      store.selectedLanguages = ['en']
+      store.selectedLanguage = 'en'
       await nextTick()
 
       await wrapper.find('.btn-action').trigger('click')
@@ -128,7 +128,7 @@ describe('BatchTranscribeModal.vue', () => {
 
       expect(sendActionMock).toHaveBeenCalledWith('/api/asr/transcribe', {
         method: 'POST',
-        data: expect.objectContaining({ project: 'project-a', docs: ['doc1', 'doc2'], languages: ['en'], batch_size: 2, model: expect.any(String) })
+        data: expect.objectContaining({ project: 'project-a', docs: ['doc1', 'doc2'], language: 'en', batch_size: 2, model: expect.any(String) })
       })
     })
 
@@ -141,7 +141,7 @@ describe('BatchTranscribeModal.vue', () => {
       await flushPromises()
       const { useAsrStore } = await import('@/stores/asr')
       const store = useAsrStore()
-      store.selectedLanguages = ['en']
+      store.selectedLanguage = 'en'
       await nextTick()
 
       await wrapper.find('.btn-action').trigger('click')
@@ -151,11 +151,11 @@ describe('BatchTranscribeModal.vue', () => {
       expect(sendActionMock).toHaveBeenCalledTimes(3)
       expect(sendActionMock).toHaveBeenCalledWith('/api/asr/transcribe', {
         method: 'POST',
-        data: expect.objectContaining({ project: 'project-a', docs: ['doc1'], languages: ['en'], batch_size: 2, model: expect.any(String) })
+        data: expect.objectContaining({ project: 'project-a', docs: ['doc1'], language: 'en', batch_size: 2, model: expect.any(String) })
       })
       expect(sendActionMock).toHaveBeenCalledWith('/api/asr/transcribe', {
         method: 'POST',
-        data: expect.objectContaining({ project: 'project-b', docs: ['doc2'], languages: ['en'], batch_size: 2, model: expect.any(String) })
+        data: expect.objectContaining({ project: 'project-b', docs: ['doc2'], language: 'en', batch_size: 2, model: expect.any(String) })
       })
     })
 
@@ -164,7 +164,7 @@ describe('BatchTranscribeModal.vue', () => {
       await flushPromises()
       const { useAsrStore } = await import('@/stores/asr')
       const store = useAsrStore()
-      store.selectedLanguages = ['en']
+      store.selectedLanguage = 'en'
       await nextTick()
 
       await wrapper.find('.btn-action').trigger('click')
