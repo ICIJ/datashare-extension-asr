@@ -41,7 +41,7 @@ describe('TranscriptionDetail.vue', () => {
       project: 'test-project',
       name: 'my-audio.mp3',
       docs: ['doc1', 'doc2'],
-      languages: ['en', 'fr'],
+      language: 'en',
       batch_size: 2,
       user: { id: 'testuser' }
     }
@@ -195,7 +195,7 @@ describe('TranscriptionDetail.vue', () => {
   })
 
   describe('transcribe again action', () => {
-    it('pre-selects the original task languages in the store', async () => {
+    it('pre-selects the original task language in the store', async () => {
       const { wrapper } = createWrapper()
       await flushPromises()
 
@@ -203,7 +203,7 @@ describe('TranscriptionDetail.vue', () => {
 
       const { useAsrStore } = await import('@/stores/asr')
       const store = useAsrStore()
-      expect(store.selectedLanguages).toEqual(['en', 'fr'])
+      expect(store.selectedLanguage).toBe('en')
     })
 
     it('calls the transcribe API with correct parameters', async () => {
@@ -214,7 +214,7 @@ describe('TranscriptionDetail.vue', () => {
 
       const { useAsrStore } = await import('@/stores/asr')
       const store = useAsrStore()
-      store.selectedLanguages = ['en', 'fr']
+      store.selectedLanguage = 'en'
 
       await wrapper.vm.confirmTranscribeAgain()
       await flushPromises()
@@ -225,7 +225,7 @@ describe('TranscriptionDetail.vue', () => {
           project: 'test-project',
           docs: ['doc1', 'doc2'],
           name: 'my-audio.mp3',
-          languages: ['en', 'fr'],
+          language: 'en',
           batch_size: 2
         }
       })
@@ -294,7 +294,7 @@ describe('TranscriptionDetail.vue', () => {
 
       const { useAsrStore } = await import('@/stores/asr')
       const store = useAsrStore()
-      store.selectedLanguages = ['fr']
+      store.selectedLanguage = 'fr'
 
       await wrapper.vm.confirmTranscribeAgain()
       await flushPromises()

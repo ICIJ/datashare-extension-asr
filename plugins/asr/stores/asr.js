@@ -35,7 +35,7 @@ export const useAsrStore = defineStore('asr', () => {
 
   const settingsOrder = ref('desc')
   const settingsPerPage = ref(25)
-  const settingsProperties = ref(['state', 'name', 'progress', 'category', 'languages', 'model', 'project', 'user', 'launchedOn'])
+  const settingsProperties = ref(['state', 'name', 'progress', 'category', 'language', 'model', 'project', 'user', 'launchedOn'])
 
   const transcription = ref(null)
   const transcriptionDocId = ref(null)
