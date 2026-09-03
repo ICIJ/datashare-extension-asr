@@ -154,9 +154,17 @@ function taskCategory(task) {
   return 'Mixed'
 }
 
-function taskLanguages(task) {
-  // Use languages from task args if available (set by the user)
-  // Jackson serializes arrays with type info: ["java.util.ArrayList", ["fr"]]
+function taskLanguage(task) {
+  const lang = task.args?.language
+  if (lang && typeof lang === 'string') {
+    try {
+      return languageNames.of(lang)
+    }
+    catch {
+      return lang
+    }
+  }
+  // Fallback: try legacy languages array
   let taskLangs = task.args?.languages
   if (Array.isArray(taskLangs)) {
     taskLangs = taskLangs.flat().filter(v => typeof v === 'string' && !v.includes('.'))
@@ -361,7 +369,7 @@ onUnmounted(() => {
                 </span>
               </th>
               <th
-                v-if="isVisible('languages')"
+                v-if="isVisible('language')"
                 class="page-table-th text-nowrap"
               >
                 <span class="page-table-th__content">
@@ -498,8 +506,8 @@ onUnmounted(() => {
               <td v-if="isVisible('category')">
                 {{ taskCategory(task) }}
               </td>
-              <td v-if="isVisible('languages')">
-                {{ taskLanguages(task) }}
+              <td v-if="isVisible('language')">
+                {{ taskLanguage(task) }}
               </td>
               <td v-if="isVisible('model')">
                 {{ taskModel(task) }}
