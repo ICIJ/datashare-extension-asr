@@ -282,21 +282,6 @@ const taskLanguageDisplay = computed(() => {
       return lang
     }
   }
-  // Fallback: legacy languages array
-  let langs = task.value?.args?.languages
-  if (Array.isArray(langs)) {
-    langs = langs.flat().filter(v => typeof v === 'string' && !v.includes('.'))
-    if (langs.length > 0) {
-      return langs.map((code) => {
-        try {
-          return languageNames.of(code)
-        }
-        catch {
-          return code
-        }
-      }).join(', ')
-    }
-  }
   return '—'
 })
 
@@ -380,12 +365,6 @@ function openDocument(docId) {
 const taskLanguageCode = computed(() => {
   const lang = task.value?.args?.language
   if (lang && typeof lang === 'string') return lang
-  // Fallback: legacy languages array
-  const langs = task.value?.args?.languages
-  if (Array.isArray(langs)) {
-    const codes = langs.flat().filter(v => typeof v === 'string' && !v.includes('.'))
-    if (codes.length > 0) return codes[0]
-  }
   return null
 })
 
