@@ -87,8 +87,7 @@ describe('TranscriptionNew.vue', () => {
       expect(sendActionMock).toHaveBeenCalledWith('/api/asr/transcribe', expect.objectContaining({
         method: 'POST',
         data: expect.objectContaining({
-          docs: [],
-          query: { match_all: {} }
+          docs: { match_all: {} }
         })
       }))
       expect(core.router.push).toHaveBeenCalledWith({ name: 'task.transcriptions' })
@@ -107,7 +106,7 @@ describe('TranscriptionNew.vue', () => {
 
       expect(sendActionMock).toHaveBeenCalledWith('/api/asr/transcribe', expect.objectContaining({
         data: expect.objectContaining({
-          query: { query_string: { query: 'exp*' } }
+          docs: { query_string: { query: 'exp*' } }
         })
       }))
     })
