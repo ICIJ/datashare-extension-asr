@@ -128,7 +128,7 @@ describe('BatchTranscribeModal.vue', () => {
 
       expect(sendActionMock).toHaveBeenCalledWith('/api/asr/transcribe', {
         method: 'POST',
-        data: expect.objectContaining({ project: 'project-a', docs: ['doc1', 'doc2'], name: '[batch] 2 documents', languages: ['en'], batch_size: 2, model: expect.any(String) })
+        data: expect.objectContaining({ project: 'project-a', docs: ['doc1', 'doc2'], languages: ['en'], batch_size: 2, model: expect.any(String) })
       })
     })
 
@@ -151,11 +151,11 @@ describe('BatchTranscribeModal.vue', () => {
       expect(sendActionMock).toHaveBeenCalledTimes(3)
       expect(sendActionMock).toHaveBeenCalledWith('/api/asr/transcribe', {
         method: 'POST',
-        data: expect.objectContaining({ project: 'project-a', docs: ['doc1'], name: '[batch] 1 documents', languages: ['en'], batch_size: 2, model: expect.any(String) })
+        data: expect.objectContaining({ project: 'project-a', docs: ['doc1'], languages: ['en'], batch_size: 2, model: expect.any(String) })
       })
       expect(sendActionMock).toHaveBeenCalledWith('/api/asr/transcribe', {
         method: 'POST',
-        data: expect.objectContaining({ project: 'project-b', docs: ['doc2'], name: '[batch] 1 documents', languages: ['en'], batch_size: 2, model: expect.any(String) })
+        data: expect.objectContaining({ project: 'project-b', docs: ['doc2'], languages: ['en'], batch_size: 2, model: expect.any(String) })
       })
     })
 

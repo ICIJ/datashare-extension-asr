@@ -69,8 +69,7 @@ async function handleBatchTranscribe() {
   try {
     const promises = Object.entries(docsByProject).map(([project, projectDocs]) => {
       const docIds = projectDocs.map((doc) => doc.id)
-      const name = `[batch] ${docIds.length} documents`
-      return asrStore.transcribeBatch(project, docIds, { name, model: selectedModel.value })
+      return asrStore.transcribeBatch(project, docIds, { model: selectedModel.value })
     })
     await Promise.all(promises)
     const { href } = core.router.resolve({ name: 'task.transcriptions' })
