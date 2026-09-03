@@ -85,16 +85,13 @@ public class AsrResource {
         Map<String, Object> taskArgs = new HashMap<>();
         taskArgs.put("project", project);
         taskArgs.put("docs", docs);
-        if (body.containsKey("config")) {
-            taskArgs.put("config", body.get("config"));
+        if (body.containsKey("model")) {
+            taskArgs.put("config", AsrConfig.fromModel((String) body.get("model")));
         }
         if (body.containsKey("language")) {
             taskArgs.put("language", body.get("language"));
         }
         taskArgs.put("batch_size", body.getOrDefault("batch_size", 2));
-        if (body.containsKey("model")) {
-            taskArgs.put("model", body.get("model"));
-        }
 
         Task<String> task = new Task<>(ASR_WORKFLOW, user, taskArgs);
         String taskId = taskManager.startTask(task, new Group(ASR_GROUP));

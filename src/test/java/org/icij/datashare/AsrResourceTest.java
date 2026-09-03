@@ -156,6 +156,34 @@ public class AsrResourceTest implements FluentRestTest {
     }
 
     @Test
+    public void test_transcribe_passes_model_inside_config() throws Exception {
+        // WHEN
+        post("/api/asr/transcribe",
+                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\"],\"model\":\"parakeet\"}")
+                .withPreemptiveAuthentication(USER_ID, "null")
+                .should().respond(201);
+
+        // THEN
+        Map<String, Object> args = taskManager.startedTasks.getFirst().args;
+        assertThat(args.containsKey("model")).isFalse();
+        AsrConfig config = (AsrConfig) args.get("config");
+        assertThat(config).isEqualTo(AsrConfig.fromModel("parakeet"));
+    }
+
+    @Test
+    public void test_transcribe_without_model_has_no_config() throws Exception {
+        // WHEN
+        post("/api/asr/transcribe",
+                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\"]}")
+                .withPreemptiveAuthentication(USER_ID, "null")
+                .should().respond(201);
+
+        // THEN
+        Map<String, Object> args = taskManager.startedTasks.getFirst().args;
+        assertThat(args.containsKey("config")).isFalse();
+    }
+
+    @Test
     public void test_transcribe_returns_503_when_task_manager_is_down() {
         // GIVEN
         taskManager.setUp(false);
