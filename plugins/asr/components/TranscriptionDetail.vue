@@ -1,6 +1,6 @@
 <script setup>
-import { ref, computed, defineAsyncComponent, onMounted, h, getCurrentInstance } from 'vue'
-import { BRow, BCol, useModal } from 'bootstrap-vue-next'
+import { ref, computed, defineAsyncComponent, onMounted, getCurrentInstance } from 'vue'
+import { BRow, BCol } from 'bootstrap-vue-next'
 import IPhFileAudio from '~icons/ph/file-audio'
 import IPhArrowClockwise from '~icons/ph/arrow-clockwise'
 import IPhTrash from '~icons/ph/trash'
@@ -52,8 +52,8 @@ const DisplayDatetime = defineAsyncComponent(() => core.findComponent('Display/D
 const DisplayUser = defineAsyncComponent(() => core.findComponent('Display/DisplayUser'))
 const ProjectButton = defineAsyncComponent(() => core.findComponent('Project/ProjectButton'))
 const AppModal = defineAsyncComponent(() => core.findComponent('AppModal/AppModal'))
+const DocumentModal = defineAsyncComponent(() => core.findComponent('Document/DocumentModal'))
 
-const { create: createModal } = useModal()
 
 const task = ref(null)
 const loading = ref(true)
@@ -61,12 +61,8 @@ const docDetails = ref({})
 const showDeleteModal = ref(false)
 const showTranscribeModal = ref(false)
 const showErrorModal = ref(false)
-const DocumentModalComponent = ref(null)
-
-core.findComponent('Document/DocumentModal').then((c) => {
-  DocumentModalComponent.value = c
-  return c
-}).catch(() => {})
+const showDocumentModal = ref(false)
+const documentModalDocId = ref(null)
 
 const taskTitle = computed(() => {
   if (!task.value) return ''
@@ -349,17 +345,8 @@ async function resolveDocDetails(taskData) {
 }
 
 function openDocument(docId) {
-  const index = task.value?.args?.project
-  if (!DocumentModalComponent.value) return
-  const component = h(DocumentModalComponent.value, {
-    index,
-    id: docId,
-    routing: docId,
-    onOk: () => {},
-    onClose: () => {},
-    onCancel: () => {}
-  })
-  createModal({ component }).show()
+  documentModalDocId.value = docId
+  showDocumentModal.value = true
 }
 
 const taskLanguageCode = computed(() => {
@@ -927,6 +914,13 @@ onMounted(fetchTask)
         </button>
       </template>
     </component>
+    <component
+      :is="DocumentModal"
+      v-model="showDocumentModal"
+      :id="documentModalDocId"
+      :routing="documentModalDocId"
+      :index="docProject()"
+    />
   </div>
 </template>
 
