@@ -44,29 +44,24 @@ describe('LanguageSelector.vue', () => {
     expect(names).toEqual(['English', 'French', 'Portuguese'])
   })
 
-  it('selects a language on checkbox click', async () => {
-    const checkboxes = wrapper.findAll('input[type="checkbox"]')
-    await checkboxes[0].setValue(true)
-    expect(store.selectedLanguages).toContain('en')
+  it('selects a language on radio click', async () => {
+    const radios = wrapper.findAll('input[type="radio"]')
+    await radios[0].setValue(true)
+    expect(store.selectedLanguage).toBe('en')
   })
 
-  it('deselects a language on checkbox uncheck', async () => {
-    store.selectedLanguages.push('en')
+  it('displays selected language name', async () => {
+    store.selectedLanguage = 'pt'
     await flushPromises()
-    const checkboxes = wrapper.findAll('input[type="checkbox"]')
-    await checkboxes[0].setValue(false)
-    expect(store.selectedLanguages).not.toContain('en')
+    expect(wrapper.text()).toContain('Portuguese')
   })
 
-  it('displays selected language names', async () => {
-    store.selectedLanguages.push('pt')
+  it('replaces previous selection on new radio click', async () => {
+    store.selectedLanguage = 'en'
     await flushPromises()
-    expect(wrapper.text()).toContain('Portuguese')
-
-    store.selectedLanguages.push('fr')
-    await flushPromises()
-    expect(wrapper.text()).toContain('Portuguese')
-    expect(wrapper.text()).toContain('French')
+    const radios = wrapper.findAll('input[type="radio"]')
+    await radios[1].setValue(true)
+    expect(store.selectedLanguage).toBe('fr')
   })
 
   it('filters languages by search', async () => {
@@ -109,7 +104,7 @@ describe('LanguageSelector.vue', () => {
       const pinia = coreSetup._pinia
       const store = useAsrStore(pinia)
       store.availableModels = { en: ['parakeet'], fr: ['parakeet'], pt: ['parakeet'], es: ['parakeet'] }
-      store.selectedLanguages = []
+      store.selectedLanguage = null
 
       wrapper = mount(LanguageSelector, {
         global: { plugins: coreSetup.plugins, stubs: { BDropdown: BDropdownStub } }
