@@ -153,8 +153,8 @@ async function handleTranscribe() {
     <button
       v-if="!asrStore.isTranscribing"
       class="btn d-flex align-items-center gap-2"
-      :class="asrStore.selectedLanguages.length > 0 ? 'btn-action' : 'btn-light'"
-      :disabled="asrStore.selectedLanguages.length === 0"
+      :class="asrStore.selectedLanguage ? 'btn-action' : 'btn-light'"
+      :disabled="!asrStore.selectedLanguage"
       @click="handleTranscribe"
     >
       <i-ph-file-audio />

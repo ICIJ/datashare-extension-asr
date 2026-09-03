@@ -48,7 +48,7 @@ const ineligibleCount = computed(() => {
 })
 
 const canTranscribe = computed(() => {
-  return asrStore.selectedLanguages.length > 0 && eligibleDocs.value.length > 0
+  return !!asrStore.selectedLanguage && eligibleDocs.value.length > 0
 })
 
 onMounted(async () => {

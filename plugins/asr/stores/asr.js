@@ -28,7 +28,7 @@ export const useAsrStore = defineStore('asr', () => {
   const api = useApi()
 
   const availableModels = ref({})
-  const selectedLanguages = ref([])
+  const selectedLanguage = ref(null)
   const panelOpen = ref(false)
   const taskId = ref(null)
   const taskState = ref(null) // null | 'RUNNING' | 'DONE' | 'ERROR' | 'CANCELLED'
@@ -61,7 +61,7 @@ export const useAsrStore = defineStore('asr', () => {
       project,
       docs: docIds,
       model,
-      languages: [...selectedLanguages.value],
+      language: selectedLanguage.value,
       batch_size: DEFAULT_BATCH_SIZE
     }
     if (query) {
@@ -107,7 +107,7 @@ export const useAsrStore = defineStore('asr', () => {
   }
 
   function reset() {
-    selectedLanguages.value = []
+    selectedLanguage.value = null
     taskId.value = null
     taskState.value = null
     transcription.value = null
@@ -115,7 +115,7 @@ export const useAsrStore = defineStore('asr', () => {
 
   return {
     availableModels,
-    selectedLanguages,
+    selectedLanguage,
     panelOpen,
     taskId,
     taskState,
