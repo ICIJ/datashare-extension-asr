@@ -115,10 +115,11 @@ function docState() {
 const isQueryBased = computed(() => {
   const raw = task.value?.args?.docs
   if (!raw) return false
-  if (Array.isArray(raw) && raw.length === 2 && typeof raw[0] === 'string' && raw[0].startsWith('java.util.')) {
+  if (!Array.isArray(raw)) return true
+  if (raw.length === 2 && typeof raw[0] === 'string' && raw[0].startsWith('java.util.')) {
     return typeof raw[1] === 'object' && !Array.isArray(raw[1])
   }
-  return typeof raw === 'object' && !Array.isArray(raw)
+  return false
 })
 
 const docs = computed(() => getDocs())
