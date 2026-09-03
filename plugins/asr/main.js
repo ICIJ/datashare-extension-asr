@@ -40,7 +40,7 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       colName: 'Name of the documents',
       colProgress: 'Progress',
       colCategory: 'Category',
-      colLanguages: 'Languages',
+      colLanguage: 'Language',
       colModel: 'Model',
       colProject: 'Project',
       colUser: 'User',

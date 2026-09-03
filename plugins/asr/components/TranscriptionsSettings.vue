@@ -50,7 +50,7 @@ const propertyOptions = [
   { value: 'name', icon: IPhFileAudio, disabled: true, text: computed(() => core.i18n.global.t('asr.colName')) },
   { value: 'progress', icon: IPhClockCountdown, text: computed(() => core.i18n.global.t('asr.colProgress')) },
   { value: 'category', icon: IPhPlay, text: computed(() => core.i18n.global.t('asr.colCategory')) },
-  { value: 'languages', icon: IPhTranslate, text: computed(() => core.i18n.global.t('asr.colLanguages')) },
+  { value: 'language', icon: IPhTranslate, text: computed(() => core.i18n.global.t('asr.colLanguage')) },
   { value: 'model', icon: IPhBrain, text: computed(() => core.i18n.global.t('asr.colModel')) },
   { value: 'project', icon: IPhCirclesThreePlus, text: computed(() => core.i18n.global.t('asr.colProject')) },
   { value: 'user', icon: IPhUserCircle, text: computed(() => core.i18n.global.t('asr.colUser')) },
@@ -60,7 +60,7 @@ const propertyOptions = [
 function reset() {
   asrStore.settingsOrder = 'desc'
   asrStore.settingsPerPage = 25
-  asrStore.settingsProperties = ['state', 'name', 'progress', 'category', 'languages', 'model', 'project', 'user', 'launchedOn']
+  asrStore.settingsProperties = ['state', 'name', 'progress', 'category', 'language', 'model', 'project', 'user', 'launchedOn']
 }
 </script>
 
