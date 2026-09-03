@@ -31,17 +31,17 @@ describe('TranscriptionNew.vue', () => {
   }
 
   describe('form validation', () => {
-    it('is invalid when no languages are selected', async () => {
+    it('is invalid when no language is selected', async () => {
       createWrapper()
       await flushPromises()
       expect(wrapper.vm.isValid).toBe(false)
     })
 
-    it('is valid when languages are selected', async () => {
+    it('is valid when a language is selected', async () => {
       createWrapper()
       await flushPromises()
       const asrStore = useAsrStore()
-      asrStore.selectedLanguages = ['en']
+      asrStore.selectedLanguage = 'en'
       await flushPromises()
       expect(wrapper.vm.isValid).toBe(true)
     })
@@ -61,15 +61,15 @@ describe('TranscriptionNew.vue', () => {
       expect(wrapper.vm.selectedModel).toBe(defaultModel)
     })
 
-    it('clears selected languages', async () => {
+    it('clears selected language', async () => {
       createWrapper()
       await flushPromises()
       const asrStore = useAsrStore()
-      asrStore.selectedLanguages = ['en', 'fr']
+      asrStore.selectedLanguage = 'en'
 
       wrapper.vm.reset()
 
-      expect(asrStore.selectedLanguages).toEqual([])
+      expect(asrStore.selectedLanguage).toBeNull()
     })
   })
 
@@ -78,7 +78,7 @@ describe('TranscriptionNew.vue', () => {
       createWrapper()
       await flushPromises()
       const asrStore = useAsrStore()
-      asrStore.selectedLanguages = ['en']
+      asrStore.selectedLanguage = 'en'
       sendActionMock.mockResolvedValue({ taskId: 'task-123' })
 
       await wrapper.vm.submit()
@@ -99,7 +99,7 @@ describe('TranscriptionNew.vue', () => {
       await flushPromises()
       const asrStore = useAsrStore()
       wrapper.vm.query = 'exp*'
-      asrStore.selectedLanguages = ['en']
+      asrStore.selectedLanguage = 'en'
       sendActionMock.mockResolvedValue({ taskId: 'task-123' })
 
       await wrapper.vm.submit()
@@ -117,7 +117,7 @@ describe('TranscriptionNew.vue', () => {
       await flushPromises()
       const asrStore = useAsrStore()
       wrapper.vm.selectedModel = 'model-b'
-      asrStore.selectedLanguages = ['en']
+      asrStore.selectedLanguage = 'en'
       sendActionMock.mockResolvedValue({ taskId: 'task-123' })
 
       await wrapper.vm.submit()
@@ -140,23 +140,20 @@ describe('TranscriptionNew.vue', () => {
     })
   })
 
-  describe('selectedLanguageNames', () => {
-    it('shows the full name for a single language', async () => {
+  describe('selectedLanguageName', () => {
+    it('shows the full name for a selected language', async () => {
       createWrapper()
       await flushPromises()
       const asrStore = useAsrStore()
-      asrStore.selectedLanguages = ['fr']
+      asrStore.selectedLanguage = 'fr'
       await flushPromises()
-      expect(wrapper.vm.selectedLanguageNames).toBe('French')
+      expect(wrapper.vm.selectedLanguageName).toBe('French')
     })
 
-    it('condenses multiple languages to first name and count', async () => {
+    it('returns empty string when no language is selected', async () => {
       createWrapper()
       await flushPromises()
-      const asrStore = useAsrStore()
-      asrStore.selectedLanguages = ['fr', 'en', 'de', 'es']
-      await flushPromises()
-      expect(wrapper.vm.selectedLanguageNames).toBe('French and 3 other languages')
+      expect(wrapper.vm.selectedLanguageName).toBe('')
     })
   })
 
