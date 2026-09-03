@@ -272,19 +272,32 @@ const searchHref = computed(() => {
 
 const languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
 
-const taskLanguages = computed(() => {
-  let langs = task.value?.args?.languages
-  if (!Array.isArray(langs)) return '—'
-  langs = langs.flat().filter(v => typeof v === 'string' && !v.includes('.'))
-  if (langs.length === 0) return '—'
-  return langs.map((code) => {
+const taskLanguageDisplay = computed(() => {
+  const lang = task.value?.args?.language
+  if (lang && typeof lang === 'string') {
     try {
-      return languageNames.of(code)
+      return languageNames.of(lang)
     }
     catch {
-      return code
+      return lang
     }
-  }).join(', ')
+  }
+  // Fallback: legacy languages array
+  let langs = task.value?.args?.languages
+  if (Array.isArray(langs)) {
+    langs = langs.flat().filter(v => typeof v === 'string' && !v.includes('.'))
+    if (langs.length > 0) {
+      return langs.map((code) => {
+        try {
+          return languageNames.of(code)
+        }
+        catch {
+          return code
+        }
+      }).join(', ')
+    }
+  }
+  return '—'
 })
 
 const MODEL_LABELS = {
@@ -364,18 +377,24 @@ function openDocument(docId) {
   createModal({ component }).show()
 }
 
-const taskLanguageCodes = computed(() => {
+const taskLanguageCode = computed(() => {
+  const lang = task.value?.args?.language
+  if (lang && typeof lang === 'string') return lang
+  // Fallback: legacy languages array
   const langs = task.value?.args?.languages
-  if (!Array.isArray(langs)) return []
-  return langs.flat().filter(v => typeof v === 'string' && !v.includes('.'))
+  if (Array.isArray(langs)) {
+    const codes = langs.flat().filter(v => typeof v === 'string' && !v.includes('.'))
+    if (codes.length > 0) return codes[0]
+  }
+  return null
 })
 
 const canTranscribe = computed(() => {
-  return asrStore.selectedLanguages.length > 0
+  return !!asrStore.selectedLanguage
 })
 
 function requestTranscribeAgain() {
-  asrStore.selectedLanguages.splice(0, asrStore.selectedLanguages.length, ...taskLanguageCodes.value)
+  asrStore.selectedLanguage = taskLanguageCode.value
   asrStore.fetchModels()
   showTranscribeModal.value = true
 }
@@ -391,7 +410,7 @@ async function confirmTranscribeAgain() {
         project: args.project,
         docs: task.value?.args?.docs,
         name,
-        languages: [...asrStore.selectedLanguages],
+        language: asrStore.selectedLanguage,
         batch_size: args.batch_size || 2
       }
     })
@@ -726,7 +745,7 @@ onMounted(fetchTask)
                         :is="IPhTranslate"
                         class="transcription-detail__card__entry__icon text-secondary-emphasis flex-shrink-0"
                       />
-                      {{ taskLanguages }}
+                      {{ taskLanguageDisplay }}
                     </div>
                   </div>
                 </li>
