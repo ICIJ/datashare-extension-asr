@@ -43,7 +43,6 @@ const AppModal = defineAsyncComponent(() => core.findComponent('AppModal/AppModa
 const tasks = ref([])
 const docNames = ref({})
 const docCategories = ref({})
-const docLanguages = ref({})
 const totalRows = ref(0)
 const page = ref(1)
 const perPage = computed(() => asrStore.settingsPerPage)
@@ -99,7 +98,6 @@ async function resolveDocNames(taskList) {
         api.sendAction(`/api/${project}/documents/${docId}`).then((doc) => {
           if (doc?.title) docNames.value[docId] = doc.title
           if (doc?.contentTypeCategory) docCategories.value[docId] = doc.contentTypeCategory
-          if (doc?.language) docLanguages.value[docId] = doc.language
           return doc
         }).catch(() => {})
       )
@@ -164,27 +162,7 @@ function taskLanguage(task) {
       return lang
     }
   }
-  // Fallback: try legacy languages array
-  let taskLangs = task.args?.languages
-  if (Array.isArray(taskLangs)) {
-    taskLangs = taskLangs.flat().filter(v => typeof v === 'string' && !v.includes('.'))
-    if (taskLangs.length > 0) {
-      return taskLangs.map((code) => {
-        try {
-          return languageNames.of(code)
-        }
-        catch {
-          return code
-        }
-      }).join(', ')
-    }
-  }
-  // Fallback to document language from ES
-  const docs = getDocs(task)
-  if (docs.length === 0) return '—'
-  const languages = new Set(docs.map(id => docLanguages.value[id]).filter(Boolean))
-  if (languages.size === 0) return '—'
-  return [...languages].map(capitalize).join(', ')
+  return '—'
 }
 
 const MODEL_LABELS = {
