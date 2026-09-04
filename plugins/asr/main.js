@@ -108,7 +108,6 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
         parakeetInfo: 'Parakeet is Nvidia\'s Parakeet-tdt-0.6b-v3, a general-purpose multilingual speech recognition model.',
         parakeetTrtInfo: 'Parakeet TRT is the TensorRT-optimized version of Parakeet, providing faster inference on compatible GPUs.',
         fireredasr2Info: 'FireRedASR2 is Xiaomi\'s speech recognition model, specialized for Chinese language transcription.',
-        fasterWhisperInfo: 'Faster-Whisper is Systran\'s CTranslate2-based implementation of OpenAI\'s Whisper model.',
         yourSelection: 'Your selection :',
         selectionSummaryCount: '{audioCount} audio and {videoCount} video documents',
         selectionSummaryRest: 'in {language} are selected to be transcribed with {model}.',
