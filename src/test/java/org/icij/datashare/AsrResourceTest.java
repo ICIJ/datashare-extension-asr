@@ -84,7 +84,7 @@ public class AsrResourceTest implements FluentRestTest {
     public void test_transcribe_creates_task_and_returns_201() throws Exception {
         // WHEN
         String body = post("/api/asr/transcribe",
-                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\"]}")
+                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\"],\"language\":\"ENGLISH\"}")
                 .withPreemptiveAuthentication(USER_ID, "null")
                 .response().content();
         Map<String, Object> response = new ObjectMapper().readValue(body, new TypeReference<>() {});
@@ -99,7 +99,7 @@ public class AsrResourceTest implements FluentRestTest {
     public void test_transcribe_passes_args_to_task() throws Exception {
         // WHEN
         post("/api/asr/transcribe",
-                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\",\"doc2\"],\"batch_size\":5}")
+                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\",\"doc2\"],\"language\":\"ENGLISH\",\"batch_size\":5}")
                 .withPreemptiveAuthentication(USER_ID, "null")
                 .should().respond(201);
 
@@ -116,7 +116,7 @@ public class AsrResourceTest implements FluentRestTest {
     public void test_transcribe_default_batch_size() throws Exception {
         // WHEN
         post("/api/asr/transcribe",
-                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\"]}")
+                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\"],\"language\":\"ENGLISH\"}")
                 .withPreemptiveAuthentication(USER_ID, "null")
                 .should().respond(201);
 
@@ -138,12 +138,21 @@ public class AsrResourceTest implements FluentRestTest {
     @Test
     public void test_transcribe_missing_docs_returns_400() {
         // GIVEN
-        String bodyWithoutDocs = "{\"project\":\"" + PROJECT + "\"}";
+        String bodyWithoutDocs = "{\"project\":\"" + PROJECT + "\",\"language\":\"ENGLISH\"}";
 
         // WHEN/THEN
         post("/api/asr/transcribe", bodyWithoutDocs)
                 .withPreemptiveAuthentication(USER_ID, "null")
                 .should().respond(400).contain("missing docs");
+    }
+
+    @Test
+    public void test_transcribe_missing_language_returns_400() {
+        // WHEN/THEN
+        post("/api/asr/transcribe",
+                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\"]}")
+                .withPreemptiveAuthentication(USER_ID, "null")
+                .should().respond(400).contain("missing language");
     }
 
     @Test
@@ -159,7 +168,7 @@ public class AsrResourceTest implements FluentRestTest {
     public void test_transcribe_passes_model_inside_config() throws Exception {
         // WHEN
         post("/api/asr/transcribe",
-                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\"],\"model\":\"parakeet\"}")
+                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\"],\"language\":\"ENGLISH\",\"model\":\"parakeet\"}")
                 .withPreemptiveAuthentication(USER_ID, "null")
                 .should().respond(201);
 
@@ -174,7 +183,7 @@ public class AsrResourceTest implements FluentRestTest {
     public void test_transcribe_without_model_has_no_config() throws Exception {
         // WHEN
         post("/api/asr/transcribe",
-                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\"]}")
+                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\"],\"language\":\"ENGLISH\"}")
                 .withPreemptiveAuthentication(USER_ID, "null")
                 .should().respond(201);
 
