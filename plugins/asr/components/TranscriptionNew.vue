@@ -76,13 +76,13 @@ const FILTER_ICONS = {
 const languageDisplayNames = new Intl.DisplayNames(['en'], { type: 'language' })
 
 const query = ref('')
-const selectedModel = ref('parakeet')
+const selectedModel = ref(null)
 const submitting = ref(false)
 
 const breadcrumbRoutes = ['task', 'task.transcriptions', 'task.transcriptions.new']
 
 const isValid = computed(() => {
-  return !!asrStore.selectedLanguage
+  return !!asrStore.selectedLanguage && !!selectedModel.value
 })
 
 const selectionBadges = computed(() => {
@@ -111,10 +111,12 @@ const selectedLanguageName = computed(() => {
 
 const MODEL_LABELS = {
   'parakeet': 'Parakeet',
+  'parakeet_trt': 'Parakeet TRT',
+  'fireredasr2_aed': 'FireRedASR2',
   'faster-whisper': 'Faster-Whisper'
 }
 
-const availableModelNames = computed(() => {
+const allModelNames = computed(() => {
   const models = new Set()
   for (const langs of Object.values(asrStore.availableModels || {})) {
     for (const m of langs) {
@@ -122,6 +124,26 @@ const availableModelNames = computed(() => {
     }
   }
   return [...models]
+})
+
+const modelsForLanguage = computed(() => {
+  const lang = asrStore.selectedLanguage
+  if (!lang || !asrStore.availableModels?.[lang]) return []
+  return asrStore.availableModels[lang]
+})
+
+function isModelDisabled(model) {
+  return modelsForLanguage.value.length > 0 && !modelsForLanguage.value.includes(model)
+    || modelsForLanguage.value.length === 0
+}
+
+watch(() => asrStore.selectedLanguage, () => {
+  if (isModelDisabled(selectedModel.value) && modelsForLanguage.value.length) {
+    selectedModel.value = modelsForLanguage.value[0]
+  }
+  if (modelsForLanguage.value.length === 0) {
+    selectedModel.value = null
+  }
 })
 
 const modelDisplayName = computed(() => {
@@ -196,10 +218,8 @@ watch(
 
 onMounted(async () => {
   await asrStore.fetchModels()
-  if (availableModelNames.value.length && !availableModelNames.value.includes(selectedModel.value)) {
-    selectedModel.value = availableModelNames.value[0]
-  }
   asrStore.selectedLanguage = null
+  selectedModel.value = null
   fetchDocumentCounts()
 })
 
@@ -235,7 +255,7 @@ function dismissBadge(badge) {
 function reset() {
   query.value = ''
   asrStore.selectedLanguage = null
-  selectedModel.value = 'parakeet'
+  selectedModel.value = null
   formSearchStore.resetFilterValues()
 }
 
@@ -440,7 +460,7 @@ async function submit() {
           </label>
           <div class="col d-flex flex-column gap-1">
             <div
-              v-for="m in availableModelNames"
+              v-for="m in allModelNames"
               :key="m"
               class="form-check"
             >
@@ -450,6 +470,7 @@ async function submit() {
                 class="form-check-input"
                 type="radio"
                 :value="m"
+                :disabled="isModelDisabled(m)"
               >
               <label
                 class="form-check-label"
@@ -459,13 +480,13 @@ async function submit() {
           </div>
         </div>
         <p
-          v-if="availableModelNames.includes('parakeet')"
+          v-if="allModelNames.includes('parakeet')"
           class="text-muted small mb-1"
         >
           {{ $t('asr.newForm.parakeetInfo') }}
         </p>
         <p
-          v-if="availableModelNames.includes('faster-whisper')"
+          v-if="allModelNames.includes('faster-whisper')"
           class="text-muted small mb-1"
         >
           {{ $t('asr.newForm.fasterWhisperInfo') }}
