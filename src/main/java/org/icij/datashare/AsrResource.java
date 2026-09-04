@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @Prefix("/api/asr")
@@ -90,7 +91,7 @@ public class AsrResource {
         Map<String, Object> taskArgs = new HashMap<>();
         taskArgs.put("project", project);
         taskArgs.put("docs", docs);
-        taskArgs.put("language", language);
+        taskArgs.put("language", toDatashareLanguage(language));
         if (body.containsKey("model")) {
             taskArgs.put("config", AsrConfig.fromModel((String) body.get("model")));
         }
@@ -127,6 +128,10 @@ public class AsrResource {
         } catch (IOException e) {
             return new JsonPayload(500, new ErrorResponse("failed to read transcription"));
         }
+    }
+
+    static String toDatashareLanguage(String isoCode) {
+        return Locale.forLanguageTag(isoCode).getDisplayLanguage(Locale.ENGLISH).toUpperCase();
     }
 
     private static String loadAvailableModels(String resourcePath) {
