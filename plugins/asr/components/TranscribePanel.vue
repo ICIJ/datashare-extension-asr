@@ -19,6 +19,8 @@ const { $toast: toast, $t: t } = getCurrentInstance()?.proxy ?? {}
 
 const MODEL_LABELS = {
   'parakeet': 'Parakeet',
+  'parakeet_trt': 'Parakeet TRT',
+  'fireredasr2_aed': 'FireRedASR2',
   'faster-whisper': 'Faster-Whisper'
 }
 
