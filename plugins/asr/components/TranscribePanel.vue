@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, getCurrentInstance, defineAsyncComponent, onMounted } from 'vue'
+import { ref, computed, watch, getCurrentInstance, defineAsyncComponent, onMounted } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
 import IPhBrain from '~icons/ph/brain'
 import IPhInfo from '~icons/ph/info'
@@ -23,9 +23,9 @@ const MODEL_LABELS = {
   'fireredasr2_aed': 'FireRedASR2'
 }
 
-const selectedModel = ref('parakeet')
+const selectedModel = ref(null)
 
-const availableModelNames = computed(() => {
+const allModelNames = computed(() => {
   const models = new Set()
   for (const langs of Object.values(asrStore.availableModels || {})) {
     for (const m of langs) {
@@ -35,10 +35,30 @@ const availableModelNames = computed(() => {
   return [...models]
 })
 
+const modelsForLanguage = computed(() => {
+  const lang = asrStore.selectedLanguage
+  if (!lang || !asrStore.availableModels?.[lang]) return []
+  return asrStore.availableModels[lang]
+})
+
+function isModelDisabled(model) {
+  return modelsForLanguage.value.length === 0 || !modelsForLanguage.value.includes(model)
+}
+
+watch(() => asrStore.selectedLanguage, () => {
+  if (modelsForLanguage.value.length) {
+    if (isModelDisabled(selectedModel.value)) {
+      selectedModel.value = modelsForLanguage.value[0]
+    }
+  } else {
+    selectedModel.value = null
+  }
+})
+
 onMounted(async () => {
   await asrStore.fetchModels()
-  if (availableModelNames.value.length && !availableModelNames.value.includes(selectedModel.value)) {
-    selectedModel.value = availableModelNames.value[0]
+  if (allModelNames.value.length && !allModelNames.value.includes(selectedModel.value)) {
+    selectedModel.value = allModelNames.value[0]
   }
 })
 
@@ -94,9 +114,10 @@ async function handleTranscribe() {
           {{ MODEL_LABELS[selectedModel] ?? selectedModel }}
         </template>
         <b-dropdown-item
-          v-for="m in availableModelNames"
+          v-for="m in allModelNames"
           :key="m"
           :active="selectedModel === m"
+          :disabled="isModelDisabled(m)"
           @click="selectedModel = m"
         >
           {{ MODEL_LABELS[m] ?? m }}
@@ -104,9 +125,23 @@ async function handleTranscribe() {
       </b-dropdown>
     </div>
 
-    <p class="text-muted small d-flex align-items-start gap-2">
-      <i-ph-info class="flex-shrink-0 mt-1" />
-      <span>{{ $t('asr.selectLanguageHint') }}</span>
+    <p
+      v-if="selectedModel === 'parakeet'"
+      class="text-muted small mb-2"
+    >
+      {{ $t('asr.newForm.parakeetInfo') }}
+    </p>
+    <p
+      v-if="selectedModel === 'parakeet_trt'"
+      class="text-muted small mb-2"
+    >
+      {{ $t('asr.newForm.parakeetTrtInfo') }}
+    </p>
+    <p
+      v-if="selectedModel === 'fireredasr2_aed'"
+      class="text-muted small mb-2"
+    >
+      {{ $t('asr.newForm.fireredasr2Info') }}
     </p>
 
     <p class="text-muted small d-flex align-items-start gap-2">
@@ -116,8 +151,8 @@ async function handleTranscribe() {
 
     <button
       class="btn d-flex align-items-center gap-2"
-      :class="asrStore.selectedLanguage ? 'btn-action' : 'btn-light'"
-      :disabled="!asrStore.selectedLanguage"
+      :class="asrStore.selectedLanguage && selectedModel ? 'btn-action' : 'btn-light'"
+      :disabled="!asrStore.selectedLanguage || !selectedModel"
       @click="handleTranscribe"
     >
       <i-ph-file-audio />
