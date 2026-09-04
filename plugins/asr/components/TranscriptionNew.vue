@@ -480,13 +480,25 @@ async function submit() {
           </div>
         </div>
         <p
-          v-if="allModelNames.includes('parakeet')"
+          v-if="selectedModel === 'parakeet'"
           class="text-muted small mb-1"
         >
           {{ $t('asr.newForm.parakeetInfo') }}
         </p>
         <p
-          v-if="allModelNames.includes('faster-whisper')"
+          v-if="selectedModel === 'parakeet_trt'"
+          class="text-muted small mb-1"
+        >
+          {{ $t('asr.newForm.parakeetTrtInfo') }}
+        </p>
+        <p
+          v-if="selectedModel === 'fireredasr2_aed'"
+          class="text-muted small mb-1"
+        >
+          {{ $t('asr.newForm.fireredasr2Info') }}
+        </p>
+        <p
+          v-if="selectedModel === 'faster-whisper'"
           class="text-muted small mb-1"
         >
           {{ $t('asr.newForm.fasterWhisperInfo') }}
