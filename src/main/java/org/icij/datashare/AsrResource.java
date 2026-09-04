@@ -82,14 +82,17 @@ public class AsrResource {
             return new JsonPayload(400, new ErrorResponse("missing docs"));
         }
 
+        String language = (String) body.get("language");
+        if (language == null || language.isBlank()) {
+            return new JsonPayload(400, new ErrorResponse("missing language"));
+        }
+
         Map<String, Object> taskArgs = new HashMap<>();
         taskArgs.put("project", project);
         taskArgs.put("docs", docs);
+        taskArgs.put("language", language);
         if (body.containsKey("model")) {
             taskArgs.put("config", AsrConfig.fromModel((String) body.get("model")));
-        }
-        if (body.containsKey("language")) {
-            taskArgs.put("language", body.get("language"));
         }
         taskArgs.put("batch_size", body.getOrDefault("batch_size", 2));
 
