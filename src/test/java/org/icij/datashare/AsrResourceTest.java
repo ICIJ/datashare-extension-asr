@@ -84,7 +84,7 @@ public class AsrResourceTest implements FluentRestTest {
     public void test_transcribe_creates_task_and_returns_201() throws Exception {
         // WHEN
         String body = post("/api/asr/transcribe",
-                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\"],\"language\":\"ENGLISH\"}")
+                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\"],\"language\":\"en\"}")
                 .withPreemptiveAuthentication(USER_ID, "null")
                 .response().content();
         Map<String, Object> response = new ObjectMapper().readValue(body, new TypeReference<>() {});
@@ -99,7 +99,7 @@ public class AsrResourceTest implements FluentRestTest {
     public void test_transcribe_passes_args_to_task() throws Exception {
         // WHEN
         post("/api/asr/transcribe",
-                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\",\"doc2\"],\"language\":\"ENGLISH\",\"batch_size\":5}")
+                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\",\"doc2\"],\"language\":\"en\",\"batch_size\":5}")
                 .withPreemptiveAuthentication(USER_ID, "null")
                 .should().respond(201);
 
@@ -116,7 +116,7 @@ public class AsrResourceTest implements FluentRestTest {
     public void test_transcribe_default_batch_size() throws Exception {
         // WHEN
         post("/api/asr/transcribe",
-                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\"],\"language\":\"ENGLISH\"}")
+                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\"],\"language\":\"en\"}")
                 .withPreemptiveAuthentication(USER_ID, "null")
                 .should().respond(201);
 
@@ -138,7 +138,7 @@ public class AsrResourceTest implements FluentRestTest {
     @Test
     public void test_transcribe_missing_docs_returns_400() {
         // GIVEN
-        String bodyWithoutDocs = "{\"project\":\"" + PROJECT + "\",\"language\":\"ENGLISH\"}";
+        String bodyWithoutDocs = "{\"project\":\"" + PROJECT + "\",\"language\":\"en\"}";
 
         // WHEN/THEN
         post("/api/asr/transcribe", bodyWithoutDocs)
@@ -156,6 +156,26 @@ public class AsrResourceTest implements FluentRestTest {
     }
 
     @Test
+    public void test_transcribe_converts_language_to_datashare_format() throws Exception {
+        // WHEN
+        post("/api/asr/transcribe",
+                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\"],\"language\":\"fr\"}")
+                .withPreemptiveAuthentication(USER_ID, "null")
+                .should().respond(201);
+
+        // THEN
+        assertThat(taskManager.startedTasks.getFirst().args.get("language")).isEqualTo("FRENCH");
+    }
+
+    @Test
+    public void test_toDatashareLanguage() {
+        assertThat(AsrResource.toDatashareLanguage("en")).isEqualTo("ENGLISH");
+        assertThat(AsrResource.toDatashareLanguage("fr")).isEqualTo("FRENCH");
+        assertThat(AsrResource.toDatashareLanguage("zh")).isEqualTo("CHINESE");
+        assertThat(AsrResource.toDatashareLanguage("de")).isEqualTo("GERMAN");
+    }
+
+    @Test
     public void test_transcribe_unauthorized_project_returns_401() {
         // WHEN/THEN
         post("/api/asr/transcribe",
@@ -168,7 +188,7 @@ public class AsrResourceTest implements FluentRestTest {
     public void test_transcribe_passes_model_inside_config() throws Exception {
         // WHEN
         post("/api/asr/transcribe",
-                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\"],\"language\":\"ENGLISH\",\"model\":\"parakeet\"}")
+                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\"],\"language\":\"en\",\"model\":\"parakeet\"}")
                 .withPreemptiveAuthentication(USER_ID, "null")
                 .should().respond(201);
 
@@ -183,7 +203,7 @@ public class AsrResourceTest implements FluentRestTest {
     public void test_transcribe_without_model_has_no_config() throws Exception {
         // WHEN
         post("/api/asr/transcribe",
-                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\"],\"language\":\"ENGLISH\"}")
+                "{\"project\":\"" + PROJECT + "\",\"docs\":[\"doc1\"],\"language\":\"en\"}")
                 .withPreemptiveAuthentication(USER_ID, "null")
                 .should().respond(201);
 
