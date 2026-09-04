@@ -104,7 +104,7 @@ function isSelected(code) {
 <template>
   <div class="language-selector">
     <div class="language-selector__row">
-      <label class="form-label m-0 text-nowrap d-flex align-items-center gap-1">
+      <label class="form-label m-0 d-flex align-items-center gap-1">
         <i-ph-translate />
         {{ $t('asr.selectLanguage') }}
       </label>
@@ -184,10 +184,9 @@ function isSelected(code) {
 
 <style scoped>
 .language-selector__row {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .language-selector__list {

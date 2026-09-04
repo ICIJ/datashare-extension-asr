@@ -3,7 +3,6 @@ import { ref, computed, getCurrentInstance, defineAsyncComponent, onMounted, onU
 import IPhFileAudio from '~icons/ph/file-audio'
 import IPhBrain from '~icons/ph/brain'
 import IPhInfo from '~icons/ph/info'
-import IPhStop from '~icons/ph/stop'
 import IPhX from '~icons/ph/x'
 import { useCore } from '@/composables/useCore'
 import { useAsrStore } from '@/stores/asr'
@@ -151,7 +150,6 @@ async function handleTranscribe() {
     </p>
 
     <button
-      v-if="!asrStore.isTranscribing"
       class="btn d-flex align-items-center gap-2"
       :class="asrStore.selectedLanguage ? 'btn-action' : 'btn-light'"
       :disabled="!asrStore.selectedLanguage"
@@ -159,14 +157,6 @@ async function handleTranscribe() {
     >
       <i-ph-file-audio />
       {{ $t('asr.transcribe') }}
-    </button>
-    <button
-      v-else
-      class="btn btn-outline-light d-flex align-items-center gap-2"
-      @click="asrStore.stopTranscription()"
-    >
-      <i-ph-stop />
-      {{ $t('asr.stopTranscription') }}
     </button>
   </div>
 </template>
