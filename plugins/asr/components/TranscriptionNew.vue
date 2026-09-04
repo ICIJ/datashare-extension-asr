@@ -112,8 +112,7 @@ const selectedLanguageName = computed(() => {
 const MODEL_LABELS = {
   'parakeet': 'Parakeet',
   'parakeet_trt': 'Parakeet TRT',
-  'fireredasr2_aed': 'FireRedASR2',
-  'faster-whisper': 'Faster-Whisper'
+  'fireredasr2_aed': 'FireRedASR2'
 }
 
 const allModelNames = computed(() => {
@@ -496,12 +495,6 @@ async function submit() {
           class="text-muted small mb-1"
         >
           {{ $t('asr.newForm.fireredasr2Info') }}
-        </p>
-        <p
-          v-if="selectedModel === 'faster-whisper'"
-          class="text-muted small mb-1"
-        >
-          {{ $t('asr.newForm.fasterWhisperInfo') }}
         </p>
         <p class="text-muted small mb-0">
           {{ $t('asr.info') }}
