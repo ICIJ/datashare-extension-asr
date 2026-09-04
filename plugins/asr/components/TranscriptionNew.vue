@@ -412,7 +412,7 @@ async function submit() {
         />
       </component>
 
-      <!-- Step 3: Languages -->
+      <!-- Step 2: Language -->
       <component
         :is="FormStep"
         :title="$t('asr.newForm.language')"
@@ -428,7 +428,7 @@ async function submit() {
       <component
         :is="FormStep"
         :title="$t('asr.newForm.model')"
-        :index="2"
+        :index="3"
       >
         <div class="row align-items-center mb-3">
           <label class="col-sm-12 col-md-4 col-lg-3 d-flex align-items-center gap-2 form-label text-body-emphasis m-0">
