@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, getCurrentInstance, defineAsyncComponent, onMounted } from 'vue'
+import { ref, computed, watch, getCurrentInstance, defineAsyncComponent, onMounted } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
 import IPhBrain from '~icons/ph/brain'
 import IPhInfo from '~icons/ph/info'
@@ -28,9 +28,9 @@ const MODEL_LABELS = {
   'fireredasr2_aed': 'FireRedASR2'
 }
 
-const selectedModel = ref('parakeet')
+const selectedModel = ref(null)
 
-const availableModelNames = computed(() => {
+const allModelNames = computed(() => {
   const models = new Set()
   for (const langs of Object.values(asrStore.availableModels || {})) {
     for (const m of langs) {
@@ -38,6 +38,26 @@ const availableModelNames = computed(() => {
     }
   }
   return [...models]
+})
+
+const modelsForLanguage = computed(() => {
+  const lang = asrStore.selectedLanguage
+  if (!lang || !asrStore.availableModels?.[lang]) return []
+  return asrStore.availableModels[lang]
+})
+
+function isModelDisabled(model) {
+  return modelsForLanguage.value.length === 0 || !modelsForLanguage.value.includes(model)
+}
+
+watch(() => asrStore.selectedLanguage, () => {
+  if (modelsForLanguage.value.length) {
+    if (isModelDisabled(selectedModel.value)) {
+      selectedModel.value = modelsForLanguage.value[0]
+    }
+  } else {
+    selectedModel.value = null
+  }
 })
 
 const eligibleDocs = computed(() => {
@@ -49,14 +69,11 @@ const ineligibleCount = computed(() => {
 })
 
 const canTranscribe = computed(() => {
-  return !!asrStore.selectedLanguage && eligibleDocs.value.length > 0
+  return !!asrStore.selectedLanguage && !!selectedModel.value && eligibleDocs.value.length > 0
 })
 
 onMounted(async () => {
   await asrStore.fetchModels()
-  if (availableModelNames.value.length && !availableModelNames.value.includes(selectedModel.value)) {
-    selectedModel.value = availableModelNames.value[0]
-  }
 })
 
 async function handleBatchTranscribe() {
@@ -146,15 +163,35 @@ async function handleBatchTranscribe() {
             {{ MODEL_LABELS[selectedModel] ?? selectedModel }}
           </template>
           <b-dropdown-item
-            v-for="m in availableModelNames"
+            v-for="m in allModelNames"
             :key="m"
             :active="selectedModel === m"
+            :disabled="isModelDisabled(m)"
             @click="selectedModel = m"
           >
             {{ MODEL_LABELS[m] ?? m }}
           </b-dropdown-item>
         </b-dropdown>
       </div>
+
+      <p
+        v-if="selectedModel === 'parakeet'"
+        class="text-muted small mb-0"
+      >
+        {{ $t('asr.newForm.parakeetInfo') }}
+      </p>
+      <p
+        v-if="selectedModel === 'parakeet_trt'"
+        class="text-muted small mb-0"
+      >
+        {{ $t('asr.newForm.parakeetTrtInfo') }}
+      </p>
+      <p
+        v-if="selectedModel === 'fireredasr2_aed'"
+        class="text-muted small mb-0"
+      >
+        {{ $t('asr.newForm.fireredasr2Info') }}
+      </p>
     </div>
 
     <template #footer>
