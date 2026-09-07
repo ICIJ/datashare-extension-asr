@@ -275,11 +275,13 @@ const taskLanguageDisplay = computed(() => {
   const lang = task.value?.args?.language
   if (lang && typeof lang === 'string') {
     try {
-      return languageNames.of(lang)
+      const name = languageNames.of(lang)
+      if (name) return capitalize(name)
     }
     catch {
-      return lang
+      // not an ISO code, fall through
     }
+    return capitalize(lang)
   }
   return '—'
 })
@@ -291,7 +293,7 @@ const MODEL_LABELS = {
 
 const taskModel = computed(() => {
   const args = task.value?.args || {}
-  const model = args.model || args.config?.model || 'parakeet'
+  const model = args.config?.inference?.model || 'parakeet'
   return MODEL_LABELS[model] ?? model
 })
 
