@@ -80,6 +80,7 @@ describe('BatchTranscribeModal.vue', () => {
       await flushPromises()
       const { useAsrStore } = await import('@/stores/asr')
       const store = useAsrStore()
+      store.availableModels = { en: ['parakeet'] }
       store.selectedLanguage = 'en'
       await nextTick()
       const btn = wrapper.find('.btn-action')
@@ -106,11 +107,11 @@ describe('BatchTranscribeModal.vue', () => {
       expect(modal.text()).toContain('asr.selectModel')
     })
 
-    it('has a default selectedModel', async () => {
+    it('has no default selectedModel until language is set', async () => {
       const wrapper = createWrapper(audioDocs)
       await flushPromises()
       const modal = wrapper.findComponent(BatchTranscribeModal)
-      expect(modal.vm.selectedModel).toBeTruthy()
+      expect(modal.vm.selectedModel).toBeNull()
     })
   })
 
@@ -120,6 +121,7 @@ describe('BatchTranscribeModal.vue', () => {
       await flushPromises()
       const { useAsrStore } = await import('@/stores/asr')
       const store = useAsrStore()
+      store.availableModels = { en: ['parakeet'] }
       store.selectedLanguage = 'en'
       await nextTick()
 
@@ -141,6 +143,7 @@ describe('BatchTranscribeModal.vue', () => {
       await flushPromises()
       const { useAsrStore } = await import('@/stores/asr')
       const store = useAsrStore()
+      store.availableModels = { en: ['parakeet'] }
       store.selectedLanguage = 'en'
       await nextTick()
 
@@ -164,6 +167,7 @@ describe('BatchTranscribeModal.vue', () => {
       await flushPromises()
       const { useAsrStore } = await import('@/stores/asr')
       const store = useAsrStore()
+      store.availableModels = { en: ['parakeet'] }
       store.selectedLanguage = 'en'
       await nextTick()
 
