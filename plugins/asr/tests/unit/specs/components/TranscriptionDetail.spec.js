@@ -250,38 +250,10 @@ describe('TranscriptionDetail.vue', () => {
       expect(wrapper.find('table').exists()).toBe(false)
     })
 
-    it('uses * as title for match_all query', async () => {
+    it('uses timestamp-based title for query-based tasks', async () => {
       const { wrapper } = createWrapper(queryTask)
       await flushPromises()
-      expect(wrapper.vm.taskTitle).toBe('*')
-    })
-
-    it('uses query text as title for query_string query', async () => {
-      const task = {
-        ...baseTask,
-        args: {
-          ...baseTask.args,
-          name: null,
-          docs: { '@type': 'java.util.LinkedHashMap', 'query_string': { query: 'doudou' } }
-        }
-      }
-      const { wrapper } = createWrapper(task)
-      await flushPromises()
-      expect(wrapper.vm.taskTitle).toBe('doudou')
-    })
-
-    it('uses compact JSON as title for complex queries', async () => {
-      const task = {
-        ...baseTask,
-        args: {
-          ...baseTask.args,
-          name: null,
-          docs: { '@type': 'java.util.LinkedHashMap', 'bool': { must: [], filter: [] } }
-        }
-      }
-      const { wrapper } = createWrapper(task)
-      await flushPromises()
-      expect(wrapper.vm.taskTitle).toBe('{"bool":{"must":[],"filter":[]}}')
+      expect(wrapper.vm.taskTitle).toBe('asr_transcription_20260720_100000')
     })
 
     it('sends original docs in transcribe again', async () => {

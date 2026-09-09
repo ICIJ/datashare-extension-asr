@@ -128,13 +128,23 @@ function isQueryBasedDocs(docs) {
   return !!docs && typeof docs === 'object' && !Array.isArray(docs)
 }
 
+function formatTaskTimestamp(dateStr) {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  if (isNaN(d)) return ''
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`
+}
+
 function taskName(task) {
   if (task.args?.name) return task.args.name
-  if (isQueryBasedDocs(task.args?.docs)) return queryLabelFromTask(task)
   const docs = getDocs(task)
+  if (isQueryBasedDocs(task.args?.docs) || docs.length > 1) {
+    const ts = formatTaskTimestamp(task.createdAt || task.creationDate)
+    return ts ? `asr_transcription_${ts}` : 'asr_transcription'
+  }
   if (docs.length === 0) return '—'
-  if (docs.length === 1) return docDisplayName(docs[0])
-  return `[batch] ${docs.length} documents`
+  return docDisplayName(docs[0])
 }
 
 function taskProgress(task) {
