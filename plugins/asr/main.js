@@ -93,7 +93,8 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       detailUser: 'User',
       detailProjects: 'Projects',
       taskNotFound: 'Task not found.',
-      newTranscription: 'New transcription'
+      newTranscription: 'New transcription',
+      allSupportedTypes: 'All supported types'
     }
   })
 
