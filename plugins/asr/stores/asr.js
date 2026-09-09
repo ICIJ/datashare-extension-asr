@@ -35,6 +35,7 @@ export const useAsrStore = defineStore('asr', () => {
 
   const availableModels = ref({})
   const selectedLanguage = ref(null)
+  const panelOpen = ref(false)
   const taskId = ref(null)
   const taskState = ref(null) // null | 'RUNNING' | 'DONE' | 'ERROR' | 'CANCELLED'
 
@@ -85,9 +86,18 @@ export const useAsrStore = defineStore('asr', () => {
     taskState.value = 'RUNNING'
   }
 
+  function openPanel() {
+    panelOpen.value = true
+  }
+
+  function closePanel() {
+    panelOpen.value = false
+  }
+
   return {
     availableModels,
     selectedLanguage,
+    panelOpen,
     taskId,
     taskState,
     transcription,
@@ -98,6 +108,8 @@ export const useAsrStore = defineStore('asr', () => {
     fetchModels,
     transcribe,
     transcribeBatch,
+    openPanel,
+    closePanel,
     settingsOrder,
     settingsPerPage,
     settingsProperties
