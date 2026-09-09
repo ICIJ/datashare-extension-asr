@@ -262,14 +262,11 @@ function buildSearchQuery() {
   const filterClauses = (formSearchStore.activeFilters ?? []).map(filter => ({
     terms: { [filter.key]: filter.values }
   }))
+  const hasContentTypeFilter = (formSearchStore.activeFilters ?? []).some(f => f.name === 'contentType')
+  if (!hasContentTypeFilter) {
+    filterClauses.push({ terms: { contentType: [...SUPPORTED_CONTENT_TYPES] } })
+  }
   const hasQuery = query.value.trim().length > 0
-  const hasFilters = filterClauses.length > 0
-  if (!hasQuery && !hasFilters) {
-    return { match_all: {} }
-  }
-  if (hasQuery && !hasFilters) {
-    return { query_string: { query: query.value.trim() } }
-  }
   return {
     bool: {
       must: hasQuery
