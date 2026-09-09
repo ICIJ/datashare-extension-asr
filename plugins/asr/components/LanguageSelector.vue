@@ -3,20 +3,10 @@ import { ref, computed, defineAsyncComponent, onMounted } from 'vue'
 import IPhTranslate from '~icons/ph/translate'
 import { useAsrStore } from '@/stores/asr'
 import { useCore } from '@/composables/useCore'
+import { languageName } from '@/utils/formatting'
 
 const core = useCore()
 const FormControlSearch = defineAsyncComponent(() => core.findComponent('Form/FormControl/FormControlSearch'))
-
-const languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
-
-function languageName(code) {
-  try {
-    return languageNames.of(code) || code
-  }
-  catch {
-    return code
-  }
-}
 
 // Map ES language name (e.g. "ENGLISH") to ASR ISO 639-1 code (e.g. "en")
 // by matching the display name against the available ASR languages

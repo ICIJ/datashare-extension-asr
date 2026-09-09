@@ -8,7 +8,9 @@ import IPhCheckCircle from '~icons/ph/check-circle'
 import IPhWarning from '~icons/ph/warning'
 
 import { useCore } from '@/composables/useCore'
-import { useAsrStore, SUPPORTED_CONTENT_TYPES } from '@/stores/asr'
+import { useAsrStore, SUPPORTED_CONTENT_TYPES, MODEL_LABELS } from '@/stores/asr'
+import { useModelSelection } from '@/composables/useModelSelection'
+import { languageName } from '@/utils/formatting'
 import LanguageSelector from '@/components/LanguageSelector.vue'
 
 const core = useCore()
@@ -51,10 +53,9 @@ const filterStarred = formSearchStore.getFilter({ name: 'starred' })
 const filterTags = formSearchStore.getFilter({ name: 'tags' })
 const filterRecommendedBy = formSearchStore.getFilter({ name: 'recommendedBy' })
 
-const languageDisplayNames = new Intl.DisplayNames(['en'], { type: 'language' })
 
 const query = ref('')
-const selectedModel = ref(null)
+const { selectedModel, allModelNames, modelsForLanguage, isModelDisabled } = useModelSelection()
 const submitting = ref(false)
 
 const breadcrumbRoutes = ['task', 'task.transcriptions', 'task.transcriptions.new']
@@ -74,43 +75,7 @@ const isValid = computed(() => {
 
 const selectedLanguageName = computed(() => {
   if (!asrStore.selectedLanguage) return ''
-  return languageDisplayNames.of(asrStore.selectedLanguage) || asrStore.selectedLanguage
-})
-
-const MODEL_LABELS = {
-  'parakeet': 'Parakeet',
-  'parakeet_trt': 'Parakeet TRT',
-  'fireredasr2_aed': 'FireRedASR2'
-}
-
-const allModelNames = computed(() => {
-  const models = new Set()
-  for (const langs of Object.values(asrStore.availableModels || {})) {
-    for (const m of langs) {
-      models.add(m)
-    }
-  }
-  return [...models]
-})
-
-const modelsForLanguage = computed(() => {
-  const lang = asrStore.selectedLanguage
-  if (!lang || !asrStore.availableModels?.[lang]) return []
-  return asrStore.availableModels[lang]
-})
-
-function isModelDisabled(model) {
-  return modelsForLanguage.value.length > 0 && !modelsForLanguage.value.includes(model)
-    || modelsForLanguage.value.length === 0
-}
-
-watch(() => asrStore.selectedLanguage, () => {
-  if (isModelDisabled(selectedModel.value) && modelsForLanguage.value.length) {
-    selectedModel.value = modelsForLanguage.value[0]
-  }
-  if (modelsForLanguage.value.length === 0) {
-    selectedModel.value = null
-  }
+  return languageName(asrStore.selectedLanguage)
 })
 
 const modelDisplayName = computed(() => {
@@ -549,11 +514,6 @@ async function submit() {
 .transcription-new__filters :deep(.filters-panel-section-filter) {
   background: var(--bs-body-bg);
   margin: 0;
-}
-
-.transcription-new__options {
-  opacity: 0.5;
-  pointer-events: none;
 }
 
 .transcription-new__summary,
