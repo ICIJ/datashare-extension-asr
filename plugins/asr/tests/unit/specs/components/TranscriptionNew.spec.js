@@ -37,10 +37,11 @@ describe('TranscriptionNew.vue', () => {
       expect(wrapper.vm.isValid).toBe(false)
     })
 
-    it('is valid when a language is selected', async () => {
+    it('is valid when a language and model are selected', async () => {
       createWrapper()
       await flushPromises()
       const asrStore = useAsrStore()
+      asrStore.availableModels = { en: ['parakeet'] }
       asrStore.selectedLanguage = 'en'
       await flushPromises()
       expect(wrapper.vm.isValid).toBe(true)
@@ -79,6 +80,7 @@ describe('TranscriptionNew.vue', () => {
       await flushPromises()
       const asrStore = useAsrStore()
       asrStore.selectedLanguage = 'en'
+      wrapper.vm.selectedModel = 'parakeet'
       sendActionMock.mockResolvedValue({ taskId: 'task-123' })
 
       await wrapper.vm.submit()
@@ -87,7 +89,9 @@ describe('TranscriptionNew.vue', () => {
       expect(sendActionMock).toHaveBeenCalledWith('/api/asr/transcribe', expect.objectContaining({
         method: 'POST',
         data: expect.objectContaining({
-          docs: { match_all: {} }
+          docs: { bool: { must: [{ match_all: {} }], filter: expect.arrayContaining([
+            expect.objectContaining({ terms: expect.objectContaining({ contentType: expect.any(Array) }) })
+          ]) } }
         })
       }))
       expect(core.router.push).toHaveBeenCalledWith({ name: 'task.transcriptions' })
@@ -98,6 +102,7 @@ describe('TranscriptionNew.vue', () => {
       await flushPromises()
       const asrStore = useAsrStore()
       wrapper.vm.query = 'exp*'
+      wrapper.vm.selectedModel = 'parakeet'
       asrStore.selectedLanguage = 'en'
       sendActionMock.mockResolvedValue({ taskId: 'task-123' })
 
@@ -106,7 +111,9 @@ describe('TranscriptionNew.vue', () => {
 
       expect(sendActionMock).toHaveBeenCalledWith('/api/asr/transcribe', expect.objectContaining({
         data: expect.objectContaining({
-          docs: { query_string: { query: 'exp*' } }
+          docs: { bool: { must: [{ query_string: { query: 'exp*' } }], filter: expect.arrayContaining([
+            expect.objectContaining({ terms: expect.objectContaining({ contentType: expect.any(Array) }) })
+          ]) } }
         })
       }))
     })
