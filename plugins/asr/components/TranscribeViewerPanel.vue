@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, inject, defineAsyncComponent, onMounted } from 'vue'
+import { computed, inject, defineAsyncComponent, onMounted } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
 import { useCore } from '@/composables/useCore'
 import { useAsrStore, isEligibleForAsr } from '@/stores/asr'
@@ -12,8 +12,6 @@ const AppModal = defineAsyncComponent(() => core.findComponent('AppModal/AppModa
 const isInModal = inject('modal', false)
 const documentStore = stores.useDocumentStore()
 const asrStore = useAsrStore()
-
-const panelOpen = ref(false)
 
 const document = computed(() => documentStore.document)
 const contentType = computed(() => document.value?.contentType || '')
@@ -41,7 +39,7 @@ onMounted(() => {
         <button
           class="btn btn-outline-warning transcribe-viewer-panel__btn"
           :disabled="asrStore.isTranscribing"
-          @click="panelOpen = true"
+          @click="asrStore.openPanel()"
         >
           {{ $t('asr.transcribeAgain') }}
         </button>
@@ -70,33 +68,25 @@ onMounted(() => {
       </span>
       <button
         class="btn btn-outline-warning transcribe-viewer-panel__btn"
-        @click="panelOpen = true"
+        @click="asrStore.openPanel()"
       >
         {{ $t('asr.transcribe') }}
       </button>
     </div>
-    <teleport
-      v-if="!isInModal"
-      to=".document-entries-list__start__list"
-    >
-      <transcribe-panel
-        v-if="panelOpen"
-        @close="panelOpen = false"
-      />
-    </teleport>
     <component
       :is="AppModal"
-      v-else
-      v-model="panelOpen"
+      v-if="isInModal"
+      :model-value="asrStore.panelOpen"
       size="md"
       no-header-close
+      @update:model-value="v => { if (!v) asrStore.closePanel() }"
     >
       <template #header>
         <span />
       </template>
       <transcribe-panel
-        v-if="panelOpen"
-        @close="panelOpen = false"
+        v-if="asrStore.panelOpen"
+        @close="asrStore.closePanel()"
       />
       <template #footer>
         <span />
