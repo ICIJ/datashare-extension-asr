@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, getCurrentInstance, defineAsyncComponent, onMounted, onUnmounted } from 'vue'
+import { ref, computed, getCurrentInstance, defineAsyncComponent, onMounted } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
 import IPhBrain from '~icons/ph/brain'
 import IPhInfo from '~icons/ph/info'
@@ -34,47 +34,11 @@ const availableModelNames = computed(() => {
   return [...models]
 })
 
-const hiddenElements = []
-
-// WORKAROUND: Hide the document entries list and its header to make room for the transcribe panel.
-// This is a standalone approach that directly manipulates the DOM of datashare-client
-// to avoid requiring changes in the client codebase.
-// A cleaner alternative would be a dedicated hook in datashare-client
-// (e.g. "document-entries-list:replace") that hides the list when a plugin registers on it.
 onMounted(async () => {
   await asrStore.fetchModels()
   if (availableModelNames.value.length && !availableModelNames.value.includes(selectedModel.value)) {
     selectedModel.value = availableModelNames.value[0]
   }
-  const container = document.querySelector('.document-entries-list__start__list')
-  if (container) {
-    container.scrollTop = 0
-    container.style.overflow = 'visible'
-    Array.from(container.children).forEach((child) => {
-      if (!child.classList.contains('transcribe-panel')) {
-        child.style.display = 'none'
-        hiddenElements.push(child)
-      }
-    })
-    hiddenElements.push({ style: container.style, _restoreOverflow: true })
-  }
-  const header = document.querySelector('.document-entries-list__start__header')
-  if (header) {
-    header.style.display = 'none'
-    hiddenElements.push(header)
-  }
-})
-
-onUnmounted(() => {
-  hiddenElements.forEach((el) => {
-    if (el._restoreOverflow) {
-      el.style.overflow = ''
-    }
-    else {
-      el.style.display = ''
-    }
-  })
-  hiddenElements.length = 0
 })
 
 async function handleTranscribe() {

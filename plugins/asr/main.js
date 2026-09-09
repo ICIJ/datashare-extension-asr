@@ -1,5 +1,6 @@
 import BatchTranscribeButton from './components/BatchTranscribeButton.vue'
 import TranscribeViewerPanel from './components/TranscribeViewerPanel.vue'
+import TranscribePanelHook from './components/TranscribePanelHook.vue'
 
 document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
   core.i18n.global.mergeLocaleMessage('en', {
@@ -37,6 +38,12 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
     name: 'asr-batch-transcribe',
     target: 'search-selection.compact:after',
     definition: BatchTranscribeButton
+  })
+
+  core.registerHook({
+    name: 'asr-transcribe-panel',
+    target: 'document-entries-list:before',
+    definition: TranscribePanelHook
   })
 
   core.registerHook({
