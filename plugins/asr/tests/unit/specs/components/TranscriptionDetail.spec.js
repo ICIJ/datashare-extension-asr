@@ -307,10 +307,10 @@ describe('TranscriptionDetail.vue', () => {
   })
 
   describe('task model display', () => {
-    it('displays the model from args.model', async () => {
+    it('displays the model from config.inference.model', async () => {
       const task = {
         ...baseTask,
-        args: { ...baseTask.args, model: 'model-x' }
+        args: { ...baseTask.args, config: { inference: { model: 'model-x' } } }
       }
       const { wrapper } = createWrapper(task)
       await flushPromises()
