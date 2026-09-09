@@ -65,17 +65,28 @@ const showErrorModal = ref(false)
 const showDocumentModal = ref(false)
 const documentModalDocId = ref(null)
 
+function formatTaskTimestamp(dateStr) {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  if (isNaN(d)) return ''
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`
+}
+
 const taskTitle = computed(() => {
   if (!task.value) return ''
-  return task.value.args?.name || taskNameFromDocs()
+  if (task.value.args?.name) return task.value.args.name
+  if (isQueryBased.value || getDocs().length > 1) {
+    const ts = formatTaskTimestamp(task.value.createdAt || task.value.creationDate)
+    return ts ? `asr_transcription_${ts}` : 'asr_transcription'
+  }
+  return taskNameFromDocs()
 })
 
 function taskNameFromDocs() {
-  if (isQueryBased.value) return queryLabel()
   const docs = getDocs()
   if (docs.length === 0) return '—'
-  if (docs.length === 1) return docDisplayName(docs[0])
-  return `[batch] ${docs.length} documents`
+  return docDisplayName(docs[0])
 }
 
 function queryLabel() {
