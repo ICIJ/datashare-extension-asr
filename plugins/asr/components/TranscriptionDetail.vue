@@ -28,7 +28,7 @@ import IPhStar from '~icons/ph/star'
 import IPhHash from '~icons/ph/hash'
 import IPhUsers from '~icons/ph/users'
 import { useCore } from '@/composables/useCore'
-import { useAsrStore } from '@/stores/asr'
+import { useAsrStore, SUPPORTED_CONTENT_TYPES } from '@/stores/asr'
 import { capitalize } from '@/utils/formatting'
 import { getDocs as getDocsFromTask, queryLabel as queryLabelFromTask } from '@/utils/task'
 import { stripJacksonTypes } from '@/utils/jackson'
@@ -219,6 +219,11 @@ function docsQuery() {
   return stripJacksonTypes(raw)
 }
 
+function isAllSupportedTypes(values) {
+  if (values.length !== SUPPORTED_CONTENT_TYPES.size) return false
+  return values.every(v => SUPPORTED_CONTENT_TYPES.has(v))
+}
+
 const taskFilters = computed(() => {
   const filters = docsQuery()?.bool?.filter
   if (!Array.isArray(filters)) return []
@@ -228,6 +233,10 @@ const taskFilters = computed(() => {
     const [esKey, values] = Object.entries(clause.terms)[0]
     const filterName = ES_KEY_TO_FILTER_NAME[esKey] || esKey
     const icon = FILTER_ICONS[filterName] || IPhFile
+    if (filterName === 'contentType' && isAllSupportedTypes(values)) {
+      result.push({ filterName, esKey, value: '*', label: core.i18n.global.t('asr.allSupportedTypes'), icon })
+      continue
+    }
     for (const value of values) {
       result.push({ filterName, esKey, value, label: filterValueLabel(filterName, value), icon })
     }
