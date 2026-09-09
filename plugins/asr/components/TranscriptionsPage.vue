@@ -13,11 +13,10 @@ import IPhSortAscending from '~icons/ph/sort-ascending'
 import IPhSortDescending from '~icons/ph/sort-descending'
 import { useCore } from '@/composables/useCore'
 import { useAsrStore, MODEL_LABELS } from '@/stores/asr'
-import { capitalize, formatTaskTimestamp, displayLanguage } from '@/utils/formatting'
-import { getDocs as getDocsFromTask, taskErrorFull, isQueryBasedDocs } from '@/utils/task'
+import { capitalize, displayLanguage } from '@/utils/formatting'
+import { getDocs, isQueryBasedDocs, taskDisplayName } from '@/utils/task'
 import { stripJacksonTypes } from '@/utils/jackson'
-import errorImageLight from '@/assets/app-modal-error-light.svg'
-import errorImageDark from '@/assets/app-modal-error-dark.svg'
+import TaskErrorModal from './TaskErrorModal.vue'
 
 const ASR_TASK_NAME = 'asr.transcription'
 const ASR_TASK_PREFIX = `${ASR_TASK_NAME}-`
@@ -38,7 +37,6 @@ const DisplayProgress = defineAsyncComponent(() => core.findComponent('Display/D
 const ProjectButton = defineAsyncComponent(() => core.findComponent('Project/ProjectButton'))
 const DismissableAlert = defineAsyncComponent(() => core.findComponent('Dismissable/DismissableAlert'))
 const ButtonIcon = defineAsyncComponent(() => core.findComponent('Button/ButtonIcon'))
-const AppModal = defineAsyncComponent(() => core.findComponent('AppModal/AppModal'))
 
 const tasks = ref([])
 const docNames = ref({})
@@ -116,23 +114,12 @@ async function deleteTask(taskId) {
   }
 }
 
-function getDocs(task) {
-  return getDocsFromTask(task)
-}
-
 function docDisplayName(docId) {
   return docNames.value[docId] || docId
 }
 
 function taskName(task) {
-  if (task.args?.name) return task.args.name
-  const docs = getDocs(task)
-  if (isQueryBasedDocs(task.args?.docs) || docs.length > 1) {
-    const ts = formatTaskTimestamp(task.createdAt || task.creationDate)
-    return ts ? `asr_transcription_${ts}` : 'asr_transcription'
-  }
-  if (docs.length === 0) return '—'
-  return docDisplayName(docs[0])
+  return taskDisplayName(task, docDisplayName)
 }
 
 function taskProgress(task) {
@@ -237,14 +224,27 @@ watch(order, () => {
   fetchTasks()
 })
 
-onMounted(() => {
-  fetchTasks()
+function startPolling() {
+  if (pollInterval) return
   pollInterval = setInterval(fetchTasks, 5000)
+}
+
+function stopPolling() {
+  if (pollInterval) {
+    clearInterval(pollInterval)
+    pollInterval = null
+  }
+}
+
+watch(tasks, (list) => {
+  const hasRunning = list.some(t => t.state === 'RUNNING' || t.state === 'QUEUED')
+  if (hasRunning) startPolling()
+  else stopPolling()
 })
 
-onUnmounted(() => {
-  if (pollInterval) clearInterval(pollInterval)
-})
+onMounted(fetchTasks)
+
+onUnmounted(stopPolling)
 </script>
 
 <template>
@@ -514,36 +514,10 @@ onUnmounted(() => {
       </div>
     </component>
 
-    <component
-      :is="AppModal"
+    <task-error-modal
       v-model="errorModalVisible"
-      :image="errorImageLight"
-      :image-width="70"
-      :ok-title="$t('asr.ok')"
-      ok-only
-      size="lg"
-      class="transcription-error-modal"
-    >
-      <template #header-image-source>
-        <source
-          :srcset="errorImageDark"
-          media="(prefers-color-scheme: dark)"
-        >
-      </template>
-      <div class="d-flex flex-column gap-4 mt-0 pt-0">
-        <div>
-          <p class="text-center fw-medium">
-            {{ $t('asr.errorTitle') }}
-          </p>
-          <div class="bg-tertiary-subtle d-block text-body-emphasis m-0 rounded-1">
-            <pre class="p-3 m-0"><code>{{ taskErrorFull(errorModalTask) }}</code></pre>
-          </div>
-        </div>
-        <p class="m-0">
-          {{ $t('asr.errorDescription') }}
-        </p>
-      </div>
-    </component>
+      :task="errorModalTask"
+    />
   </div>
 </template>
 

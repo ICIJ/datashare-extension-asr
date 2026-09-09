@@ -4,6 +4,7 @@ import IPhDownloadSimple from '~icons/ph/download-simple'
 import { useCore } from '@/composables/useCore'
 import { useAsrStore, isEligibleForAsr } from '@/stores/asr'
 import { formatTimeRange } from '@/utils/formatting'
+import { downloadFile } from '@/utils/download'
 
 const props = defineProps({
   document: {
@@ -24,16 +25,6 @@ onMounted(() => {
     asrStore.fetchTranscription(props.document.index, props.document.id)
   }
 })
-
-function downloadFile(content, filename) {
-  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = window.document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.click()
-  URL.revokeObjectURL(url)
-}
 
 function downloadTranscription() {
   const text = asrStore.transcription.transcripts.map(t => t.text).join('\n')

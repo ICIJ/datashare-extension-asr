@@ -1,4 +1,5 @@
 import { stripJacksonTypes, unwrapJacksonList } from './jackson'
+import { formatTaskTimestamp } from './formatting'
 
 export function getDocs(task) {
   if (!task) return []
@@ -23,6 +24,18 @@ export function isQueryBasedDocs(docs) {
     return typeof docs[1] === 'object' && !Array.isArray(docs[1])
   }
   return false
+}
+
+export function taskDisplayName(task, docNameFn) {
+  if (!task) return ''
+  if (task.args?.name) return task.args.name
+  const docs = getDocs(task)
+  if (isQueryBasedDocs(task.args?.docs) || docs.length > 1) {
+    const ts = formatTaskTimestamp(task.createdAt || task.creationDate)
+    return ts ? `asr_transcription_${ts}` : 'asr_transcription'
+  }
+  if (docs.length === 0) return '—'
+  return docNameFn ? docNameFn(docs[0]) : docs[0]
 }
 
 function extractQueryLabel(obj) {

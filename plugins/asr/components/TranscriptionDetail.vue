@@ -14,8 +14,6 @@ import IPhBrain from '~icons/ph/brain'
 import IPhInfo from '~icons/ph/info'
 import confirmImage from '@/assets/app-modal-default-light.svg'
 import confirmImageDark from '@/assets/app-modal-default-dark.svg'
-import errorImage from '@/assets/app-modal-error-light.svg'
-import errorImageDark from '@/assets/app-modal-error-dark.svg'
 import IPhWarning from '~icons/ph/warning'
 import IPhMagnifyingGlass from '~icons/ph/magnifying-glass'
 import IPhFunnel from '~icons/ph/funnel'
@@ -29,9 +27,11 @@ import IPhHash from '~icons/ph/hash'
 import IPhUsers from '~icons/ph/users'
 import { useCore } from '@/composables/useCore'
 import { useAsrStore, SUPPORTED_CONTENT_TYPES, MODEL_LABELS } from '@/stores/asr'
-import { capitalize, formatTaskTimestamp, displayLanguage } from '@/utils/formatting'
-import { getDocs as getDocsFromTask, queryLabel as queryLabelFromTask, taskErrorFull, isQueryBasedDocs } from '@/utils/task'
+import { capitalize, displayLanguage } from '@/utils/formatting'
+import { getDocs as getDocsFromTask, queryLabel as queryLabelFromTask, taskErrorFull, isQueryBasedDocs, taskDisplayName } from '@/utils/task'
+import { downloadFile } from '@/utils/download'
 import { stripJacksonTypes } from '@/utils/jackson'
+import TaskErrorModal from './TaskErrorModal.vue'
 import LanguageSelector from './LanguageSelector.vue'
 
 const props = defineProps({
@@ -66,21 +66,7 @@ const showErrorModal = ref(false)
 const showDocumentModal = ref(false)
 const documentModalDocId = ref(null)
 
-const taskTitle = computed(() => {
-  if (!task.value) return ''
-  if (task.value.args?.name) return task.value.args.name
-  if (isQueryBased.value || getDocs().length > 1) {
-    const ts = formatTaskTimestamp(task.value.createdAt || task.value.creationDate)
-    return ts ? `asr_transcription_${ts}` : 'asr_transcription'
-  }
-  return taskNameFromDocs()
-})
-
-function taskNameFromDocs() {
-  const docs = getDocs()
-  if (docs.length === 0) return '—'
-  return docDisplayName(docs[0])
-}
+const taskTitle = computed(() => taskDisplayName(task.value, docDisplayName))
 
 function queryLabel() {
   return queryLabelFromTask(task.value)
@@ -411,13 +397,7 @@ function downloadCsv() {
     ])
   }
   const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n')
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = window.document.createElement('a')
-  a.href = url
-  a.download = `${taskTitle.value || 'transcription'}.csv`
-  a.click()
-  URL.revokeObjectURL(url)
+  downloadFile(csv, `${taskTitle.value || 'transcription'}.csv`, 'text/csv;charset=utf-8')
 }
 
 onMounted(fetchTask)
@@ -804,35 +784,10 @@ onMounted(fetchTask)
       </b-row>
     </component>
 
-    <component
-      :is="AppModal"
+    <task-error-modal
       v-model="showErrorModal"
-      :image="errorImage"
-      :image-width="70"
-      :ok-title="$t('asr.ok')"
-      ok-only
-      size="lg"
-    >
-      <template #header-image-source>
-        <source
-          :srcset="errorImageDark"
-          media="(prefers-color-scheme: dark)"
-        >
-      </template>
-      <div class="d-flex flex-column gap-4 mt-0 pt-0">
-        <div>
-          <p class="text-center fw-medium">
-            {{ $t('asr.errorTitle') }}
-          </p>
-          <div class="bg-tertiary-subtle d-block text-body-emphasis m-0 rounded-1">
-            <pre class="p-3 m-0"><code>{{ taskErrorFull(task) }}</code></pre>
-          </div>
-        </div>
-        <p class="m-0">
-          {{ $t('asr.errorDescription') }}
-        </p>
-      </div>
-    </component>
+      :task="task"
+    />
 
     <component
       :is="AppModal"
