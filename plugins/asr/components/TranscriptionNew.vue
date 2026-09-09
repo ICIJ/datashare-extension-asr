@@ -4,16 +4,6 @@ import IPhFileAudio from '~icons/ph/file-audio'
 import IPhBrain from '~icons/ph/brain'
 import IPhMagnifyingGlass from '~icons/ph/magnifying-glass'
 import IPhCirclesThreePlus from '~icons/ph/circles-three-plus'
-import IPhTreeStructure from '~icons/ph/tree-structure'
-import IPhFile from '~icons/ph/file'
-import IPhCalendarBlank from '~icons/ph/calendar-blank'
-import IPhGlobe from '~icons/ph/globe'
-import IPhPaperclip from '~icons/ph/paperclip'
-import IPhCalendarPlus from '~icons/ph/calendar-plus'
-import IPhStar from '~icons/ph/star'
-import IPhHash from '~icons/ph/hash'
-import IPhUsers from '~icons/ph/users'
-import IPhPath from '~icons/ph/path'
 import IPhCheckCircle from '~icons/ph/check-circle'
 import IPhWarning from '~icons/ph/warning'
 
@@ -36,11 +26,12 @@ const FilterTypeDateRange = defineAsyncComponent(() => core.findComponent('Filte
 const FilterTypeStarred = defineAsyncComponent(() => core.findComponent('Filter/FilterType/FilterTypeStarred'))
 const FilterTypeRecommendedBy = defineAsyncComponent(() => core.findComponent('Filter/FilterType/FilterTypeRecommendedBy'))
 const FiltersPanelSectionFilterEntry = defineAsyncComponent(() => core.findComponent('FiltersPanel/FiltersPanelSectionFilterEntry'))
+const SearchBreadcrumbUri = defineAsyncComponent(() => core.findComponent('Search/SearchBreadcrumbUri/SearchBreadcrumbUri'))
 
 const { useSearchStore } = core.stores
 const searchStore = useSearchStore()
 const formSearchStore = useSearchStore.disposable()
-formSearchStore.setIndices(searchStore.indices)
+formSearchStore.setIndices(searchStore.indices.slice(0, 1))
 
 const allProjects = computed(() => core.projects || [])
 const selectedProject = computed({
@@ -60,19 +51,6 @@ const filterStarred = formSearchStore.getFilter({ name: 'starred' })
 const filterTags = formSearchStore.getFilter({ name: 'tags' })
 const filterRecommendedBy = formSearchStore.getFilter({ name: 'recommendedBy' })
 
-const FILTER_ICONS = {
-  project: IPhCirclesThreePlus,
-  path: IPhTreeStructure,
-  contentType: IPhFile,
-  creationDate: IPhCalendarBlank,
-  language: IPhGlobe,
-  extractionLevel: IPhPaperclip,
-  indexingDate: IPhCalendarPlus,
-  starred: IPhStar,
-  tags: IPhHash,
-  recommendedBy: IPhUsers
-}
-
 const languageDisplayNames = new Intl.DisplayNames(['en'], { type: 'language' })
 
 const query = ref('')
@@ -81,27 +59,17 @@ const submitting = ref(false)
 
 const breadcrumbRoutes = ['task', 'task.transcriptions', 'task.transcriptions.new']
 
-const isValid = computed(() => {
-  return !!asrStore.selectedLanguage && !!selectedModel.value
+const overviewUri = computed(() => {
+  const routeQuery = formSearchStore.toBaseRouteQuery
+  if (query.value.trim()) {
+    routeQuery.q = query.value.trim()
+  }
+  const { href = null } = core.router.resolve({ name: 'search', query: routeQuery }) ?? {}
+  return href
 })
 
-const selectionBadges = computed(() => {
-  const badges = []
-  if (selectedProject.value) {
-    const project = selectedProject.value
-    const label = allProjects.value.find(p => p.name === project.name)?.label || project.name
-    badges.push({ type: 'project', value: project.name, label, icon: IPhCirclesThreePlus })
-  }
-  if (query.value.trim()) {
-    badges.push({ type: 'query', label: query.value.trim(), icon: IPhMagnifyingGlass })
-  }
-  for (const filter of (formSearchStore.activeFilters ?? [])) {
-    const icon = FILTER_ICONS[filter.name] || IPhFile
-    for (const value of filter.values) {
-      badges.push({ type: 'filter', filterName: filter.name, value, label: value, icon })
-    }
-  }
-  return badges
+const isValid = computed(() => {
+  return !!asrStore.selectedLanguage && !!selectedModel.value
 })
 
 const selectedLanguageName = computed(() => {
@@ -159,6 +127,10 @@ async function fetchDocumentCounts() {
     const filterClauses = (formSearchStore.activeFilters ?? []).map(filter => ({
       terms: { [filter.key]: filter.values }
     }))
+    const hasContentTypeFilter = (formSearchStore.activeFilters ?? []).some(f => f.name === 'contentType')
+    if (!hasContentTypeFilter) {
+      filterClauses.push({ terms: { contentType: [...SUPPORTED_CONTENT_TYPES] } })
+    }
     const body = {
       size: 0,
       query: {
@@ -236,18 +208,6 @@ function toggleContentTypeValue(item, checked) {
   }
   else {
     formSearchStore.removeFilterValue({ name: 'contentType', value: item.key })
-  }
-}
-
-function dismissBadge(badge) {
-  if (badge.type === 'query') {
-    query.value = ''
-  }
-  else if (badge.type === 'project') {
-    selectedProject.value = null
-  }
-  else {
-    formSearchStore.removeFilterValue({ name: badge.filterName, value: badge.value })
   }
 }
 
@@ -333,7 +293,7 @@ async function submit() {
             />
             {{ $t('asr.newForm.project') }}
           </label>
-          <div class="col">
+          <div class="col-auto">
             <component
               :is="ProjectDropdownSelector"
               v-model="selectedProject"
@@ -446,8 +406,8 @@ async function submit() {
         :title="$t('asr.newForm.model')"
         :index="3"
       >
-        <div class="row align-items-center mb-3">
-          <label class="col-sm-12 col-md-4 col-lg-3 d-flex align-items-center gap-2 form-label text-body-emphasis m-0">
+        <div class="row align-items-start mb-3">
+          <label class="col-sm-12 col-md-4 col-lg-3 d-flex align-items-center gap-2 form-label text-body-emphasis m-0 pt-1">
             <i-ph-brain
               class="text-tertiary"
               style="font-size: 1.25em"
@@ -544,35 +504,13 @@ async function submit() {
       -->
 
       <!-- Point 5: Your selection -->
-      <div
-        v-if="selectionBadges.length"
-        class="transcription-new__selection"
-      >
-        <h6 class="d-flex align-items-center gap-2 text-body-secondary mb-3">
-          <IPhPath />
-          {{ $t('asr.newForm.yourSelection') }}
-        </h6>
-        <div class="d-flex flex-wrap gap-2">
-          <span
-            v-for="(badge, i) in selectionBadges"
-            :key="i"
-            class="transcription-new__badge d-inline-flex align-items-center gap-1 rounded-pill border px-3 py-1"
-          >
-            <component
-              :is="badge.icon"
-              class="flex-shrink-0"
-            />
-            <span class="text-truncate">{{ badge.label }}</span>
-            <button
-              type="button"
-              class="btn-close ms-1"
-              style="font-size: 0.6em"
-              aria-label="Remove"
-              @click="dismissBadge(badge)"
-            />
-          </span>
-        </div>
-      </div>
+      <component
+        v-if="overviewUri"
+        :is="SearchBreadcrumbUri"
+        :key="overviewUri"
+        :uri="overviewUri"
+        class="transcription-new__selection pt-3"
+      />
 
       <!-- Point 6: Selection summary -->
       <div
@@ -616,13 +554,6 @@ async function submit() {
 .transcription-new__options {
   opacity: 0.5;
   pointer-events: none;
-}
-
-.transcription-new__badge {
-  background: var(--bs-body-bg);
-  font-size: 0.875rem;
-  max-width: 300px;
-  color: var(--bs-body-color);
 }
 
 .transcription-new__summary,

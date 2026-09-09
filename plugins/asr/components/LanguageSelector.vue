@@ -113,7 +113,7 @@ function isSelected(code) {
         variant="outline-light"
         boundary="viewport"
         :floating-middleware="floatingMiddleware"
-        class="w-100"
+        class="language-selector__dropdown"
         menu-class="p-2"
         toggle-class="w-100 d-flex justify-content-between align-items-center text-truncate"
       >
@@ -185,8 +185,13 @@ function isSelected(code) {
 <style scoped>
 .language-selector__row {
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.language-selector__row .language-selector__dropdown {
+  flex: 1 1 200px;
 }
 
 .language-selector__list {
