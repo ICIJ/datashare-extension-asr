@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
+import IPhFileAudio from '~icons/ph/file-audio'
 import BatchTranscribeModal from './BatchTranscribeModal.vue'
 
 const props = defineProps({
@@ -42,7 +43,7 @@ function handleClick() {
         class="app-icon button-icon__icon-left"
         style="font-size: 1.25em; display: inline-flex"
       >
-        <i-ph-file-audio />
+        <IPhFileAudio />
       </span>
       <span class="button-icon__label ms-2">{{ $t('asr.transcribe') }}</span>
     </button>
