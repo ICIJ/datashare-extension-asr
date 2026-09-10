@@ -260,11 +260,16 @@ function buildFilterRouteQuery() {
   const query = {}
   for (const { filterName, value } of taskFilters.value) {
     const key = `f[${filterName}]`
-    if (query[key]) {
-      query[key] = [].concat(query[key], value)
-    }
-    else {
-      query[key] = value
+    const values = filterName === 'contentType' && value === '*'
+      ? [...SUPPORTED_CONTENT_TYPES]
+      : [value]
+    for (const v of values) {
+      if (query[key]) {
+        query[key] = [].concat(query[key], v)
+      }
+      else {
+        query[key] = v
+      }
     }
   }
   return query
