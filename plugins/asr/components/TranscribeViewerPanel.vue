@@ -38,7 +38,6 @@ onMounted(() => {
         </span>
         <button
           class="btn btn-outline-warning transcribe-viewer-panel__btn"
-          :disabled="asrStore.isTranscribing"
           @click="asrStore.openPanel()"
         >
           {{ $t('asr.transcribeAgain') }}

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, getCurrentInstance, defineAsyncComponent, onMounted } from 'vue'
+import { getCurrentInstance, defineAsyncComponent, onMounted } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
 import IPhBrain from '~icons/ph/brain'
 import IPhInfo from '~icons/ph/info'
@@ -18,7 +18,7 @@ const documentStore = stores.useDocumentStore()
 const asrStore = useAsrStore()
 const { $toast: toast, $t: t } = getCurrentInstance()?.proxy ?? {}
 
-const { selectedModel, allModelNames, modelsForLanguage, isModelDisabled } = useModelSelection()
+const { selectedModel, allModelNames, isModelDisabled } = useModelSelection()
 
 onMounted(async () => {
   await asrStore.fetchModels()

@@ -36,15 +36,12 @@ export const useAsrStore = defineStore('asr', () => {
   const availableModels = ref({})
   const selectedLanguage = ref(null)
   const panelOpen = ref(false)
-  const taskId = ref(null)
-  const taskState = ref(null) // null | 'RUNNING' | 'DONE' | 'ERROR' | 'CANCELLED'
 
   const settingsOrder = ref('desc')
   const settingsPerPage = ref(25)
   const settingsProperties = ref(['state', 'name', 'progress', 'category', 'language', 'model', 'project', 'user', 'launchedOn'])
 
   const transcription = ref(null)
-  const isTranscribing = computed(() => taskState.value === 'RUNNING')
   const hasTranscription = computed(() => transcription.value !== null)
   const languages = computed(() => Object.keys(availableModels.value || {}).sort())
 
@@ -81,9 +78,7 @@ export const useAsrStore = defineStore('asr', () => {
   }
 
   async function transcribe(project, docId, { model } = {}) {
-    const response = await transcribeBatch(project, [docId], { model })
-    taskId.value = response.taskId
-    taskState.value = 'RUNNING'
+    return transcribeBatch(project, [docId], { model })
   }
 
   function openPanel() {
@@ -98,10 +93,7 @@ export const useAsrStore = defineStore('asr', () => {
     availableModels,
     selectedLanguage,
     panelOpen,
-    taskId,
-    taskState,
     transcription,
-    isTranscribing,
     hasTranscription,
     languages,
     fetchTranscription,
