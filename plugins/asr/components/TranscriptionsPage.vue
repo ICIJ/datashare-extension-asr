@@ -15,6 +15,7 @@ import { useCore } from '@/composables/useCore'
 import { useAsrStore } from '@/stores/asr'
 import { capitalize } from '@/utils/formatting'
 import { getDocs as getDocsFromTask, queryLabel as queryLabelFromTask } from '@/utils/task'
+import { stripJacksonTypes } from '@/utils/jackson'
 import errorImageLight from '@/assets/app-modal-error-light.svg'
 import errorImageDark from '@/assets/app-modal-error-dark.svg'
 
@@ -153,9 +154,31 @@ function taskProgress(task) {
   return 0
 }
 
+function categoryFromQuery(task) {
+  let raw = task?.args?.docs
+  if (Array.isArray(raw) && raw.length === 2 && typeof raw[0] === 'string' && raw[0].startsWith('java.util.')) {
+    raw = raw[1]
+  }
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null
+  const cleaned = stripJacksonTypes(raw)
+  const filters = cleaned?.bool?.filter
+  if (!Array.isArray(filters)) return null
+  for (const clause of filters) {
+    if (!clause.terms?.contentType) continue
+    const types = clause.terms.contentType
+    const categories = new Set(types.map(t => t.split('/')[0]))
+    if (categories.size === 1) return capitalize([...categories][0])
+    return 'Mixed'
+  }
+  return null
+}
+
 function taskCategory(task) {
+  if (isQueryBasedDocs(task?.args?.docs)) {
+    return categoryFromQuery(task) || ''
+  }
   const docs = getDocs(task)
-  if (docs.length === 0) return '—'
+  if (docs.length === 0) return ''
   const categories = new Set(docs.map(id => docCategories.value[id]).filter(Boolean))
   if (categories.size === 0) return '—'
   if (categories.size === 1) return capitalize([...categories][0])
