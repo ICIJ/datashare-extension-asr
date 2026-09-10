@@ -43,7 +43,7 @@ jobs:
       - run: yarn build
 
   release:
-    needs: build
+    needs: [build, build-plugin]
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
 
@@ -56,6 +56,12 @@ jobs:
           java-version: '21'
           cache: maven
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: yarn
+          cache-dependency-path: plugins/asr/yarn.lock
+
       - name: Download available models from datashare-python release
         run: |
           ASR_WORKER_VERSION=$(mvn help:evaluate -Dexpression=asr-worker.version -q -DforceStdout)
@@ -67,12 +73,20 @@ jobs:
       - name: Package datashare asr extension
         run: mvn package -Dmaven.test.skip=true
 
-      - name: Create GitHub release and upload jar
+      - name: Build and pack plugin
+        working-directory: plugins/asr
+        run: |
+          yarn install
+          yarn build
+          npm pack
+
+      - name: Create GitHub release and upload assets
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="${GITHUB_REF_NAME}"
           JAR="target/datashare-extension-asr-${TAG}-jar-with-dependencies.jar"
-          gh release create "${TAG}" "${JAR}" \
+          PLUGIN=$(ls plugins/asr/datashare-plugin-asr-*.tgz)
+          gh release create "${TAG}" "${JAR}" "${PLUGIN}" \
             --title "${TAG}" \
             --notes "release ${TAG}"
