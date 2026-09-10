@@ -54,6 +54,7 @@ const DisplayUser = defineAsyncComponent(() => core.findComponent('Display/Displ
 const ProjectButton = defineAsyncComponent(() => core.findComponent('Project/ProjectButton'))
 const AppModal = defineAsyncComponent(() => core.findComponent('AppModal/AppModal'))
 const DocumentModal = defineAsyncComponent(() => core.findComponent('Document/DocumentModal'))
+const SearchParameterQueryTerm = defineAsyncComponent(() => core.findComponent('Search/SearchParameter/SearchParameterQueryTerm'))
 
 
 const task = ref(null)
@@ -813,23 +814,26 @@ onMounted(fetchTask)
                     </div>
                   </div>
                 </li>
-                <li v-if="taskFilters.length > 0">
+                <li v-if="isQueryBased">
                   <div class="transcription-detail__card__entry d-flex align-items-start gap-2">
                     <component
                       :is="IPhFunnel"
                       class="transcription-detail__card__entry__icon text-secondary-emphasis flex-shrink-0"
                     />
-                    <div class="d-flex flex-wrap gap-2">
+                    <div class="transcription-detail__card__filters d-flex flex-wrap gap-2">
                       <component
-                        :is="ButtonIcon"
+                        :is="SearchParameterQueryTerm"
+                        :term="getQueryString()"
+                        :icon="IPhMagnifyingGlass"
+                        no-x-icon
+                      />
+                      <component
+                        :is="SearchParameterQueryTerm"
                         v-for="(filter, index) in taskFilters"
                         :key="index"
-                        variant="outline-secondary"
-                        size="sm"
-                        :icon-left="filter.icon"
-                        :label="filter.label"
+                        :term="filter.label"
+                        :icon="filter.icon"
                         no-x-icon
-                        class="transcription-detail__filter-chip"
                       />
                     </div>
                   </div>
@@ -980,18 +984,18 @@ onMounted(fetchTask)
   padding: 0.75rem 0;
 }
 
-</style>
-
-<style>
-.transcription-detail__filter-chip.btn {
-  border-style: dashed;
-  border-color: currentColor;
-  color: var(--bs-body-color);
-  background: var(--bs-body-bg);
-  cursor: default;
+.transcription-detail__card__filters {
+  min-width: 0;
+  overflow: hidden;
 }
 
-.transcription-detail__filter-chip.btn:hover {
-  cursor: default;
+.transcription-detail__card__filters :deep(.search-parameter-query-term) {
+  max-width: 100%;
+}
+
+.transcription-detail__card__filters :deep(.search-parameter-query-term .search-parameter-query-term__value) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>
