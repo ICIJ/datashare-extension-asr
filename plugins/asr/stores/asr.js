@@ -4,6 +4,9 @@ import { useApi } from '@/composables/useApi'
 
 const DEFAULT_BATCH_SIZE = 2
 
+export const ASR_TASK_NAME = 'asr.transcription'
+export const ASR_TASK_PREFIX = `${ASR_TASK_NAME}-`
+
 export const SUPPORTED_CONTENT_TYPES = new Set([
   'audio/aac',
   'audio/aiff',

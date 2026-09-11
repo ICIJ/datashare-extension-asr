@@ -29,7 +29,6 @@ export function isQueryBasedDocs(docs) {
 
 export function taskDisplayName(task, docNameFn) {
   if (!task) return ''
-  if (task.args?.name) return task.args.name
   const docs = getDocs(task)
   if (isQueryBasedDocs(task.args?.docs) || docs.length > 1) {
     const ts = formatTaskTimestamp(task.createdAt || task.creationDate)

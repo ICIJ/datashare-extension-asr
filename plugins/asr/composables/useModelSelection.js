@@ -35,5 +35,5 @@ export function useModelSelection() {
     }
   })
 
-  return { selectedModel, allModelNames, modelsForLanguage, isModelDisabled }
+  return { selectedModel, allModelNames, isModelDisabled }
 }

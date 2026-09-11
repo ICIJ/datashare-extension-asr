@@ -26,7 +26,7 @@ import IPhStar from '~icons/ph/star'
 import IPhHash from '~icons/ph/hash'
 import IPhUsers from '~icons/ph/users'
 import { useCore } from '@/composables/useCore'
-import { useAsrStore, SUPPORTED_CONTENT_TYPES, MODEL_LABELS } from '@/stores/asr'
+import { useAsrStore, SUPPORTED_CONTENT_TYPES, MODEL_LABELS, ASR_TASK_PREFIX } from '@/stores/asr'
 import { capitalize, displayLanguage } from '@/utils/formatting'
 import { getDocs as getDocsFromTask, queryLabel as queryLabelFromTask, isQueryBasedDocs, taskDisplayName } from '@/utils/task'
 import { downloadFile } from '@/utils/download'
@@ -278,7 +278,7 @@ const taskProject = computed(() => {
   return (Array.isArray(project) ? project[0] : project) || null
 })
 
-const fullTaskId = computed(() => `asr.transcription-${props.taskId}`)
+const fullTaskId = computed(() => `${ASR_TASK_PREFIX}${props.taskId}`)
 
 async function fetchTask() {
   loading.value = true
@@ -356,7 +356,7 @@ async function confirmTranscribeAgain() {
     const linkLabel = core.i18n.global.t('asr.viewTranscriptions')
     toast?.success(core.i18n.global.t('asr.transcriptionLaunched', { name: displayName }), { href, linkLabel })
     if (response?.taskId) {
-      const newTaskId = response.taskId.replace('asr.transcription-', '')
+      const newTaskId = response.taskId.replace(ASR_TASK_PREFIX, '')
       core.router.push({ name: 'task.transcriptions.detail', params: { taskId: newTaskId } })
     }
   }
