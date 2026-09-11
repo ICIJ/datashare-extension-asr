@@ -1,3 +1,6 @@
+import { markRaw } from 'vue'
+import IPhFileAudio from '~icons/ph/file-audio'
+import { formatTaskTimestamp } from './utils/formatting'
 import BatchTranscribeButton from './components/BatchTranscribeButton.vue'
 import TranscribeViewerPanel from './components/TranscribeViewerPanel.vue'
 import TranscribePanelHook from './components/TranscribePanelHook.vue'
@@ -37,6 +40,25 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
     }
   })
 
+  if (typeof core.registerTaskName === 'function') {
+    core.registerTaskName('asr.transcription', {
+      icon: IPhFileAudio,
+      title: 'asr.transcription',
+      listRoute: { name: 'task.transcriptions' },
+      linkTitle: 'asr.transcription',
+      getProjects: item => [item.args?.project].filter(Boolean),
+      getTitle(item) {
+        const ts = formatTaskTimestamp(item.createdAt || item.creationDate)
+        return ts ? `asr_transcription_${ts}` : 'asr.transcription'
+      },
+      getRoute(item) {
+        const prefix = 'asr.transcription-'
+        const taskId = item.id.startsWith(prefix) ? item.id.slice(prefix.length) : item.id
+        return { name: 'task.transcriptions.detail', params: { taskId } }
+      }
+    })
+  }
+
   core.registerHook({
     name: 'asr-batch-transcribe',
     target: 'search-selection.compact:after',
@@ -50,20 +72,20 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
   })
 
   core.registerHook({
-    name: 'asr-transcribe-audio-viewer',
+    name: 'asr-transcribe-viewer-panel',
     target: 'document.viewer.audio:after',
-    definition: TranscribeViewerPanel
+    definition: markRaw(TranscribeViewerPanel)
   })
 
   core.registerHook({
-    name: 'asr-transcribe-video-viewer',
+    name: 'asr-transcribe-viewer-panel-video',
     target: 'document.viewer.video:after',
-    definition: TranscribeViewerPanel
+    definition: markRaw(TranscribeViewerPanel)
   })
 
   core.registerHook({
-    name: 'asr-transcription-download',
-    target: 'document-download-popover.buttons:after',
-    definition: TranscriptionDownloadButtons
+    name: 'asr-download-transcription',
+    target: 'document.download-popover:after',
+    definition: markRaw(TranscriptionDownloadButtons)
   })
 })
