@@ -1,6 +1,7 @@
 import { markRaw } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
 import { formatTaskTimestamp } from './utils/formatting'
+import { ASR_TASK_PREFIX } from './stores/asr'
 import TranscriptionsSidebarEntry from './components/TranscriptionsSidebarEntry.vue'
 import TranscriptionsPage from './components/TranscriptionsPage.vue'
 import TranscriptionsSettings from './components/TranscriptionsSettings.vue'
@@ -18,14 +19,9 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       transcribe: 'Transcribe',
       transcriptions: 'Transcriptions',
       noTextTranscribed: 'No text transcribed',
-      unsupportedFormat: 'This audio/video format is not supported for transcription.',
-      transcriptionAvailable: 'Transcription available',
       transcriptionDisclaimer: 'This is an automatic transcription. Always check original.',
       transcribeAgain: 'Transcribe again',
       close: 'Close',
-      noTextTranscribedVisitor: 'No text transcribed. Ask an editor or an admin to run transcription.',
-      transcriptionInProgress: 'Transcription in progress...',
-      stopTranscription: 'Stop transcription',
       info: 'All the processing is done within Datashare — no data is sent to third parties.',
       selectModel: 'Select a model',
       selectLanguage: 'Select the language you can hear in the documents *',
@@ -134,8 +130,7 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
         return ts ? `asr_transcription_${ts}` : 'asr.transcription'
       },
       getRoute(item) {
-        const prefix = 'asr.transcription-'
-        const taskId = item.id.startsWith(prefix) ? item.id.slice(prefix.length) : item.id
+        const taskId = item.id.startsWith(ASR_TASK_PREFIX) ? item.id.slice(ASR_TASK_PREFIX.length) : item.id
         return { name: 'task.transcriptions.detail', params: { taskId } }
       }
     })
@@ -156,19 +151,19 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
   core.registerHook({
     name: 'asr-transcribe-viewer-panel',
     target: 'document.viewer.audio:after',
-    definition: markRaw(TranscribeViewerPanel)
+    definition: TranscribeViewerPanel
   })
 
   core.registerHook({
     name: 'asr-transcribe-viewer-panel-video',
     target: 'document.viewer.video:after',
-    definition: markRaw(TranscribeViewerPanel)
+    definition: TranscribeViewerPanel
   })
 
   core.registerHook({
     name: 'asr-download-transcription',
     target: 'document.download-popover:after',
-    definition: markRaw(TranscriptionDownloadButtons)
+    definition: TranscriptionDownloadButtons
   })
 
   core.registerHook({

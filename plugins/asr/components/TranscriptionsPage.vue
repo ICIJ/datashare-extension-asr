@@ -12,7 +12,7 @@ import IPhClockCountdown from '~icons/ph/clock-countdown'
 import IPhSortAscending from '~icons/ph/sort-ascending'
 import IPhSortDescending from '~icons/ph/sort-descending'
 import { useCore } from '@/composables/useCore'
-import { useAsrStore, MODEL_LABELS } from '@/stores/asr'
+import { useAsrStore, MODEL_LABELS, ASR_TASK_NAME, ASR_TASK_PREFIX } from '@/stores/asr'
 import { capitalize, displayLanguage } from '@/utils/formatting'
 import { getDocs, isQueryBasedDocs, taskDisplayName } from '@/utils/task'
 import { stripJacksonTypes } from '@/utils/jackson'
@@ -20,8 +20,6 @@ import confirmImageLight from '@/assets/app-modal-default-light.svg'
 import confirmImageDark from '@/assets/app-modal-default-dark.svg'
 import TaskErrorModal from './TaskErrorModal.vue'
 
-const ASR_TASK_NAME = 'asr.transcription'
-const ASR_TASK_PREFIX = `${ASR_TASK_NAME}-`
 
 function taskUuid(task) {
   return task.id.startsWith(ASR_TASK_PREFIX) ? task.id.slice(ASR_TASK_PREFIX.length) : task.id
