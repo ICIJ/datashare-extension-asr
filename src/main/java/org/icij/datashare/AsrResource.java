@@ -12,7 +12,6 @@ import org.icij.datashare.asynctasks.Group;
 import org.icij.datashare.asynctasks.Task;
 import org.icij.datashare.asynctasks.TaskManager;
 import org.icij.datashare.user.User;
-
 import com.google.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,15 +28,14 @@ public class AsrResource {
     static final String ASR_WORKFLOW = "asr.transcription";
     static final String ASR_GROUP = "Python";
     static final String TRANSCRIPTION_FILENAME = "transcription.json";
-
     private static final ObjectMapper mapper = new ObjectMapper();
-
     private final String availableModels;
     private final Map<String, List<String>> modelsMap;
     private final TaskManager taskManager;
     private final PropertiesProvider propertiesProvider;
 
     record TaskResponse(String taskId) {}
+
     record ErrorResponse(String error) {}
 
     @Inject
@@ -54,9 +52,7 @@ public class AsrResource {
 
     @Get("/models")
     public Payload getModels() {
-        return availableModels.isEmpty()
-                ? new Payload(503)
-                : new Payload("application/json", availableModels);
+        return availableModels.isEmpty() ? new Payload(503) : new Payload("application/json", availableModels);
     }
 
     @Post("/transcribe")
@@ -65,8 +61,7 @@ public class AsrResource {
             return new JsonPayload(503, new ErrorResponse("task manager is unavailable"));
         }
 
-        Map<String, Object> body = mapper.readValue(
-                context.request().contentAsBytes(), new TypeReference<>() {});
+        Map<String, Object> body = mapper.readValue(context.request().contentAsBytes(), new TypeReference<>() {});
 
         String project = (String) body.get("project");
         if (project == null || project.isBlank()) {
@@ -115,8 +110,8 @@ public class AsrResource {
             return new JsonPayload(503, new ErrorResponse("artifact directory is not configured"));
         }
 
-        Path transcriptionPath = Path.of(artifactDir, project,
-                docId.substring(0, 2), docId.substring(2, 4), docId, TRANSCRIPTION_FILENAME);
+        Path transcriptionPath = Path.of(artifactDir, project, docId.substring(0, 2), docId.substring(2, 4), docId,
+                                         TRANSCRIPTION_FILENAME);
 
         if (!Files.exists(transcriptionPath)) {
             return new Payload(404);
@@ -146,7 +141,8 @@ public class AsrResource {
     }
 
     private static Map<String, List<String>> parseModels(String json) {
-        if (json.isEmpty()) return Map.of();
+        if (json.isEmpty())
+            return Map.of();
         try {
             return mapper.readValue(json, new TypeReference<>() {});
         } catch (IOException e) {
