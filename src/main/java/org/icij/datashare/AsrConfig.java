@@ -3,11 +3,7 @@ package org.icij.datashare;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
-record AsrConfig(
-        ModelConfig preprocessing,
-        ModelConfig inference,
-        ModelConfig postprocessing
-) {
+record AsrConfig(ModelConfig preprocessing, ModelConfig inference, ModelConfig postprocessing) {
     record ModelConfig(String model) {}
 
     static AsrConfig fromModel(String model) {
