@@ -121,6 +121,16 @@
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>3.7.0</version>
             </plugin>
+            <plugin>
+                <groupId>org.icij</groupId>
+                <artifactId>intellij-code-formatter-maven-plugin</artifactId>
+                <version>1.0.4</version>
+                <executions>
+                    <execution>
+                        <goals><goal>check</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
