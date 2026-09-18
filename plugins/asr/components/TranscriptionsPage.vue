@@ -16,6 +16,8 @@ import { useAsrStore } from '@/stores/asr'
 import { capitalize } from '@/utils/formatting'
 import { getDocs as getDocsFromTask, queryLabel as queryLabelFromTask } from '@/utils/task'
 import { stripJacksonTypes } from '@/utils/jackson'
+import confirmImageLight from '@/assets/app-modal-default-light.svg'
+import confirmImageDark from '@/assets/app-modal-default-dark.svg'
 import errorImageLight from '@/assets/app-modal-error-light.svg'
 import errorImageDark from '@/assets/app-modal-error-dark.svg'
 
@@ -53,6 +55,8 @@ const search = ref('')
 const loading = ref(false)
 const errorModalVisible = ref(false)
 const errorModalTask = ref(null)
+const deleteModalVisible = ref(false)
+const deleteModalTaskId = ref(null)
 
 let pollInterval = null
 
@@ -107,7 +111,16 @@ async function resolveDocNames(taskList) {
   await Promise.all(pending)
 }
 
-async function deleteTask(taskId) {
+function requestDelete(taskId) {
+  deleteModalTaskId.value = taskId
+  deleteModalVisible.value = true
+}
+
+async function confirmDelete() {
+  deleteModalVisible.value = false
+  const taskId = deleteModalTaskId.value
+  deleteModalTaskId.value = null
+  if (!taskId) return
   try {
     await api.sendAction(`/api/task/clean/${encodeURIComponent(taskId)}`, { method: 'DELETE' })
     await fetchTasks()
@@ -542,7 +555,7 @@ onUnmounted(() => {
               <td>
                 <button
                   class="btn btn-sm btn-link text-muted p-0"
-                  @click="deleteTask(task.id)"
+                  @click="requestDelete(task.id)"
                 >
                   <i-ph-trash style="font-size: 1.1em" />
                 </button>
@@ -550,6 +563,27 @@ onUnmounted(() => {
             </tr>
           </tbody>
         </table>
+      </div>
+    </component>
+
+    <component
+      :is="AppModal"
+      v-model="deleteModalVisible"
+      :image="confirmImageLight"
+      :image-width="60"
+      :title="$t('asr.deleteTitle')"
+      :ok-title="$t('asr.deleteConfirm')"
+      size="md"
+      @ok="confirmDelete"
+    >
+      <template #header-image-source>
+        <source
+          :srcset="confirmImageDark"
+          media="(prefers-color-scheme: dark)"
+        >
+      </template>
+      <div class="text-center text-secondary">
+        {{ $t('asr.deleteDescription') }}
       </div>
     </component>
 
