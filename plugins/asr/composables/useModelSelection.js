@@ -25,7 +25,7 @@ export function useModelSelection() {
     return modelsForLanguage.value.length === 0 || !modelsForLanguage.value.includes(model)
   }
 
-  watch(() => asrStore.selectedLanguage, () => {
+  watch([() => asrStore.selectedLanguage, () => asrStore.availableModels], () => {
     if (modelsForLanguage.value.length) {
       if (isModelDisabled(selectedModel.value)) {
         selectedModel.value = modelsForLanguage.value[0]
@@ -33,7 +33,7 @@ export function useModelSelection() {
     } else {
       selectedModel.value = null
     }
-  })
+  }, { immediate: true })
 
   return { selectedModel, allModelNames, isModelDisabled }
 }
