@@ -20,12 +20,7 @@ const { $toast: toast, $t: t } = getCurrentInstance()?.proxy ?? {}
 
 const { selectedModel, allModelNames, isModelDisabled } = useModelSelection()
 
-onMounted(async () => {
-  await asrStore.fetchModels()
-  if (allModelNames.value.length && !allModelNames.value.includes(selectedModel.value)) {
-    selectedModel.value = allModelNames.value[0]
-  }
-})
+onMounted(() => asrStore.fetchModels())
 
 async function handleTranscribe() {
   const doc = documentStore.document
