@@ -3,7 +3,8 @@ export function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
 }
 
-const languageDisplayNames = new Intl.DisplayNames(['en'], { type: 'language' })
+const locale = typeof navigator !== 'undefined' ? navigator.language : 'en'
+const languageDisplayNames = new Intl.DisplayNames([locale], { type: 'language' })
 
 export function languageName(code) {
   try {

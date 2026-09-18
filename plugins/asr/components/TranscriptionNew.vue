@@ -423,51 +423,6 @@ async function submit() {
         </p>
       </component>
 
-      <!-- Step 3: Options — disabled until V2
-      <component
-        :is="FormStep"
-        :index="3"
-        class="transcription-new__options"
-      >
-        <template #title>
-          {{ $t('asr.newForm.options') }}
-        </template>
-        <div class="row align-items-center">
-          <label class="col-sm-12 col-md-4 col-lg-3 d-flex align-items-center gap-2 form-label text-body-emphasis m-0">
-            {{ $t('asr.newForm.skipAlreadyTranscribed') }}
-          </label>
-          <div class="col d-flex flex-column gap-1">
-            <div class="form-check">
-              <input
-                id="skip-yes"
-                v-model="skipAlreadyTranscribed"
-                class="form-check-input"
-                type="radio"
-                :value="true"
-              >
-              <label
-                class="form-check-label"
-                for="skip-yes"
-              >{{ $t('asr.newForm.yes') }}</label>
-            </div>
-            <div class="form-check">
-              <input
-                id="skip-no"
-                v-model="skipAlreadyTranscribed"
-                class="form-check-input"
-                type="radio"
-                :value="false"
-              >
-              <label
-                class="form-check-label"
-                for="skip-no"
-              >{{ $t('asr.newForm.no') }}</label>
-            </div>
-          </div>
-        </div>
-      </component>
-      -->
-
       <!-- Point 5: Your selection -->
       <component
         v-if="overviewUri"
