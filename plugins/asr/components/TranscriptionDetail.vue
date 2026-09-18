@@ -183,8 +183,8 @@ function filterValueLabel(filterName, value) {
 
 function docsQuery() {
   const raw = task.value?.args?.docs
-  if (!raw || Array.isArray(raw) && !raw[0]?.startsWith?.('java.util.')) return null
-  if (Array.isArray(raw) && raw.length === 2 && typeof raw[0] === 'string' && raw[0].startsWith('java.util.')) {
+  if (!isQueryBasedDocs(raw)) return null
+  if (Array.isArray(raw)) {
     return stripJacksonTypes(raw[1])
   }
   return stripJacksonTypes(raw)
@@ -299,9 +299,8 @@ async function fetchTask() {
 async function resolveDocDetails(taskData) {
   const project = taskData.args?.project
   if (!project) return
-  const docs = taskData.args?.docs || []
-  const docList = docs.length === 2 && docs[0] === 'java.util.ArrayList' ? docs[1] : docs
-  if (!Array.isArray(docList)) return
+  const docList = getDocsFromTask(taskData)
+  if (!Array.isArray(docList) || !docList.length) return
   const ids = docList.filter(id => !docDetails.value[id])
   if (!ids.length) return
   try {
