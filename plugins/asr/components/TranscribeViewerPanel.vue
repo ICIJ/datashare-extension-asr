@@ -97,7 +97,7 @@ onMounted(() => {
 
 <style scoped>
 .transcribe-viewer-panel__btn {
-  background-color: white;
+  background-color: var(--bs-body-bg, white);
 }
 
 .transcribe-viewer-panel__btn:hover {
