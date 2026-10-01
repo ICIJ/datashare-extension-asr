@@ -122,7 +122,7 @@ async function handleBatchTranscribe() {
       </div>
 
       <div>
-        <language-selector />
+        <language-selector :index="selectedDocuments[0]?.index" />
         <p class="text-muted mb-0 small mt-2">
           <i-ph-warning class="me-1" />
           <strong>{{ $t('asr.batchLanguageWarningTitle') }}</strong>
