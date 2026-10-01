@@ -4,6 +4,13 @@ import IPhTranslate from '~icons/ph/translate'
 import { useAsrStore } from '@/stores/asr'
 import { useCore } from '@/composables/useCore'
 
+const props = defineProps({
+  index: {
+    type: String,
+    required: true
+  }
+})
+
 const core = useCore()
 const FormControlSearch = defineAsyncComponent(() => core.findComponent('Form/FormControl/FormControlSearch'))
 
@@ -40,27 +47,30 @@ const floatingMiddleware = [
 
 const asrStore = useAsrStore()
 const search = ref('')
-const projectLanguages = ref([])
+const rawBucketKeys = ref([])
 
 const MAX_PROJECT_LANGUAGES = 5
 
 onMounted(async () => {
   try {
     const response = await core.api.elasticsearch.search({
-      index: core.projectIds.join(','),
+      index: props.index,
       body: {
         size: 0,
         aggs: { languages: { terms: { field: 'language', size: MAX_PROJECT_LANGUAGES } } }
       }
     })
-    const buckets = response?.aggregations?.languages?.buckets || []
-    projectLanguages.value = buckets
-      .map(b => esLanguageToCode(b.key, asrStore.languages))
-      .filter(Boolean)
+    rawBucketKeys.value = (response?.aggregations?.languages?.buckets || []).map(b => b.key)
   }
   catch {
-    projectLanguages.value = []
+    rawBucketKeys.value = []
   }
+})
+
+const projectLanguages = computed(() => {
+  return rawBucketKeys.value
+    .map(key => esLanguageToCode(key, asrStore.languages))
+    .filter(Boolean)
 })
 
 const sortedLanguages = computed(() => {

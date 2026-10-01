@@ -76,7 +76,7 @@ async function handleTranscribe() {
       />
     </div>
 
-    <language-selector class="mb-3" />
+    <language-selector :index="documentStore.document.index" class="mb-3" />
 
     <div class="transcribe-panel__model-selector mb-3">
       <label class="form-label m-0 text-nowrap d-flex align-items-center gap-1">

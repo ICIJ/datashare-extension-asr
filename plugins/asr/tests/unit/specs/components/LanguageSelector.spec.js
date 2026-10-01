@@ -22,6 +22,7 @@ describe('LanguageSelector.vue', () => {
   beforeEach(async () => {
     const { plugins } = CoreSetup.init().useAll()
     wrapper = mount(LanguageSelector, {
+      props: { index: 'test-project' },
       global: { plugins, stubs: { BDropdown: BDropdownStub } }
     })
     const { useAsrStore } = await import('@/stores/asr')
@@ -107,6 +108,7 @@ describe('LanguageSelector.vue', () => {
       store.selectedLanguage = null
 
       wrapper = mount(LanguageSelector, {
+        props: { index: 'test-project' },
         global: { plugins: coreSetup.plugins, stubs: { BDropdown: BDropdownStub } }
       })
       await flushPromises()
