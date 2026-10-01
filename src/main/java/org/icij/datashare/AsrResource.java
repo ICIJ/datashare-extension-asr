@@ -109,6 +109,9 @@ public class AsrResource {
             return new JsonPayload(503, new ErrorResponse("artifact directory is not configured"));
         }
 
+        if (!docId.matches("[A-Za-z0-9]{4,}")) {
+            return new JsonPayload(400, new ErrorResponse("invalid document id"));
+        }
         Path transcriptionPath = Path.of(artifactDir, project, docId.substring(0, 2), docId.substring(2, 4), docId,
                                          TRANSCRIPTION_FILENAME);
 
