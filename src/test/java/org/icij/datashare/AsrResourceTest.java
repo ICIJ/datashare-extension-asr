@@ -227,7 +227,7 @@ public class AsrResourceTest implements FluentRestTest {
     @Test
     public void test_get_transcription_returns_200() throws IOException {
         // GIVEN
-        String docId = "doc_id";
+        String docId = "abcdef1234567890abcdef1234567890";
         String transcription = "{\"transcripts\":[{\"text\":\"hello\"}],\"confidence\":0.95}";
         Path transcriptionDir = Path.of(tmpFolder.getRoot().getAbsolutePath(),
                 PROJECT, docId.substring(0, 2), docId.substring(2, 4), docId);
@@ -243,15 +243,23 @@ public class AsrResourceTest implements FluentRestTest {
     @Test
     public void test_get_transcription_returns_404_when_not_found() {
         // WHEN/THEN
-        get("/api/asr/transcription/" + PROJECT + "/doc_id")
+        get("/api/asr/transcription/" + PROJECT + "/abcdef1234567890abcdef1234567890")
                 .withPreemptiveAuthentication(USER_ID, "null")
                 .should().respond(404);
     }
 
     @Test
+    public void test_get_transcription_returns_400_for_invalid_doc_id() {
+        // WHEN/THEN
+        get("/api/asr/transcription/" + PROJECT + "/ab")
+                .withPreemptiveAuthentication(USER_ID, "null")
+                .should().respond(400);
+    }
+
+    @Test
     public void test_get_transcription_returns_401_for_unauthorized_project() {
         // WHEN/THEN
-        get("/api/asr/transcription/other-project/doc_id")
+        get("/api/asr/transcription/other-project/abcdef1234567890abcdef1234567890")
                 .withPreemptiveAuthentication(USER_ID, "null")
                 .should().respond(401);
     }
