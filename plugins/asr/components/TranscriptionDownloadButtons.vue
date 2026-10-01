@@ -20,7 +20,7 @@ const contentType = computed(() => props.document?.contentType || '')
 const isEligible = computed(() => isEligibleForAsr(contentType.value))
 
 onMounted(() => {
-  if (isEligible.value && !asrStore.hasTranscription) {
+  if (isEligible.value && asrStore.transcriptionDocId !== props.document.id) {
     asrStore.fetchTranscription(props.document.index, props.document.id)
   }
 })
