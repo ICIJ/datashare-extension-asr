@@ -34,6 +34,7 @@ export const useAsrStore = defineStore('asr', () => {
   const taskState = ref(null) // null | 'RUNNING' | 'DONE' | 'ERROR' | 'CANCELLED'
 
   const transcription = ref(null)
+  const transcriptionDocId = ref(null)
   const isTranscribing = computed(() => taskState.value === 'RUNNING')
   const hasTranscription = computed(() => transcription.value !== null)
   const languages = computed(() => Object.keys(availableModels.value || {}).sort())
@@ -41,9 +42,11 @@ export const useAsrStore = defineStore('asr', () => {
   async function fetchTranscription(project, docId) {
     try {
       transcription.value = await api.sendAction(`/api/asr/transcription/${project}/${docId}`)
+      transcriptionDocId.value = docId
     }
     catch {
       transcription.value = null
+      transcriptionDocId.value = null
     }
   }
 
@@ -111,6 +114,7 @@ export const useAsrStore = defineStore('asr', () => {
     taskId.value = null
     taskState.value = null
     transcription.value = null
+    transcriptionDocId.value = null
   }
 
   return {
@@ -120,6 +124,7 @@ export const useAsrStore = defineStore('asr', () => {
     taskId,
     taskState,
     transcription,
+    transcriptionDocId,
     isTranscribing,
     hasTranscription,
     languages,
