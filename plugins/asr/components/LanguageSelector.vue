@@ -16,6 +16,7 @@ const FormControlSearch = defineAsyncComponent(() => core.findComponent('Form/Fo
 
 const locale = core.i18n?.global?.locale?.value || core.i18n?.global?.locale || 'en'
 const languageNames = new Intl.DisplayNames([locale], { type: 'language' })
+const englishLanguageNames = new Intl.DisplayNames(['en'], { type: 'language' })
 
 function languageName(code) {
   try {
