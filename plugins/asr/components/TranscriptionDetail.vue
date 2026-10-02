@@ -28,9 +28,9 @@ import IPhStar from '~icons/ph/star'
 import IPhHash from '~icons/ph/hash'
 import IPhUsers from '~icons/ph/users'
 import { useCore } from '@/composables/useCore'
-import { useAsrStore, SUPPORTED_CONTENT_TYPES } from '@/stores/asr'
-import { capitalize } from '@/utils/formatting'
-import { getDocs as getDocsFromTask, queryLabel as queryLabelFromTask } from '@/utils/task'
+import { useAsrStore, SUPPORTED_CONTENT_TYPES, MODEL_LABELS } from '@/stores/asr'
+import { capitalize, formatTaskTimestamp, displayLanguage } from '@/utils/formatting'
+import { getDocs as getDocsFromTask, queryLabel as queryLabelFromTask, taskErrorFull, isQueryBasedDocs } from '@/utils/task'
 import { stripJacksonTypes } from '@/utils/jackson'
 import LanguageSelector from './LanguageSelector.vue'
 
@@ -65,14 +65,6 @@ const showTranscribeModal = ref(false)
 const showErrorModal = ref(false)
 const showDocumentModal = ref(false)
 const documentModalDocId = ref(null)
-
-function formatTaskTimestamp(dateStr) {
-  if (!dateStr) return ''
-  const d = new Date(dateStr)
-  if (isNaN(d)) return ''
-  const pad = (n) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`
-}
 
 const taskTitle = computed(() => {
   if (!task.value) return ''
@@ -124,15 +116,7 @@ function docState() {
   return task.value?.state || 'QUEUED'
 }
 
-const isQueryBased = computed(() => {
-  const raw = task.value?.args?.docs
-  if (!raw) return false
-  if (!Array.isArray(raw)) return true
-  if (raw.length === 2 && typeof raw[0] === 'string' && raw[0].startsWith('java.util.')) {
-    return typeof raw[1] === 'object' && !Array.isArray(raw[1])
-  }
-  return false
-})
+const isQueryBased = computed(() => isQueryBasedDocs(task.value?.args?.docs))
 
 const docs = computed(() => getDocs())
 
@@ -152,17 +136,6 @@ const isFinished = computed(() => {
 function getQueryString() {
   const label = queryLabel()
   return label === '—' ? '*' : label
-}
-
-function taskErrorFull() {
-  if (!task.value?.error) return 'Unknown error'
-  const error = task.value.error
-  const message = error.message || error.cause || error.name || 'Unknown error'
-  if (!error.stacktrace?.length) return message
-  const stacktrace = error.stacktrace
-    .map(frame => `  at ${frame.name}(${frame.file}:${frame.lineno})`)
-    .join('\n')
-  return `${message}\n${stacktrace}`
 }
 
 const ES_KEY_TO_FILTER_NAME = {
@@ -295,28 +268,9 @@ const searchHref = computed(() => {
   return `${window.location.origin}${resolved.href}`
 })
 
-const languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
-
 const taskLanguageDisplay = computed(() => {
-  const lang = task.value?.args?.language
-  if (lang && typeof lang === 'string') {
-    try {
-      const name = languageNames.of(lang)
-      if (name) return capitalize(name)
-    }
-    catch {
-      // not an ISO code, fall through
-    }
-    return capitalize(lang)
-  }
-  return '—'
+  return displayLanguage(task.value?.args?.language)
 })
-
-const MODEL_LABELS = {
-  'parakeet': 'Parakeet',
-  'parakeet_trt': 'Parakeet TRT',
-  'fireredasr2_aed': 'FireRedASR2'
-}
 
 const taskModel = computed(() => {
   const args = task.value?.args || {}
@@ -872,7 +826,7 @@ watch(() => props.taskId, fetchTask, { immediate: true })
             {{ $t('asr.errorTitle') }}
           </p>
           <div class="bg-tertiary-subtle d-block text-body-emphasis m-0 rounded-1">
-            <pre class="p-3 m-0"><code>{{ taskErrorFull() }}</code></pre>
+            <pre class="p-3 m-0"><code>{{ taskErrorFull(task) }}</code></pre>
           </div>
         </div>
         <p class="m-0">
@@ -986,9 +940,6 @@ watch(() => props.taskId, fetchTask, { immediate: true })
   font-size: 1.25em;
 }
 
-.transcription-detail__card__entry--buttons .transcription-detail__card__entry__icon {
-  padding: 0.75rem 0;
-}
 
 .transcription-detail__card__filters {
   min-width: 0;

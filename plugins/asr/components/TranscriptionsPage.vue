@@ -12,9 +12,9 @@ import IPhClockCountdown from '~icons/ph/clock-countdown'
 import IPhSortAscending from '~icons/ph/sort-ascending'
 import IPhSortDescending from '~icons/ph/sort-descending'
 import { useCore } from '@/composables/useCore'
-import { useAsrStore } from '@/stores/asr'
-import { capitalize } from '@/utils/formatting'
-import { getDocs as getDocsFromTask, queryLabel as queryLabelFromTask } from '@/utils/task'
+import { useAsrStore, MODEL_LABELS } from '@/stores/asr'
+import { capitalize, formatTaskTimestamp, displayLanguage } from '@/utils/formatting'
+import { getDocs as getDocsFromTask, taskErrorFull, isQueryBasedDocs } from '@/utils/task'
 import { stripJacksonTypes } from '@/utils/jackson'
 import confirmImageLight from '@/assets/app-modal-default-light.svg'
 import confirmImageDark from '@/assets/app-modal-default-dark.svg'
@@ -31,7 +31,6 @@ function taskUuid(task) {
 const core = useCore()
 const { api } = core
 const asrStore = useAsrStore()
-const languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
 
 const PageHeader = defineAsyncComponent(() => core.findComponent('PageHeader/PageHeader'))
 const PageContainer = defineAsyncComponent(() => core.findComponent('PageContainer/PageContainer'))
@@ -153,18 +152,6 @@ function docDisplayName(docId) {
   return docNames.value[docId] || docId
 }
 
-function isQueryBasedDocs(docs) {
-  return !!docs && typeof docs === 'object' && !Array.isArray(docs)
-}
-
-function formatTaskTimestamp(dateStr) {
-  if (!dateStr) return ''
-  const d = new Date(dateStr)
-  if (isNaN(d)) return ''
-  const pad = (n) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`
-}
-
 function taskName(task) {
   if (task.args?.name) return task.args.name
   const docs = getDocs(task)
@@ -214,24 +201,7 @@ function taskCategory(task) {
 }
 
 function taskLanguage(task) {
-  const lang = task.args?.language
-  if (lang && typeof lang === 'string') {
-    try {
-      const name = languageNames.of(lang)
-      if (name) return capitalize(name)
-    }
-    catch {
-      // not an ISO code, fall through
-    }
-    return capitalize(lang)
-  }
-  return '—'
-}
-
-const MODEL_LABELS = {
-  'parakeet': 'Parakeet',
-  'parakeet_trt': 'Parakeet TRT',
-  'fireredasr2_aed': 'FireRedASR2'
+  return displayLanguage(task.args?.language)
 }
 
 function taskModel(task) {
@@ -283,16 +253,6 @@ const colSpan = computed(() => visibleColumns.value.length + 1)
 function showError(task) {
   errorModalTask.value = task
   errorModalVisible.value = true
-}
-
-function taskErrorFull(task) {
-  if (!task?.error) return 'Unknown error'
-  const message = task.error.message || task.error.cause || task.error.name || 'Unknown error'
-  if (!task.error.stacktrace?.length) return message
-  const stacktrace = task.error.stacktrace
-    .map(frame => `  at ${frame.name}(${frame.file}:${frame.lineno})`)
-    .join('\n')
-  return `${message}\n${stacktrace}`
 }
 
 watch(page, () => fetchTasks())
