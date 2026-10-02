@@ -86,28 +86,27 @@ const audioCount = ref(0)
 const videoCount = ref(0)
 const unsupportedCount = ref(0)
 
+function buildBaseSearchBody() {
+  return core.api.elasticsearch.buildSearchDocsBody({
+    query: query.value.trim() || '*',
+    filters: formSearchStore.instantiatedFilters,
+    from: 0,
+    perPage: 0
+  })
+}
+
 async function fetchDocumentCounts() {
   const index = formSearchStore.indices?.[0] || core.projectIds[0]
   try {
-    const filterClauses = (formSearchStore.activeFilters ?? []).map(filter => ({
-      terms: { [filter.key]: filter.values }
-    }))
-    const body = {
-      size: 0,
-      query: {
-        bool: {
-          must: query.value.trim()
-            ? [{ query_string: { query: query.value.trim() } }]
-            : [{ match_all: {} }],
-          filter: [{ term: { type: 'Document' } }, ...filterClauses]
-        }
-      },
-      aggs: {
-        contentTypes: {
-          terms: { field: 'contentType', size: 50 }
-        }
+    const body = buildBaseSearchBody()
+    body.size = 0
+    body.aggs = {
+      contentTypes: {
+        terms: { field: 'contentType', size: 50 }
       }
     }
+    delete body.highlight
+    delete body.sort
     const res = await core.api.elasticsearch.search({ index, body })
     const buckets = res?.aggregations?.contentTypes?.buckets ?? []
     let audio = 0
@@ -180,22 +179,15 @@ function reset() {
 }
 
 function buildSearchQuery() {
-  const filterClauses = (formSearchStore.activeFilters ?? []).map(filter => ({
-    terms: { [filter.key]: filter.values }
-  }))
+  const body = buildBaseSearchBody()
+  const esQuery = body.query
   const hasContentTypeFilter = (formSearchStore.activeFilters ?? []).some(f => f.name === 'contentType')
   if (!hasContentTypeFilter) {
-    filterClauses.push({ terms: { contentType: [...SUPPORTED_CONTENT_TYPES] } })
+    if (!esQuery.bool) esQuery.bool = {}
+    if (!esQuery.bool.filter) esQuery.bool.filter = []
+    esQuery.bool.filter.push({ terms: { contentType: [...SUPPORTED_CONTENT_TYPES] } })
   }
-  const hasQuery = query.value.trim().length > 0
-  return {
-    bool: {
-      must: hasQuery
-        ? [{ query_string: { query: query.value.trim() } }]
-        : [{ match_all: {} }],
-      filter: filterClauses
-    }
-  }
+  return esQuery
 }
 
 async function submit() {

@@ -17,7 +17,20 @@ class CoreSetup {
       sendAction: options.sendAction || vi.fn().mockResolvedValue(null),
       elasticsearch: {
         search: options.elasticsearchSearch || (() => Promise.resolve({ aggregations: { languages: { buckets: [] } } })),
-        getDocumentsByIds: options.getDocumentsByIds || vi.fn().mockResolvedValue({ hits: { hits: [] } })
+        getDocumentsByIds: options.getDocumentsByIds || vi.fn().mockResolvedValue({ hits: { hits: [] } }),
+        buildSearchDocsBody: vi.fn().mockImplementation(({ query }) => ({
+          query: {
+            bool: {
+              must: [
+                { match_all: {} },
+                { bool: { should: [{ query_string: { query: query || '*' } }] } },
+                { match: { type: 'Document' } }
+              ]
+            }
+          },
+          from: 0,
+          size: 0
+        }))
       }
     }
     this.router = {
@@ -71,10 +84,15 @@ class CoreSetup {
     const projectIds = this.projectIds
     const mockFormSearchStore = {
       activeFilters: [],
+      instantiatedFilters: [],
+      indices: projectIds,
       setIndices: vi.fn(),
       getFilter: vi.fn().mockReturnValue({}),
+      hasFilterValue: vi.fn().mockReturnValue(false),
+      addFilterValue: vi.fn(),
       resetFilterValues: vi.fn(),
-      removeFilterValue: vi.fn()
+      removeFilterValue: vi.fn(),
+      toBaseRouteQuery: {}
     }
     const useSearchStore = vi.fn().mockReturnValue({ indices: projectIds })
     useSearchStore.disposable = vi.fn().mockReturnValue(mockFormSearchStore)
