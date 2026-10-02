@@ -20,6 +20,12 @@ export const SUPPORTED_CONTENT_TYPES = new Set([
   'video/mov'
 ])
 
+export const MODEL_LABELS = {
+  'parakeet': 'Parakeet',
+  'parakeet_trt': 'Parakeet TRT',
+  'fireredasr2_aed': 'FireRedASR2'
+}
+
 export function isEligibleForAsr(contentType) {
   return SUPPORTED_CONTENT_TYPES.has(contentType)
 }
@@ -29,7 +35,6 @@ export const useAsrStore = defineStore('asr', () => {
 
   const availableModels = ref({})
   const selectedLanguage = ref(null)
-  const panelOpen = ref(false)
   const taskId = ref(null)
   const taskState = ref(null) // null | 'RUNNING' | 'DONE' | 'ERROR' | 'CANCELLED'
 
@@ -83,48 +88,11 @@ export const useAsrStore = defineStore('asr', () => {
     taskState.value = 'RUNNING'
   }
 
-  async function stopTranscription() {
-    if (!taskId.value) return
-    try {
-      await api.sendAction(`/api/task/stop/${taskId.value}`, { method: 'PUT' })
-      taskState.value = 'CANCELLED'
-    }
-    catch {
-      // task may already be finished
-    }
-  }
 
-  async function pollTaskStatus() {
-    if (!taskId.value) return
-    try {
-      const task = await api.sendAction(`/api/task/${taskId.value}`)
-      taskState.value = task.state
-    }
-    catch {
-      // task not found
-    }
-  }
-
-  function openPanel() {
-    panelOpen.value = true
-  }
-
-  function closePanel() {
-    panelOpen.value = false
-  }
-
-  function reset() {
-    selectedLanguage.value = null
-    taskId.value = null
-    taskState.value = null
-    transcription.value = null
-    transcriptionDocId.value = null
-  }
 
   return {
     availableModels,
     selectedLanguage,
-    panelOpen,
     taskId,
     taskState,
     transcription,
@@ -136,13 +104,8 @@ export const useAsrStore = defineStore('asr', () => {
     fetchModels,
     transcribe,
     transcribeBatch,
-    stopTranscription,
-    pollTaskStatus,
     settingsOrder,
     settingsPerPage,
-    settingsProperties,
-    openPanel,
-    closePanel,
-    reset
+    settingsProperties
   }
 })

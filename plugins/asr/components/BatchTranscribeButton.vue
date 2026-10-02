@@ -1,6 +1,5 @@
 <script setup>
 import { ref, computed } from 'vue'
-import IPhFileAudio from '~icons/ph/file-audio'
 import BatchTranscribeModal from './BatchTranscribeModal.vue'
 
 const props = defineProps({

@@ -3,6 +3,29 @@ export function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
 }
 
+const languageDisplayNames = new Intl.DisplayNames(['en'], { type: 'language' })
+
+export function languageName(code) {
+  try {
+    return languageDisplayNames.of(code) || code
+  }
+  catch {
+    return code
+  }
+}
+
+export function displayLanguage(code) {
+  if (!code || typeof code !== 'string') return '—'
+  try {
+    const name = languageDisplayNames.of(code)
+    if (name) return capitalize(name)
+  }
+  catch {
+    // not an ISO code
+  }
+  return capitalize(code)
+}
+
 export function formatTimestamp(seconds) {
   const h = Math.floor(seconds / 3600)
   const m = Math.floor((seconds % 3600) / 60)

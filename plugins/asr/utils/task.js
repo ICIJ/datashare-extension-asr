@@ -7,6 +7,25 @@ export function getDocs(task) {
   return unwrapJacksonList(docs)
 }
 
+export function taskErrorFull(task) {
+  if (!task?.error) return 'Unknown error'
+  const message = task.error.message || task.error.cause || task.error.name || 'Unknown error'
+  if (!task.error.stacktrace?.length) return message
+  const stacktrace = task.error.stacktrace
+    .map(frame => `  at ${frame.name}(${frame.file}:${frame.lineno})`)
+    .join('\n')
+  return `${message}\n${stacktrace}`
+}
+
+export function isQueryBasedDocs(docs) {
+  if (!docs) return false
+  if (!Array.isArray(docs)) return typeof docs === 'object'
+  if (docs.length === 2 && typeof docs[0] === 'string' && docs[0].startsWith('java.util.')) {
+    return typeof docs[1] === 'object' && !Array.isArray(docs[1])
+  }
+  return false
+}
+
 function extractQueryLabel(obj) {
   if (!obj || typeof obj !== 'object') return null
   const keys = Object.keys(obj)
