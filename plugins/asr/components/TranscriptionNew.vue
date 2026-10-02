@@ -61,7 +61,7 @@ const submitting = ref(false)
 const breadcrumbRoutes = ['task', 'task.transcriptions', 'task.transcriptions.new']
 
 const overviewUri = computed(() => {
-  const routeQuery = formSearchStore.toBaseRouteQuery
+  const routeQuery = { ...formSearchStore.toBaseRouteQuery }
   if (query.value.trim()) {
     routeQuery.q = query.value.trim()
   }
