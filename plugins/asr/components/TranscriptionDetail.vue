@@ -467,7 +467,7 @@ function downloadCsv() {
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
-onMounted(fetchTask)
+watch(() => props.taskId, fetchTask, { immediate: true })
 </script>
 
 <template>
