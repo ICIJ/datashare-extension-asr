@@ -92,10 +92,6 @@ async function fetchDocumentCounts() {
     const filterClauses = (formSearchStore.activeFilters ?? []).map(filter => ({
       terms: { [filter.key]: filter.values }
     }))
-    const hasContentTypeFilter = (formSearchStore.activeFilters ?? []).some(f => f.name === 'contentType')
-    if (!hasContentTypeFilter) {
-      filterClauses.push({ terms: { contentType: [...SUPPORTED_CONTENT_TYPES] } })
-    }
     const body = {
       size: 0,
       query: {
