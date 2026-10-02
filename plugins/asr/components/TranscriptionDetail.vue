@@ -404,8 +404,9 @@ async function confirmTranscribeAgain() {
     const response = await api.sendAction('/api/asr/transcribe', {
       method: 'POST',
       data: {
-        project: args.project,
-        docs: task.value?.args?.docs,
+        project: taskProject.value,
+        docs: isQueryBased.value ? docsQuery() : getDocs(),
+        model: args.config?.inference?.model,
         name,
         language: asrStore.selectedLanguage,
         batch_size: args.batch_size || 2
