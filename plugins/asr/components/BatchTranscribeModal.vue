@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, getCurrentInstance, defineAsyncComponent, onMounted } from 'vue'
+import { ref, computed, getCurrentInstance, defineAsyncComponent, onMounted } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
 import IPhBrain from '~icons/ph/brain'
 import IPhInfo from '~icons/ph/info'
@@ -23,7 +23,7 @@ const asrStore = useAsrStore()
 const AppModal = defineAsyncComponent(() => core.findComponent('AppModal/AppModal'))
 const { $toast: toast, $t: t } = getCurrentInstance()?.proxy ?? {}
 
-const { selectedModel, allModelNames, modelsForLanguage, isModelDisabled } = useModelSelection()
+const { selectedModel, allModelNames, isModelDisabled } = useModelSelection()
 
 const eligibleDocs = computed(() => {
   return props.selectedDocuments.filter(doc => isEligibleForAsr(doc.contentType || ''))

@@ -55,7 +55,7 @@ const filterRecommendedBy = formSearchStore.getFilter({ name: 'recommendedBy' })
 
 
 const query = ref('')
-const { selectedModel, allModelNames, modelsForLanguage, isModelDisabled } = useModelSelection()
+const { selectedModel, allModelNames, isModelDisabled } = useModelSelection()
 const submitting = ref(false)
 
 const breadcrumbRoutes = ['task', 'task.transcriptions', 'task.transcriptions.new']
