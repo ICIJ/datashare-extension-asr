@@ -272,8 +272,7 @@ async function submit() {
   submitting.value = true
   try {
     const project = formSearchStore.indices?.[0] || core.projectIds[0]
-    const name = `Transcription ${new Date().toLocaleDateString()}`
-    await asrStore.transcribeBatch(project, [], { name, model: selectedModel.value, query: buildSearchQuery() })
+    await asrStore.transcribeBatch(project, [], { model: selectedModel.value, query: buildSearchQuery() })
     core.router.push({ name: 'task.transcriptions' })
   }
   catch {

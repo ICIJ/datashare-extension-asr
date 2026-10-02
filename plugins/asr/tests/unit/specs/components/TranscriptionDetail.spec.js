@@ -225,7 +225,6 @@ describe('TranscriptionDetail.vue', () => {
         data: {
           project: 'test-project',
           docs: ['doc1', 'doc2'],
-          name: 'my-audio.mp3',
           language: 'en',
           batch_size: 2
         }
