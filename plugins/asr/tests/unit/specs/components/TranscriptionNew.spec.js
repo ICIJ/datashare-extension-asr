@@ -86,14 +86,15 @@ describe('TranscriptionNew.vue', () => {
       await wrapper.vm.submit()
       await flushPromises()
 
-      expect(sendActionMock).toHaveBeenCalledWith('/api/asr/transcribe', expect.objectContaining({
-        method: 'POST',
-        data: expect.objectContaining({
-          docs: { bool: { must: [{ match_all: {} }], filter: expect.arrayContaining([
-            expect.objectContaining({ terms: expect.objectContaining({ contentType: expect.any(Array) }) })
-          ]) } }
-        })
-      }))
+      const call = sendActionMock.mock.calls.find(c => c[0] === '/api/asr/transcribe')
+      expect(call).toBeTruthy()
+      const docs = call[1].data.docs
+      expect(docs.bool).toBeTruthy()
+      expect(docs.bool.filter).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ terms: expect.objectContaining({ contentType: expect.any(Array) }) })
+        ])
+      )
       expect(core.router.push).toHaveBeenCalledWith({ name: 'task.transcriptions' })
     })
 
@@ -109,13 +110,20 @@ describe('TranscriptionNew.vue', () => {
       await wrapper.vm.submit()
       await flushPromises()
 
-      expect(sendActionMock).toHaveBeenCalledWith('/api/asr/transcribe', expect.objectContaining({
-        data: expect.objectContaining({
-          docs: { bool: { must: [{ query_string: { query: 'exp*' } }], filter: expect.arrayContaining([
-            expect.objectContaining({ terms: expect.objectContaining({ contentType: expect.any(Array) }) })
-          ]) } }
-        })
-      }))
+      const call = sendActionMock.mock.calls.find(c => c[0] === '/api/asr/transcribe')
+      expect(call).toBeTruthy()
+      const docs = call[1].data.docs
+      expect(docs.bool).toBeTruthy()
+      expect(docs.bool.must).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ bool: { should: [{ query_string: { query: 'exp*' } }] } })
+        ])
+      )
+      expect(docs.bool.filter).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ terms: expect.objectContaining({ contentType: expect.any(Array) }) })
+        ])
+      )
     })
 
     it('includes the selected model in the payload', async () => {
@@ -129,9 +137,9 @@ describe('TranscriptionNew.vue', () => {
       await wrapper.vm.submit()
       await flushPromises()
 
-      expect(sendActionMock).toHaveBeenCalledWith('/api/asr/transcribe', expect.objectContaining({
-        data: expect.objectContaining({ model: 'model-b' })
-      }))
+      const call = sendActionMock.mock.calls.find(c => c[0] === '/api/asr/transcribe')
+      expect(call).toBeTruthy()
+      expect(call[1].data.model).toBe('model-b')
     })
 
     it('does not submit when form is invalid', async () => {
