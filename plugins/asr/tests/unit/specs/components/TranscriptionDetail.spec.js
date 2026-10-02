@@ -273,7 +273,11 @@ describe('TranscriptionDetail.vue', () => {
 
       expect(sendActionMock).toHaveBeenCalledWith('/api/asr/transcribe', {
         method: 'POST',
-        data: expect.objectContaining({ docs })
+        data: expect.objectContaining({
+          project: 'test-project',
+          docs: { match_all: {} },
+          language: 'fr'
+        })
       })
     })
   })

@@ -93,22 +93,37 @@ async function fetchTasks() {
 }
 
 async function resolveDocNames(taskList) {
-  const pending = []
+  const byProject = {}
   for (const task of taskList) {
     const project = task.args?.project
     if (!project) continue
     for (const docId of getDocs(task)) {
       if (docNames.value[docId]) continue
-      pending.push(
-        api.sendAction(`/api/${project}/documents/${docId}`).then((doc) => {
-          if (doc?.title) docNames.value[docId] = doc.title
-          if (doc?.contentTypeCategory) docCategories.value[docId] = doc.contentTypeCategory
-          return doc
-        }).catch(() => {})
-      )
+      ;(byProject[project] ??= new Set()).add(docId)
     }
   }
-  await Promise.all(pending)
+  const promises = Object.entries(byProject).map(async ([project, idSet]) => {
+    const ids = [...idSet]
+    try {
+      const result = await api.elasticsearch.getDocumentsByIds(project, ids)
+      const hits = result?.hits?.hits || []
+      for (const hit of hits) {
+        const path = hit._source?.path || ''
+        const basename = path.split('/').pop()
+        if (basename) docNames.value[hit._id] = basename
+        const contentType = hit._source?.contentType || ''
+        const category = contentType.split('/')[0]
+        if (category) docCategories.value[hit._id] = category
+      }
+    }
+    catch {
+      // documents not found
+    }
+    for (const id of ids) {
+      if (!docNames.value[id]) docNames.value[id] = id
+    }
+  })
+  await Promise.all(promises)
 }
 
 function requestDelete(taskId) {
