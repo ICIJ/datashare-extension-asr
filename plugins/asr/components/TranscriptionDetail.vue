@@ -834,7 +834,7 @@ watch(() => props.taskId, fetchTask, { immediate: true })
         </p>
 
         <div>
-          <language-selector />
+          <language-selector :index="taskProject || ''" />
           <p class="text-muted mb-0 small mt-2">
             <component
               :is="IPhWarning"

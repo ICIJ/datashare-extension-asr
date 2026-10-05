@@ -347,7 +347,7 @@ async function submit() {
         :title="$t('asr.newForm.language')"
         :index="2"
       >
-        <language-selector />
+        <language-selector :index="formSearchStore.indices?.[0] || ''" />
         <p class="text-muted small mt-2 mb-0">
           {{ $t('asr.newForm.languageHint') }}
         </p>
