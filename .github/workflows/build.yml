@@ -79,6 +79,11 @@ jobs:
           yarn install
           yarn build
           npm pack
+          VERSION=$(node -p "require('./package.json').version")
+          TARBALL="datashare-plugin-asr-${VERSION}.tgz"
+          tar --transform="s,^package/,datashare-plugin-asr-${VERSION}/," -xzf "$TARBALL"
+          tar -czf "$TARBALL" "datashare-plugin-asr-${VERSION}"
+          rm -rf "datashare-plugin-asr-${VERSION}"
 
       - name: Create GitHub release and upload assets
         env:
