@@ -138,7 +138,7 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
 
   core.registerHook({
     name: 'asr-batch-transcribe',
-    target: 'search-selection.compact:after',
+    target: 'search-selection-compact:after',
     definition: BatchTranscribeButton
   })
 
@@ -150,19 +150,19 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
 
   core.registerHook({
     name: 'asr-transcribe-viewer-panel',
-    target: 'document.viewer.audio:after',
+    target: 'document-viewer-audio:after',
     definition: TranscribeViewerPanel
   })
 
   core.registerHook({
     name: 'asr-transcribe-viewer-panel-video',
-    target: 'document.viewer.video:after',
+    target: 'document-viewer-video:after',
     definition: TranscribeViewerPanel
   })
 
   core.registerHook({
     name: 'asr-download-transcription',
-    target: 'document.download-popover:after',
+    target: 'document-download-popover:after',
     definition: TranscriptionDownloadButtons
   })
 
