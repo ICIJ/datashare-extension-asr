@@ -19,6 +19,7 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
       transcribe: 'Transcribe',
       transcriptions: 'Transcriptions',
       noTextTranscribed: 'No text transcribed',
+      transcriptionEmpty: 'Transcription completed but produced no results. Try again with a different language or model.',
       transcriptionDisclaimer: 'This is an automatic transcription. Always check original.',
       transcribeAgain: 'Transcribe again',
       close: 'Close',

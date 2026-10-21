@@ -30,7 +30,7 @@ onMounted(() => {
     v-if="isEligible"
     class="mt-3"
   >
-    <div v-if="asrStore.hasTranscription">
+    <div v-if="asrStore.hasTranscription && asrStore.hasTranscripts">
       <div class="alert alert-warning d-flex align-items-center justify-content-between mb-3 px-3 py-2">
         <span class="d-flex align-items-center gap-2">
           <i-ph-file-audio style="font-size: 1.25em" />
@@ -56,6 +56,21 @@ onMounted(() => {
           <span>{{ t.text }}</span>
         </div>
       </div>
+    </div>
+    <div
+      v-else-if="asrStore.hasTranscription && !asrStore.hasTranscripts"
+      class="alert alert-warning d-flex align-items-center justify-content-between px-3 py-2"
+    >
+      <span class="d-flex align-items-center gap-2">
+        <i-ph-file-audio style="font-size: 1.25em" />
+        {{ $t('asr.transcriptionEmpty') }}
+      </span>
+      <button
+        class="btn btn-outline-warning transcribe-viewer-panel__btn"
+        @click="asrStore.openPanel()"
+      >
+        {{ $t('asr.transcribeAgain') }}
+      </button>
     </div>
     <div
       v-else

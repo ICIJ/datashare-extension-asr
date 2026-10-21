@@ -47,6 +47,7 @@ export const useAsrStore = defineStore('asr', () => {
   const transcription = ref(null)
   const transcriptionDocId = ref(null)
   const hasTranscription = computed(() => transcription.value !== null)
+  const hasTranscripts = computed(() => transcription.value?.transcripts?.length > 0)
   const languages = computed(() => Object.keys(availableModels.value || {}).sort())
 
   async function fetchTranscription(project, docId) {
@@ -102,6 +103,7 @@ export const useAsrStore = defineStore('asr', () => {
     transcription,
     transcriptionDocId,
     hasTranscription,
+    hasTranscripts,
     languages,
     fetchTranscription,
     fetchModels,

@@ -43,7 +43,7 @@ function downloadWithTimestamps() {
 </script>
 
 <template>
-  <template v-if="isEligible && asrStore.hasTranscription">
+  <template v-if="isEligible && asrStore.hasTranscripts">
     <component
       :is="ButtonIcon"
       :icon-left="IPhDownloadSimple"
