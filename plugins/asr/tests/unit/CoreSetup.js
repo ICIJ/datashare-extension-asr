@@ -13,6 +13,7 @@ class CoreSetup {
     }
     this._pinia = createPinia()
     this.projectIds = options.projectIds || ['test-project']
+    this.mode = { modeName: options.modeName || 'LOCAL' }
     this.api = {
       sendAction: options.sendAction || vi.fn().mockResolvedValue(null),
       elasticsearch: {

@@ -5,8 +5,8 @@ import CoreSetup from '~tests/unit/CoreSetup'
 import TranscriptionsSidebarEntry from '@/components/TranscriptionsSidebarEntry.vue'
 
 describe('TranscriptionsSidebarEntry.vue', () => {
-  function createWrapper(props = {}) {
-    const { plugins } = CoreSetup.init().useAll()
+  function createWrapper(props = {}, options = {}) {
+    const { plugins } = CoreSetup.init(options).useAll()
     return mount(TranscriptionsSidebarEntry, {
       props,
       global: { plugins }
@@ -38,6 +38,24 @@ describe('TranscriptionsSidebarEntry.vue', () => {
       const links = wrapper.findAllComponents(RouterLinkStub)
       const newLink = links.find(l => l.props('to')?.name === 'task.transcriptions.new')
       expect(newLink).toBeTruthy()
+    })
+  })
+
+  describe('in server mode', () => {
+    let wrapper
+
+    beforeEach(() => {
+      wrapper = createWrapper({ to: { name: 'task.task-board' } }, { modeName: 'SERVER' })
+    })
+
+    it('still has a link to the transcriptions list', () => {
+      const links = wrapper.findAllComponents(RouterLinkStub)
+      expect(links.some(l => l.props('to')?.name === 'task.transcriptions')).toBe(true)
+    })
+
+    it('has no action link to create a new transcription', () => {
+      const links = wrapper.findAllComponents(RouterLinkStub)
+      expect(links.some(l => l.props('to')?.name === 'task.transcriptions.new')).toBe(false)
     })
   })
 

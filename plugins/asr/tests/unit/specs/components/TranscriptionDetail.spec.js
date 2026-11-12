@@ -171,6 +171,18 @@ describe('TranscriptionDetail.vue', () => {
       await flushPromises()
       expect(wrapper.vm.isFinished).toBe(true)
     })
+
+    it('is displayed in local mode', async () => {
+      const { wrapper } = createWrapper()
+      await flushPromises()
+      expect(wrapper.find('[label="asr.transcribeAgain"]').exists()).toBe(true)
+    })
+
+    it('is hidden in server mode', async () => {
+      const { wrapper } = createWrapper(baseTask, { modeName: 'SERVER' })
+      await flushPromises()
+      expect(wrapper.find('[label="asr.transcribeAgain"]').exists()).toBe(false)
+    })
   })
 
   describe('delete action', () => {

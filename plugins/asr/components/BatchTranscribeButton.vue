@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
 import BatchTranscribeModal from './BatchTranscribeModal.vue'
+import { useMode } from '@/composables/useMode'
 
 const props = defineProps({
   selectionEntries: {
@@ -13,6 +14,8 @@ const props = defineProps({
     default: true
   }
 })
+
+const { isServer } = useMode()
 
 const hasMultipleProjects = computed(() => {
   const projects = new Set(props.selectionEntries.map(doc => doc.index || doc.routing))
@@ -31,25 +34,27 @@ function handleClick() {
 </script>
 
 <template>
-  <span
-    v-b-tooltip.top.body="hasMultipleProjects ? $t('asr.multipleProjectsWarning') : ''"
-  >
-    <button
-      class="btn btn-outline-tertiary button-icon button-icon--use-injected-variant d-inline-flex align-items-center text-nowrap"
-      :disabled="isDisabled"
-      @click="handleClick"
+  <template v-if="!isServer">
+    <span
+      v-b-tooltip.top.body="hasMultipleProjects ? $t('asr.multipleProjectsWarning') : ''"
     >
-      <span
-        class="app-icon button-icon__icon-left"
-        style="font-size: 1.25em; display: inline-flex"
+      <button
+        class="btn btn-outline-tertiary button-icon button-icon--use-injected-variant d-inline-flex align-items-center text-nowrap"
+        :disabled="isDisabled"
+        @click="handleClick"
       >
-        <IPhFileAudio />
-      </span>
-      <span class="button-icon__label ms-2">{{ $t('asr.transcribe') }}</span>
-    </button>
-  </span>
-  <batch-transcribe-modal
-    v-model="modalOpen"
-    :selected-documents="selectedDocuments"
-  />
+        <span
+          class="app-icon button-icon__icon-left"
+          style="font-size: 1.25em; display: inline-flex"
+        >
+          <IPhFileAudio />
+        </span>
+        <span class="button-icon__label ms-2">{{ $t('asr.transcribe') }}</span>
+      </button>
+    </span>
+    <batch-transcribe-modal
+      v-model="modalOpen"
+      :selected-documents="selectedDocuments"
+    />
+  </template>
 </template>

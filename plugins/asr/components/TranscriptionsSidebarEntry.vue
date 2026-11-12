@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
 import IPhPlus from '~icons/ph/plus'
+import { useMode } from '@/composables/useMode'
 
 const props = defineProps({
   title: { type: String, default: '' },
@@ -11,6 +12,7 @@ const props = defineProps({
 })
 
 const isTaskSection = computed(() => props.to?.name === 'task.task-board')
+const { isServer } = useMode()
 </script>
 
 <template>
@@ -29,6 +31,7 @@ const isTaskSection = computed(() => props.to?.name === 'task.task-board')
       {{ $t('asr.transcriptions') }}
     </router-link>
     <router-link
+      v-if="!isServer"
       :to="{ name: 'task.transcriptions.new' }"
       class="transcriptions-sidebar-entry__action ms-2 d-flex"
       :title="$t('asr.newTranscription')"

@@ -3,6 +3,7 @@ import { computed, inject, defineAsyncComponent, onMounted } from 'vue'
 import IPhFileAudio from '~icons/ph/file-audio'
 import { useCore } from '@/composables/useCore'
 import { useAsrStore, isEligibleForAsr } from '@/stores/asr'
+import { useMode } from '@/composables/useMode'
 import { formatTimeRange } from '@/utils/formatting'
 import TranscribePanel from './TranscribePanel.vue'
 
@@ -12,6 +13,7 @@ const AppModal = defineAsyncComponent(() => core.findComponent('AppModal/AppModa
 const isInModal = inject('modal', false)
 const documentStore = stores.useDocumentStore()
 const asrStore = useAsrStore()
+const { isServer } = useMode()
 
 const document = computed(() => documentStore.document)
 const contentType = computed(() => document.value?.contentType || '')
@@ -37,6 +39,7 @@ onMounted(() => {
           {{ $t('asr.transcriptionDisclaimer') }}
         </span>
         <button
+          v-if="!isServer"
           class="btn btn-outline-warning transcribe-viewer-panel__btn"
           @click="asrStore.openPanel()"
         >
@@ -66,6 +69,7 @@ onMounted(() => {
         {{ $t('asr.transcriptionEmpty') }}
       </span>
       <button
+        v-if="!isServer"
         class="btn btn-outline-warning transcribe-viewer-panel__btn"
         @click="asrStore.openPanel()"
       >
@@ -81,6 +85,7 @@ onMounted(() => {
         {{ $t('asr.noTextTranscribed') }}
       </span>
       <button
+        v-if="!isServer"
         class="btn btn-outline-warning transcribe-viewer-panel__btn"
         @click="asrStore.openPanel()"
       >

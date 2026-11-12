@@ -26,6 +26,7 @@ import IPhStar from '~icons/ph/star'
 import IPhHash from '~icons/ph/hash'
 import IPhUsers from '~icons/ph/users'
 import { useCore } from '@/composables/useCore'
+import { useMode } from '@/composables/useMode'
 import { useAsrStore, SUPPORTED_CONTENT_TYPES, MODEL_LABELS, ASR_TASK_PREFIX } from '@/stores/asr'
 import { capitalize, displayLanguage } from '@/utils/formatting'
 import { getDocs as getDocsFromTask, queryLabel as queryLabelFromTask, isQueryBasedDocs, taskDisplayName } from '@/utils/task'
@@ -40,6 +41,7 @@ const props = defineProps({
 
 const core = useCore()
 const { api } = core
+const { isServer } = useMode()
 const asrStore = useAsrStore()
 const { $toast: toast } = getCurrentInstance()?.proxy ?? {}
 
@@ -574,6 +576,7 @@ watch(() => props.taskId, fetchTask, { immediate: true })
             <div class="d-flex flex-wrap gap-3">
               <component
                 :is="ButtonIcon"
+                v-if="!isServer"
                 :icon-left="IPhArrowClockwise"
                 :label="$t('asr.transcribeAgain')"
                 variant="link"

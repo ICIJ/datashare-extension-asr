@@ -207,7 +207,8 @@ document.addEventListener('datashare:ready', async ({ detail: { core } }) => {
         },
         meta: {
           title: 'asr.newForm.title',
-          icon: markRaw(IPhFileAudio)
+          icon: markRaw(IPhFileAudio),
+          allowedModes: ['LOCAL', 'EMBEDDED']
         }
       })
       core.router.addRoute('task', {
